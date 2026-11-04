@@ -52,3 +52,6 @@ ui-debug.log
 emulator-data/
 service-account*.json
 !.env.example
+
+.vercel
+.env*
