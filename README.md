@@ -16,11 +16,11 @@ Sitio web del Club de la Montaña (Sally Willmans): las familias ven las próxim
 
 **Siguientes etapas:**
 
-1. Conectar Firebase: las salidas, inscripciones y ajustes salen de Firestore (`src/lib/data.ts`, `src/lib/inscripciones.ts` ya están escritos)
+1. Conectar Firebase: las salidas, inscripciones y ajustes salen de Firestore (`src/lib/data.ts`, `src/lib/inscripciones.ts` ya están escritos). Proyecto creado y conectado a Vercel; falta que el sitio lea de Firestore
 2. Pago real con Mercado Pago y webhook (`src/lib/mercadopago.ts`)
-3. Panel de Sally: login, crear y editar salidas, fotos, lista de inscritos
-4. Avisos por correo (`src/lib/email.ts`)
-5. Dominio, SEO y publicación
+3. Avisos por correo (`src/lib/email.ts`)
+4. Contenido real, dominio y SEO
+5. Panel de Sally (se entrega al final): login, crear y editar salidas, fotos, lista de inscritos
 
 ## Firebase
 
