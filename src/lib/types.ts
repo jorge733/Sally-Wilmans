@@ -5,6 +5,8 @@ export interface Salida {
   titulo: string;
   /** YYYY-MM-DD (hora de Chile) */
   fecha: string;
+  /** Último día, para actividades de varios días (ej. Club de Verano) */
+  fechaFin?: string | null;
   /** HH:mm */
   horaInicio: string;
   horaFin: string;

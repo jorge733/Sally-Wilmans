@@ -1,6 +1,7 @@
 /**
- * Datos de ejemplo para el prototipo. En la siguiente etapa se reemplazan
- * por lo que Sally cargue desde su panel (Firebase).
+ * Datos de ejemplo para el prototipo, basados en las publicaciones de
+ * @clubdelamontanachile (lugares, horarios, edades y cupos). Los precios son
+ * provisorios. En la siguiente etapa se reemplazan por los datos reales.
  */
 import type { AjustesSitio, Salida } from "./types";
 import { AJUSTES_POR_DEFECTO } from "./site";
@@ -11,110 +12,126 @@ const base = {
   estado: "publicada" as const,
   creadoEn: 0,
   actualizadoEn: 0,
+  edadMin: 5,
+  edadMax: 12,
+};
+
+const sabado = {
+  ...base,
+  horaInicio: "08:45",
+  horaFin: "13:00",
+  precio: 15000,
+  cupos: 20,
+};
+
+const LLEVAR_SABADO = [
+  "Mochila pequeña",
+  "Botella con agua (mínimo 1 litro)",
+  "Colación saludable",
+  "Bloqueador, jockey o sombrero",
+  "Zapatillas con buena suela",
+  "Ropa cómoda que se pueda ensuciar",
+  "Cortaviento o polerón",
+];
+
+const MACUL = {
+  lugar: "Parque Quebrada de Macul, Peñalolén",
+  puntoEncuentro: "Entrada del parque, al final de Av. José Arrieta (se confirma por WhatsApp)",
+};
+
+const RAMON = {
+  lugar: "Parque Aguas de Ramón, La Reina",
+  puntoEncuentro: "Entrada del parque, Av. Álvaro Casanova 2583 (se confirma por WhatsApp)",
+};
+
+const verano = {
+  ...base,
+  horaInicio: "09:00",
+  horaFin: "13:00",
+  precio: 90000,
+  cupos: 20,
+  lugar: "Cerros y parques de la precordillera de Santiago",
+  puntoEncuentro: "Se informa a las familias inscritas",
+  descripcion:
+    "Una semana completa en la naturaleza, de lunes a viernes. Cada día exploramos un sendero distinto, jugamos libremente, hacemos talleres y juegos tradicionales, y compartimos la colación al aire libre. Una de las versiones más esperadas del año.",
+  queLlevar: [
+    "Mochila de 15 a 20 litros",
+    "Botella con 1,5 litros de agua",
+    "Colación saludable para cada día",
+    "Bloqueador, jockey o sombrero",
+    "Zapatillas de trekking o con buena suela",
+    "Ropa cómoda y una muda de recambio",
+  ],
 };
 
 export const SALIDAS_DEMO: Salida[] = [
   {
-    ...base,
-    id: "aguas-de-ramon",
-    titulo: "Quebrada de Ramón y su cascada",
+    ...sabado,
+    ...MACUL,
+    id: "macul-7-nov",
+    titulo: "Primavera en Quebrada de Macul",
+    fecha: "2026-11-07",
+    cuposTomados: 12,
+    descripcion:
+      "La primavera está haciendo de las suyas: salimos a investigar las flores, los insectos y las plantitas que están creciendo en la quebrada. Caminata, juego libre y juegos tradicionales en la naturaleza.",
+    queLlevar: LLEVAR_SABADO,
+  },
+  {
+    ...sabado,
+    ...RAMON,
+    id: "ramon-14-nov",
+    titulo: "Exploradores en Aguas de Ramón",
     fecha: "2026-11-14",
-    horaInicio: "09:00",
-    horaFin: "14:00",
-    lugar: "Parque Aguas de Ramón, La Reina",
-    puntoEncuentro: "Entrada del parque, Av. Álvaro Casanova 2583",
-    edadMin: 7,
-    edadMax: 12,
-    precio: 18000,
-    cupos: 16,
+    cuposTomados: 8,
+    descripcion:
+      "Subimos por la quebrada siguiendo el estero, buscando huellas, piedras y rincones para jugar. Una mañana para moverse, explorar, asombrarse y compartir con otros niños.",
+    queLlevar: LLEVAR_SABADO,
+  },
+  {
+    ...sabado,
+    ...MACUL,
+    id: "macul-21-nov",
+    titulo: "Caminata y juego libre en Macul",
+    fecha: "2026-11-21",
+    cuposTomados: 20,
+    descripcion:
+      "Caminata por los senderos de la quebrada, con pausas para observar el paisaje, juego libre y una colación compartida al aire libre.",
+    queLlevar: LLEVAR_SABADO,
+  },
+  {
+    ...sabado,
+    ...RAMON,
+    id: "ramon-28-nov",
+    titulo: "Despedida de noviembre en Aguas de Ramón",
+    fecha: "2026-11-28",
+    cuposTomados: 17,
+    descripcion:
+      "Cerramos el mes en la montaña: sendero, juegos tradicionales y un círculo final para compartir lo que más nos gustó de la temporada.",
+    queLlevar: LLEVAR_SABADO,
+  },
+  {
+    ...verano,
+    id: "verano-2027-semana-1",
+    titulo: "Club de Verano 2027 · Semana 1",
+    fecha: "2027-01-11",
+    fechaFin: "2027-01-15",
     cuposTomados: 9,
-    descripcion:
-      "Una caminata de media jornada por la quebrada, con paradas para observar aves y plantas nativas. Llegamos hasta la cascada para almorzar y volvemos por el mismo sendero.",
-    queLlevar: [
-      "Mochila pequeña",
-      "Botella con 1,5 litros de agua",
-      "Almuerzo y colación",
-      "Bloqueador y jockey",
-      "Zapatillas de trekking o con buena suela",
-      "Cortaviento",
-    ],
   },
   {
-    ...base,
-    id: "cerro-manquehue",
-    titulo: "Primera cumbre: Manquehuito",
-    fecha: "2026-11-22",
-    horaInicio: "08:30",
-    horaFin: "13:30",
-    lugar: "Cerro Manquehue, Lo Barnechea",
-    puntoEncuentro: "Estacionamiento del Club de Golf Sport Francés",
-    edadMin: 9,
-    edadMax: 14,
-    precio: 20000,
-    cupos: 12,
-    cuposTomados: 11,
-    descripcion:
-      "Subida al Manquehuito, ideal para quienes ya han caminado antes. Aprendemos a usar los bastones, a dosificar el esfuerzo y a orientarnos con el paisaje de la ciudad a nuestros pies.",
-    queLlevar: [
-      "Mochila de 20 a 25 litros",
-      "2 litros de agua",
-      "Colación energética",
-      "Bloqueador, lentes de sol y jockey",
-      "Zapatos de trekking",
-      "Polerón o polar",
-    ],
-  },
-  {
-    ...base,
-    id: "parque-mahuida",
-    titulo: "Exploradores del bosque",
-    fecha: "2026-11-29",
-    horaInicio: "10:00",
-    horaFin: "13:00",
-    lugar: "Parque Mahuida, La Reina",
-    puntoEncuentro: "Portería del parque, Av. Alcalde Fernando Castillo Velasco 11095",
-    edadMin: 4,
-    edadMax: 7,
-    precio: 15000,
-    cupos: 14,
-    cuposTomados: 14,
-    descripcion:
-      "Salida corta para los más pequeños: senderos suaves, juegos de exploración, búsqueda de huellas y un picnic en el bosque. Los apoderados pueden acompañar en la primera salida.",
-    queLlevar: ["Mochila pequeña", "Botella de agua", "Colación", "Bloqueador y jockey", "Ropa cómoda"],
-  },
-  {
-    ...base,
-    id: "yerba-loca",
-    titulo: "Día completo en Yerba Loca",
-    fecha: "2026-12-06",
-    horaInicio: "08:00",
-    horaFin: "18:00",
-    lugar: "Santuario de la Naturaleza Yerba Loca, Farellones",
-    puntoEncuentro: "Metro Escuela Militar, salida Apoquindo (vamos en bus contratado)",
-    edadMin: 10,
-    edadMax: 15,
-    precio: 32000,
-    cupos: 20,
-    cuposTomados: 6,
-    descripcion:
-      "Nuestra salida más larga del año: traslado en bus, caminata por el valle del estero Yerba Loca hasta Casa de Piedra y vuelta al atardecer. Incluye traslado y entrada al santuario.",
-    queLlevar: [
-      "Mochila de 25 a 30 litros",
-      "2,5 litros de agua",
-      "Almuerzo y dos colaciones",
-      "Bloqueador, lentes de sol, jockey o sombrero",
-      "Zapatos de trekking",
-      "Primera capa térmica y cortaviento",
-      "Muda de calcetines",
-    ],
+    ...verano,
+    id: "verano-2027-semana-2",
+    titulo: "Club de Verano 2027 · Semana 2",
+    fecha: "2027-01-18",
+    fechaFin: "2027-01-22",
+    cuposTomados: 4,
   },
 ];
 
 export const AJUSTES_DEMO: AjustesSitio = {
   ...AJUSTES_POR_DEFECTO,
-  whatsapp: "56912345678",
-  email: "hola@clubdelamontana.cl",
-  instagram: "clubdelamontana",
+  whatsapp: "56982326966",
+  email: "",
+  instagram: "clubdelamontanachile",
 };
 
 export function salidaDemo(id: string): Salida | undefined {

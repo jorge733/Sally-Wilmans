@@ -1,40 +1,47 @@
 /**
- * Textos fijos del sitio. Se ajustan en las rondas de cambios con Sally.
- * Lo que Sally cambia sola (WhatsApp, correo, autorización) está en el panel > Ajustes.
+ * Textos fijos del sitio, basados en el Instagram @clubdelamontanachile.
+ * Se ajustan en las rondas de cambios con Sally.
+ * Lo que Sally cambia sola (WhatsApp, correo, autorización) va en el panel > Ajustes.
  */
 export const SITIO = {
   nombre: "Club de la Montaña",
-  bajada: "Salidas a la montaña para niños y niñas",
+  nombreLargo: "Club de Niños en la Montaña",
+  bajada: "Naturaleza, juego libre y vida sana para niños y niñas de 5 a 12 años",
   descripcion:
-    "Taller de montaña para niños: salidas guiadas a la naturaleza, en grupos pequeños y con adultos a cargo. Revisa las próximas salidas, inscribe a tus hijos y paga en línea.",
-  responsable: "Sally Willmans",
+    "Club de Niños en la Montaña: salidas al cerro para niños y niñas de 5 a 12 años en Santiago. Naturaleza, senderismo, juego libre y vida sana, inspirado en la pedagogía Waldorf. Revisa las próximas fechas e inscribe a tus hijos en línea.",
+  responsable: "Sally Wilmans Cifuentes",
   ciudad: "Santiago, Chile",
+  desde: 2018,
+  edades: "5 a 12 años",
 };
+
+/** Los cuatro pilares que aparecen en los afiches del club. */
+export const PILARES = ["Naturaleza", "Senderismo", "Juego libre", "Vida sana"];
 
 export const AJUSTES_POR_DEFECTO = {
   whatsapp: "",
   email: "",
   instagram: "",
   textoAutorizacion:
-    "Autorizo a mi(s) hijo(s) o hija(s) a participar en la salida indicada, organizada por Club de la Montaña. Declaro que la información de salud entregada es verdadera y completa, y que conozco las indicaciones de la salida. (Texto provisorio: Sally debe reemplazarlo por la autorización definitiva desde el panel.)",
+    "Autorizo a mi(s) hijo(s) o hija(s) a participar en la actividad indicada, organizada por Club de la Montaña. Declaro que la información de salud entregada es verdadera y completa, y que conozco las indicaciones de la salida. (Texto provisorio: Sally debe reemplazarlo por la autorización definitiva.)",
 };
 
 export const PASOS = [
   {
-    titulo: "Elige la salida",
-    texto: "Revisa el calendario: fecha, lugar, edades, horario y lo que hay que llevar.",
+    titulo: "Elige la fecha",
+    texto: "Revisa el calendario: lugar, horario, edades y lo que hay que llevar.",
   },
   {
     titulo: "Completa la ficha",
-    texto: "Datos de cada niño, alergias o datos de salud, contacto de emergencia y tu autorización.",
+    texto: "Datos de cada niño, alergias o cuidados de salud, contacto de emergencia y tu autorización.",
   },
   {
     titulo: "Paga en línea",
     texto: "Con Mercado Pago: débito, crédito o en cuotas. El cupo queda reservado al pagar.",
   },
   {
-    titulo: "Te llega el comprobante",
-    texto: "Recibes un correo con el detalle de la salida y la lista de lo que deben llevar.",
+    titulo: "¡Nos vemos en el cerro!",
+    texto: "Te llega un correo con el comprobante, el punto de encuentro y la lista de lo que deben llevar.",
   },
 ];
 
@@ -45,7 +52,7 @@ export const CUIDADOS = [
   },
   {
     titulo: "Adultos a cargo",
-    texto: "Guías con experiencia en montaña y en trabajo con niños, durante toda la jornada.",
+    texto: "Monitores con experiencia en montaña y en trabajo con niños, durante toda la jornada.",
   },
   {
     titulo: "Ficha de salud",
@@ -53,26 +60,34 @@ export const CUIDADOS = [
   },
   {
     titulo: "Rutas a su medida",
-    texto: "Elegimos senderos según la edad del grupo, con pausas, juegos y tiempo para observar.",
+    texto: "Senderos según la edad del grupo, con pausas, juegos tradicionales y tiempo para asombrarse.",
   },
 ];
 
 export const PREGUNTAS = [
   {
-    p: "¿Qué pasa si la salida se llena?",
-    r: "El cupo se descuenta solo al pagar. Cuando no quedan cupos, la salida aparece como completa y ya no recibe inscripciones.",
+    p: "¿Para qué edades son las salidas?",
+    r: "Para niños y niñas de 5 a 12 años. En cada salida verás el rango de edad exacto.",
   },
   {
-    p: "¿Cómo pago?",
-    r: "Con Mercado Pago, usando tarjeta de débito, crédito (también en cuotas) u otros medios que ofrece Mercado Pago.",
+    p: "¿Dónde son las salidas?",
+    r: "En cerros y parques precordilleranos de Santiago, como el Parque Quebrada de Macul y el Parque Aguas de Ramón.",
+  },
+  {
+    p: "¿Qué pasa si la salida se llena?",
+    r: "El cupo se descuenta solo al pagar. Cuando no quedan cupos, la fecha aparece como completa y ya no recibe inscripciones.",
   },
   {
     p: "¿Puedo inscribir a más de un hijo?",
     r: "Sí. En la misma inscripción puedes agregar a varios niños, cada uno con su ficha.",
   },
   {
+    p: "¿Cómo pago?",
+    r: "Con Mercado Pago, usando tarjeta de débito, crédito (también en cuotas) u otros medios que ofrece Mercado Pago.",
+  },
+  {
     p: "¿Qué pasa si llueve o hay mal tiempo?",
-    r: "Si las condiciones no son seguras, la salida se reprograma y te avisamos con anticipación.",
+    r: "Si las condiciones no son seguras, la salida se reprograma y les avisamos con anticipación.",
   },
 ];
 

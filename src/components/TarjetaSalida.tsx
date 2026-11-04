@@ -29,6 +29,11 @@ export function EstadoCupos({ salida }: { salida: Salida }) {
 
 export function TarjetaSalida({ salida, indice }: { salida: Salida; indice: number }) {
   const f = fechaCorta(salida.fecha);
+  if (salida.fechaFin && salida.fechaFin !== salida.fecha) {
+    const fin = fechaCorta(salida.fechaFin);
+    f.dia = `${f.dia}–${fin.dia}`;
+    f.semana = `${f.semana} a ${fin.semana}`;
+  }
   const abierta = salidaAbierta(salida);
   return (
     <Link
@@ -41,6 +46,11 @@ export function TarjetaSalida({ salida, indice }: { salida: Salida; indice: numb
           <img src={salida.fotoUrl} alt="" className="size-full object-cover" />
         ) : (
           <Paisaje variante={indice} className="size-full transition duration-500 group-hover:scale-105" />
+        )}
+        {salida.fechaFin && (
+          <div className="absolute right-3 bottom-3 rounded-full bg-acento px-3 py-1 text-xs font-semibold text-white">
+            Lunes a viernes
+          </div>
         )}
         <div className="absolute top-3 left-3 rounded-xl bg-white px-3 py-1.5 text-center leading-tight shadow">
           <div className="text-[10px] font-semibold tracking-wider text-gris uppercase">{f.semana}</div>

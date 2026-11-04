@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-tinta: #18212b;
-  --color-gris: #5d6670;
-  --color-linea: #e2ddd4;
-  --color-marca: #14324a;
-  --color-marca-claro: #c9d6e2;
-  --color-acento: #b4432f;
-  --color-acento-oscuro: #93351f;
-  --color-crema: #f5f2ec;
-  --color-bosque: #2f5d50;
+  --color-tinta: #23291f;
+  --color-gris: #5f6656;
+  --color-linea: #e3dccb;
+  --color-marca: #2f4a34;
+  --color-marca-claro: #d5dfcc;
+  --color-acento: #c0663a;
+  --color-acento-oscuro: #9f4f29;
+  --color-crema: #f3eddf;
+  --color-bosque: #5c7a3c;
   --font-sans: var(--font-inter), "Segoe UI", system-ui, sans-serif;
   --font-serif: var(--font-fraunces), Georgia, serif;
+  --font-mano: var(--font-amatic), "Comic Sans MS", cursive;
 }
 
 html {
@@ -19,7 +20,7 @@ html {
 }
 
 body {
-  background: #fffdf9;
+  background: #fbf8f1;
   color: var(--color-tinta);
 }
 
@@ -97,4 +98,11 @@ h3 {
   body {
     background: #fff;
   }
+}
+
+/* Letra "a mano" como en los afiches del club */
+.mano {
+  font-family: var(--font-amatic), "Comic Sans MS", cursive;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }

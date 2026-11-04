@@ -13,7 +13,7 @@ import {
 import { Paisaje } from "@/components/Paisaje";
 import { EstadoCupos } from "@/components/TarjetaSalida";
 import { AJUSTES_DEMO, SALIDAS_DEMO, salidaDemo } from "@/lib/demo";
-import { clp, edades, fechaLarga, linkWhatsapp } from "@/lib/format";
+import { clp, edades, fechaSalida, linkWhatsapp } from "@/lib/format";
 import { salidaAbierta } from "@/lib/salida-utils";
 
 type Props = { params: Promise<{ id: string }> };
@@ -25,7 +25,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const s = salidaDemo((await params).id);
   if (!s) return {};
-  return { title: s.titulo, description: `${fechaLarga(s.fecha)} · ${s.lugar}. ${s.descripcion}` };
+  return { title: s.titulo, description: `${fechaSalida(s)} · ${s.lugar}. ${s.descripcion}` };
 }
 
 export default async function DetalleSalida({ params }: Props) {
@@ -36,7 +36,7 @@ export default async function DetalleSalida({ params }: Props) {
   const abierta = salidaAbierta(salida);
 
   const datos = [
-    { Icono: IconoCalendario, k: "Fecha", v: fechaLarga(salida.fecha, true) },
+    { Icono: IconoCalendario, k: "Fecha", v: fechaSalida(salida, true) },
     { Icono: IconoReloj, k: "Horario", v: `${salida.horaInicio} a ${salida.horaFin} h` },
     { Icono: IconoNinos, k: "Edades", v: edades(salida.edadMin, salida.edadMax) },
     { Icono: IconoLugar, k: "Lugar", v: salida.lugar },

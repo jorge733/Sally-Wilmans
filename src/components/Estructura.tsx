@@ -4,15 +4,30 @@ import { SITIO } from "@/lib/site";
 import type { AjustesSitio } from "@/lib/types";
 import { IconoCorreo, IconoInstagram, IconoWhatsapp } from "./Iconos";
 
+/** Montañas dibujadas a mano con un corazón, como el logo de los afiches del club. */
 export function Logo({ claro = false }: { claro?: boolean }) {
+  const trazo = claro ? "#f3eddf" : "#2f4a34";
   return (
-    <Link href="/" className="flex items-center gap-2.5" aria-label={`${SITIO.nombre}, inicio`}>
-      <svg viewBox="0 0 40 40" className="size-9 shrink-0" aria-hidden>
-        <circle cx="20" cy="20" r="20" fill={claro ? "#fff" : "#14324a"} />
-        <path d="M7 29 16 15l5 7 4-5 8 12Z" fill={claro ? "#14324a" : "#fff"} />
-        <path d="M16 15l2.5 3.8-2.5-1.3-2.4 1.4Z" fill="#b4432f" />
+    <Link href="/" className="flex items-center gap-2" aria-label={`${SITIO.nombre}, inicio`}>
+      <svg
+        viewBox="0 0 48 40"
+        className="h-9 w-11 shrink-0"
+        aria-hidden
+        fill="none"
+        stroke={trazo}
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M3 27 15 11l6 8 6-9 18 17" />
+        <path d="m15 11 3 6 3-2M27 10l2.5 5 3-2" strokeWidth="1.8" />
+        <path
+          d="M24 37c-2.6-1.8-4.4-3.4-4.4-5.2 0-1.3 1-2.2 2.2-2.2.9 0 1.6.5 2.2 1.3.6-.8 1.3-1.3 2.2-1.3 1.2 0 2.2.9 2.2 2.2 0 1.8-1.8 3.4-4.4 5.2Z"
+          fill={claro ? "#f6c68f" : "#c0663a"}
+          stroke="none"
+        />
       </svg>
-      <span className={`font-serif text-lg font-semibold leading-none ${claro ? "text-white" : "text-marca"}`}>
+      <span className={`mano text-[1.6rem] leading-[0.85] uppercase ${claro ? "text-crema" : "text-marca"}`}>
         Club de la
         <br />
         Montaña
@@ -23,11 +38,11 @@ export function Logo({ claro = false }: { claro?: boolean }) {
 
 export function Encabezado() {
   return (
-    <header className="sticky top-0 z-30 border-b border-linea/70 bg-[#fffdf9]/90 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-linea/70 bg-[#fbf8f1]/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-gris md:flex" aria-label="Principal">
-          <Link href="/#salidas" className="hover:text-tinta">Próximas salidas</Link>
+          <Link href="/#salidas" className="hover:text-tinta">Próximas fechas</Link>
           <Link href="/#como-funciona" className="hover:text-tinta">Cómo funciona</Link>
           <Link href="/#nosotros" className="hover:text-tinta">Quiénes somos</Link>
           <Link href="/#contacto" className="hover:text-tinta">Contacto</Link>

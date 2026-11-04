@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { IconoCheck, IconoFlecha, IconoMochila } from "@/components/Iconos";
-import { clp, edades, fechaLarga } from "@/lib/format";
+import { clp, edades, fechaSalida } from "@/lib/format";
 import type { Nino, Salida } from "@/lib/types";
 
 type Paso = "ficha" | "pago" | "listo";
@@ -63,7 +63,7 @@ export function FormularioInscripcion({
       <div className="text-xs font-semibold tracking-wider text-marca-claro uppercase">Salida</div>
       <div className="mt-1 font-serif text-xl font-semibold">{salida.titulo}</div>
       <div className="mt-1 text-sm text-marca-claro first-letter:uppercase">
-        {fechaLarga(salida.fecha)} · {salida.horaInicio} a {salida.horaFin} h
+        {fechaSalida(salida)} · {salida.horaInicio} a {salida.horaFin} h
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import "server-only";
 import nodemailer from "nodemailer";
 import { obtenerAjustes } from "./data";
-import { clp, edades, fechaLarga } from "./format";
+import { clp, edades, fechaSalida } from "./format";
 import { SITIO } from "./site";
 import type { Inscripcion, Salida } from "./types";
 
@@ -36,10 +36,10 @@ const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 function marco(titulo: string, cuerpo: string): string {
-  return `<!doctype html><html><body style="margin:0;background:#f5f2ec;font-family:Arial,Helvetica,sans-serif;color:#18212b">
+  return `<!doctype html><html><body style="margin:0;background:#f3eddf;font-family:Arial,Helvetica,sans-serif;color:#23291f">
   <div style="max-width:560px;margin:0 auto;padding:24px 16px">
-    <div style="background:#14324a;color:#fff;border-radius:10px 10px 0 0;padding:20px 24px">
-      <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#c9d6e2">${SITIO.nombre}</div>
+    <div style="background:#2f4a34;color:#fff;border-radius:10px 10px 0 0;padding:20px 24px">
+      <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#d5dfcc">${SITIO.nombre}</div>
       <div style="font-size:22px;font-weight:bold;margin-top:4px">${titulo}</div>
     </div>
     <div style="background:#fff;border-radius:0 0 10px 10px;padding:24px;line-height:1.55;font-size:15px">${cuerpo}</div>
@@ -50,7 +50,7 @@ function filas(pares: [string, string][]): string {
   return `<table style="width:100%;border-collapse:collapse;margin:12px 0">${pares
     .map(
       ([k, v]) =>
-        `<tr><td style="padding:6px 0;color:#5d6670;width:40%;vertical-align:top">${k}</td><td style="padding:6px 0;font-weight:bold">${v}</td></tr>`,
+        `<tr><td style="padding:6px 0;color:#5f6656;width:40%;vertical-align:top">${k}</td><td style="padding:6px 0;font-weight:bold">${v}</td></tr>`,
     )
     .join("")}</table>`;
 }
@@ -60,7 +60,7 @@ export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida)
   const ninos = insc.ninos.map((n) => `${esc(n.nombre)} (${n.edad} años)`).join("<br>");
   const detalle = filas([
     ["Salida", esc(salida.titulo)],
-    ["Fecha", fechaLarga(salida.fecha, true)],
+    ["Fecha", fechaSalida(salida, true)],
     ["Horario", `${salida.horaInicio} a ${salida.horaFin} h`],
     ["Lugar", esc(salida.lugar)],
     ["Punto de encuentro", esc(salida.puntoEncuentro || "Se avisará por WhatsApp")],
@@ -88,16 +88,16 @@ export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida)
   const aviso = marco(
     "Nueva inscripción pagada",
     `${filas([
-      ["Salida", `${esc(salida.titulo)} · ${fechaLarga(salida.fecha)}`],
+      ["Salida", `${esc(salida.titulo)} · ${fechaSalida(salida)}`],
       ["Apoderado", `${esc(insc.apoderado.nombre)}<br>${esc(insc.apoderado.telefono)}<br>${esc(insc.apoderado.email)}`],
       ["Emergencia", `${esc(insc.emergencia.nombre)} (${esc(insc.emergencia.relacion)})<br>${esc(insc.emergencia.telefono)}`],
       ["Total", clp(insc.total)],
       ["Cupos", `${salida.cuposTomados} de ${salida.cupos} tomados`],
     ])}<ul style="padding-left:20px">${fichas}</ul>${
       insc.sobrecupo
-        ? `<p style="color:#b4432f;font-weight:bold">Atención: este pago llegó después de que venció la reserva y la salida ya estaba llena. Revisa los cupos en el panel.</p>`
+        ? `<p style="color:#c0663a;font-weight:bold">Atención: este pago llegó después de que venció la reserva y la salida ya estaba llena. Revisa los cupos en el panel.</p>`
         : ""
-    }<p style="color:#5d6670;font-size:13px">Edades de la salida: ${edades(salida.edadMin, salida.edadMax)}</p>`,
+    }<p style="color:#5f6656;font-size:13px">Edades de la salida: ${edades(salida.edadMin, salida.edadMax)}</p>`,
   );
 
   const avisoA = process.env.ADMIN_NOTIFY_EMAIL || ajustes.email;

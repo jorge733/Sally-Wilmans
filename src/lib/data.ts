@@ -13,6 +13,7 @@ export function aSalida(d: Doc): Salida {
     id: d.id,
     titulo: x.titulo ?? "",
     fecha: x.fecha ?? "",
+    fechaFin: x.fechaFin ?? null,
     horaInicio: x.horaInicio ?? "",
     horaFin: x.horaFin ?? "",
     lugar: x.lugar ?? "",

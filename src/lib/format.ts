@@ -53,3 +53,12 @@ export function linkWhatsapp(numero: string, mensaje?: string): string {
   const n = soloDigitos(numero);
   return `https://wa.me/${n}${mensaje ? `?text=${encodeURIComponent(mensaje)}` : ""}`;
 }
+
+/** Fecha de una salida, o rango si dura varios días: "lunes 11 al viernes 15 de enero". */
+export function fechaSalida(s: { fecha: string; fechaFin?: string | null }, conAnio = false): string {
+  if (!s.fechaFin || s.fechaFin === s.fecha) return fechaLarga(s.fecha, conAnio);
+  const ini = fechaLarga(s.fecha, conAnio).replace(",", "");
+  const fin = fechaLarga(s.fechaFin, conAnio).replace(",", "");
+  const [dIni, mIni] = [ini.split(" de ")[0], ini.split(" de ").slice(1).join(" de ")];
+  return mIni === fin.split(" de ").slice(1).join(" de ") ? `${dIni} al ${fin}` : `${ini} al ${fin}`;
+}

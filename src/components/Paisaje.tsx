@@ -3,10 +3,10 @@
  * `variante` cambia la paleta para que cada salida se vea distinta.
  */
 const PALETAS = [
-  { cielo: ["#f4d9b8", "#e9b48a"], sol: "#fff3dd", capas: ["#8aa3b4", "#4f7287", "#2a4d63", "#14324a"] },
-  { cielo: ["#d6e6ef", "#a9c7d8"], sol: "#ffffff", capas: ["#9fb7a2", "#6b917a", "#3f6b59", "#2f5d50"] },
-  { cielo: ["#f3c9b1", "#d98b6a"], sol: "#ffe8cf", capas: ["#b98a7a", "#8f5f55", "#5c3d3c", "#3a2a2f"] },
-  { cielo: ["#e4ecf1", "#c2d3de"], sol: "#ffffff", capas: ["#c7d4dc", "#91a9b8", "#5d7d92", "#33536b"] },
+  { cielo: ["#f6dcb0", "#eaa877"], sol: "#fff1d6", capas: ["#a9b98f", "#748e5f", "#4a6640", "#2f4a34"] },
+  { cielo: ["#dbe8e4", "#a9cbc6"], sol: "#ffffff", capas: ["#b4c5a3", "#86a06f", "#5c7a3c", "#3b5530"] },
+  { cielo: ["#f5cfa8", "#d98a5c"], sol: "#ffe6c2", capas: ["#c3a07e", "#937355", "#6b5a3e", "#3f3a28"] },
+  { cielo: ["#efe6d2", "#d8c9a8"], sol: "#ffffff", capas: ["#c9cfae", "#9aa87c", "#6c7f50", "#44573a"] },
 ];
 
 export function Paisaje({
