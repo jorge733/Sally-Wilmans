@@ -1,0 +1,10 @@
+rules_version = '2';
+// Las fotos se suben desde el servidor. El público solo puede verlas.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

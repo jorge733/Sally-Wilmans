@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-tinta: #18212b;
+  --color-gris: #5d6670;
+  --color-linea: #e2ddd4;
+  --color-marca: #14324a;
+  --color-marca-claro: #c9d6e2;
+  --color-acento: #b4432f;
+  --color-acento-oscuro: #93351f;
+  --color-crema: #f5f2ec;
+  --color-bosque: #2f5d50;
+  --font-sans: var(--font-inter), "Segoe UI", system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #fffdf9;
+  color: var(--color-tinta);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-fraunces), Georgia, serif;
+  text-wrap: balance;
+}
+
+.etiqueta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-acento);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.75rem 1.4rem;
+  font-weight: 600;
+  transition: background-color 0.15s, transform 0.15s;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-primario {
+  background: var(--color-acento);
+  color: #fff;
+}
+.btn-primario:hover {
+  background: var(--color-acento-oscuro);
+}
+.btn-primario:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-secundario {
+  border: 1.5px solid currentColor;
+}
+.btn-secundario:hover {
+  background: rgb(0 0 0 / 0.04);
+}
+
+.campo {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--color-linea);
+  border-radius: 0.6rem;
+  background: #fff;
+  padding: 0.65rem 0.85rem;
+  font-size: 1rem;
+}
+.campo:focus {
+  outline: 2px solid var(--color-marca);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.rotulo {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}

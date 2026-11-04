@@ -1,0 +1,106 @@
+import Link from "next/link";
+import { linkWhatsapp } from "@/lib/format";
+import { SITIO } from "@/lib/site";
+import type { AjustesSitio } from "@/lib/types";
+import { IconoCorreo, IconoInstagram, IconoWhatsapp } from "./Iconos";
+
+export function Logo({ claro = false }: { claro?: boolean }) {
+  return (
+    <Link href="/" className="flex items-center gap-2.5" aria-label={`${SITIO.nombre}, inicio`}>
+      <svg viewBox="0 0 40 40" className="size-9 shrink-0" aria-hidden>
+        <circle cx="20" cy="20" r="20" fill={claro ? "#fff" : "#14324a"} />
+        <path d="M7 29 16 15l5 7 4-5 8 12Z" fill={claro ? "#14324a" : "#fff"} />
+        <path d="M16 15l2.5 3.8-2.5-1.3-2.4 1.4Z" fill="#b4432f" />
+      </svg>
+      <span className={`font-serif text-lg font-semibold leading-none ${claro ? "text-white" : "text-marca"}`}>
+        Club de la
+        <br />
+        Montaña
+      </span>
+    </Link>
+  );
+}
+
+export function Encabezado() {
+  return (
+    <header className="sticky top-0 z-30 border-b border-linea/70 bg-[#fffdf9]/90 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <Logo />
+        <nav className="hidden items-center gap-7 text-sm font-medium text-gris md:flex" aria-label="Principal">
+          <Link href="/#salidas" className="hover:text-tinta">Próximas salidas</Link>
+          <Link href="/#como-funciona" className="hover:text-tinta">Cómo funciona</Link>
+          <Link href="/#nosotros" className="hover:text-tinta">Quiénes somos</Link>
+          <Link href="/#contacto" className="hover:text-tinta">Contacto</Link>
+        </nav>
+        <Link href="/#salidas" className="btn btn-primario px-4 py-2 text-sm">
+          Inscribir
+        </Link>
+      </div>
+    </header>
+  );
+}
+
+export function Pie({ ajustes }: { ajustes: AjustesSitio }) {
+  return (
+    <footer className="bg-marca text-marca-claro">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3">
+        <div>
+          <Logo claro />
+          <p className="mt-4 max-w-xs text-sm">{SITIO.bajada}. {SITIO.ciudad}.</p>
+        </div>
+        <div className="text-sm">
+          <div className="mb-3 font-semibold text-white">Contacto</div>
+          <ul className="space-y-2">
+            {ajustes.whatsapp && (
+              <li>
+                <a href={linkWhatsapp(ajustes.whatsapp)} className="inline-flex items-center gap-2 hover:text-white">
+                  <IconoWhatsapp className="size-4" /> WhatsApp
+                </a>
+              </li>
+            )}
+            {ajustes.email && (
+              <li>
+                <a href={`mailto:${ajustes.email}`} className="inline-flex items-center gap-2 hover:text-white">
+                  <IconoCorreo className="size-4" /> {ajustes.email}
+                </a>
+              </li>
+            )}
+            {ajustes.instagram && (
+              <li>
+                <a
+                  href={`https://instagram.com/${ajustes.instagram}`}
+                  className="inline-flex items-center gap-2 hover:text-white"
+                >
+                  <IconoInstagram className="size-4" /> @{ajustes.instagram}
+                </a>
+              </li>
+            )}
+          </ul>
+        </div>
+        <div className="text-sm">
+          <div className="mb-3 font-semibold text-white">Pagos seguros</div>
+          <p>Las inscripciones se pagan con Mercado Pago: débito, crédito o cuotas.</p>
+        </div>
+      </div>
+      <div className="border-t border-white/10 py-5 text-center text-xs">
+        © {new Date().getFullYear()} {SITIO.nombre}
+      </div>
+    </footer>
+  );
+}
+
+export function BotonWhatsapp({ numero }: { numero: string }) {
+  if (!numero) return null;
+  return (
+    <a
+      href={linkWhatsapp(numero, "Hola, tengo una consulta sobre las salidas del Club de la Montaña")}
+      target="_blank"
+      rel="noopener"
+      className="no-print fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-full bg-[#25d366] py-3 pr-4 pl-3 font-semibold text-white shadow-lg shadow-black/15 transition hover:scale-105 sm:right-6 sm:bottom-6"
+      aria-label="Escríbenos por WhatsApp"
+    >
+      <IconoWhatsapp className="size-7" />
+      <span className="hidden sm:inline">¿Dudas?</span>
+    </a>
+  );
+}
