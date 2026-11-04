@@ -22,6 +22,25 @@ Sitio web del Club de la Montaña (Sally Willmans): las familias ven las próxim
 4. Avisos por correo (`src/lib/email.ts`)
 5. Dominio, SEO y publicación
 
+## Firebase
+
+- Proyecto: `clubdelamontana-chile` (consola: https://console.firebase.google.com/project/clubdelamontana-chile)
+- Firestore en `southamerica-west1` (Santiago). Las reglas bloquean el acceso desde el navegador; todo pasa por el servidor con `firebase-admin`.
+- Las credenciales del servidor están como variables de entorno en Vercel (`FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, etc.).
+- Pendiente: activar el login con correo (Authentication) para el panel y el plan Blaze para Storage (fotos).
+
+Publicar reglas:
+
+```bash
+firebase deploy --only firestore:rules,firestore:indexes
+```
+
+Emuladores locales (sin tocar datos reales):
+
+```bash
+firebase emulators:start --project demo-club-montana
+```
+
 ## Desarrollo
 
 ```bash

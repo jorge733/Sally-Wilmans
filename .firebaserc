@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "demo-club-montana"
+    "default": "clubdelamontana-chile",
+    "demo": "demo-club-montana"
   }
 }
