@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { db } from "./firebase-admin";
 import { hoyChile } from "./format";
 export { cuposLibres, salidaAbierta } from "./salida-utils";
@@ -51,11 +52,11 @@ export async function todasLasSalidas(): Promise<Salida[]> {
   return snap.docs.map(aSalida).sort((a, b) => b.fecha.localeCompare(a.fecha));
 }
 
-export async function obtenerSalida(id: string): Promise<Salida | null> {
+export const obtenerSalida = cache(async (id: string): Promise<Salida | null> => {
   if (!id || id.includes("/")) return null;
   const d = await db.collection("salidas").doc(id).get();
   return d.exists ? aSalida(d) : null;
-}
+});
 
 export async function obtenerInscripcion(id: string): Promise<Inscripcion | null> {
   if (!id || id.includes("/")) return null;
@@ -68,10 +69,10 @@ export async function inscripcionesDeSalida(salidaId: string): Promise<Inscripci
   return snap.docs.map(aInscripcion).sort((a, b) => a.creadoEn - b.creadoEn);
 }
 
-export async function obtenerAjustes(): Promise<AjustesSitio> {
+export const obtenerAjustes = cache(async (): Promise<AjustesSitio> => {
   const d = await db.collection("ajustes").doc("sitio").get();
   return { ...AJUSTES_POR_DEFECTO, ...(d.data() ?? {}) } as AjustesSitio;
-}
+});
 
 export async function obtenerGaleria(): Promise<FotoGaleria[]> {
   const snap = await db.collection("galeria").get();

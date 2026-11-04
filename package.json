@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "emuladores": "firebase emulators:start --project demo-club-montana",
+    "cargar": "node scripts/cargar-datos.mjs"
   },
   "dependencies": {
     "firebase": "^13.2.0",

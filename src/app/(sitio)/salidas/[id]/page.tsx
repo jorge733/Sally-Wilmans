@@ -12,27 +12,29 @@ import {
 } from "@/components/Iconos";
 import { Paisaje } from "@/components/Paisaje";
 import { EstadoCupos } from "@/components/TarjetaSalida";
-import { AJUSTES_DEMO, SALIDAS_DEMO, salidaDemo } from "@/lib/demo";
+import { obtenerAjustes, obtenerSalida } from "@/lib/data";
 import { clp, edades, fechaSalida, linkWhatsapp } from "@/lib/format";
-import { salidaAbierta } from "@/lib/salida-utils";
+import { salidaAbierta, varianteDe } from "@/lib/salida-utils";
 
 type Props = { params: Promise<{ id: string }> };
 
-export function generateStaticParams() {
-  return SALIDAS_DEMO.map((s) => ({ id: s.id }));
+/** Se genera al primer visitante y se regenera cada minuto para mostrar los cupos al día. */
+export const revalidate = 60;
+export async function generateStaticParams() {
+  return [];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const s = salidaDemo((await params).id);
-  if (!s) return {};
+  const s = await obtenerSalida((await params).id);
+  if (!s || s.estado === "borrador") return {};
   return { title: s.titulo, description: `${fechaSalida(s)} · ${s.lugar}. ${s.descripcion}` };
 }
 
 export default async function DetalleSalida({ params }: Props) {
   const { id } = await params;
-  const salida = salidaDemo(id);
-  if (!salida) notFound();
-  const indice = SALIDAS_DEMO.indexOf(salida);
+  const [salida, ajustes] = await Promise.all([obtenerSalida(id), obtenerAjustes()]);
+  if (!salida || salida.estado === "borrador") notFound();
+  const indice = varianteDe(salida.id);
   const abierta = salidaAbierta(salida);
 
   const datos = [
@@ -111,7 +113,7 @@ export default async function DetalleSalida({ params }: Props) {
             )}
             <p className="mt-4 text-center text-xs text-gris">Pago seguro con Mercado Pago · débito, crédito o cuotas</p>
             <a
-              href={linkWhatsapp(AJUSTES_DEMO.whatsapp, `Hola, tengo una duda sobre la salida "${salida.titulo}"`)}
+              href={linkWhatsapp(ajustes.whatsapp, `Hola, tengo una duda sobre la salida "${salida.titulo}"`)}
               target="_blank"
               rel="noopener"
               className="mt-4 block text-center text-sm font-semibold text-bosque hover:underline"

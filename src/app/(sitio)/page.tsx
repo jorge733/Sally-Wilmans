@@ -11,7 +11,8 @@ import {
 } from "@/components/Iconos";
 import { Paisaje } from "@/components/Paisaje";
 import { TarjetaSalida } from "@/components/TarjetaSalida";
-import { AJUSTES_DEMO, SALIDAS_DEMO } from "@/lib/demo";
+import { varianteDe } from "@/lib/salida-utils";
+import { obtenerAjustes, salidasPublicas } from "@/lib/data";
 import { linkWhatsapp } from "@/lib/format";
 import { CUIDADOS, PASOS, PILARES, PREGUNTAS, SITIO } from "@/lib/site";
 
@@ -25,9 +26,11 @@ function Hoja({ className = "" }: { className?: string }) {
   );
 }
 
-export default function Inicio() {
-  const salidas = SALIDAS_DEMO;
-  const ajustes = AJUSTES_DEMO;
+/** Se regenera cada minuto para mostrar fechas y cupos al día. */
+export const revalidate = 60;
+
+export default async function Inicio() {
+  const [salidas, ajustes] = await Promise.all([salidasPublicas(), obtenerAjustes()]);
   const anios = new Date().getFullYear() - SITIO.desde;
 
   return (
@@ -83,11 +86,20 @@ export default function Inicio() {
               inscripción se cierra sola cuando se llenan.
             </p>
           </div>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {salidas.map((s, i) => (
-              <TarjetaSalida key={s.id} salida={s} indice={i} />
-            ))}
-          </div>
+          {salidas.length > 0 ? (
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {salidas.map((s) => (
+                <TarjetaSalida key={s.id} salida={s} indice={varianteDe(s.id)} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-10 rounded-2xl border border-dashed border-linea bg-white p-10 text-center">
+              <p className="mano text-3xl text-marca">¡Pronto nuevas fechas!</p>
+              <p className="mt-2 text-gris">
+                Estamos preparando las próximas salidas. Síguenos en Instagram o escríbenos para enterarte primero.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -193,14 +205,16 @@ export default function Inicio() {
               <p className="etiqueta">Galería</p>
               <h2 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">Así son nuestras salidas</h2>
             </div>
-            <a
-              href={`https://instagram.com/${ajustes.instagram}`}
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-2 font-semibold text-bosque hover:underline"
-            >
-              <IconoInstagram /> Más fotos en @{ajustes.instagram}
-            </a>
+            {ajustes.instagram && (
+              <a
+                href={`https://instagram.com/${ajustes.instagram}`}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-2 font-semibold text-bosque hover:underline"
+              >
+                <IconoInstagram /> Más fotos en @{ajustes.instagram}
+              </a>
+            )}
           </div>
           <div className="mt-10 grid auto-rows-[160px] grid-cols-2 gap-3 sm:auto-rows-[200px] md:grid-cols-4">
             {[0, 1, 2, 3, 1, 2].map((v, i) => (
@@ -249,22 +263,26 @@ export default function Inicio() {
               </p>
             </div>
             <div className="flex flex-col gap-3">
-              <a
-                href={linkWhatsapp(ajustes.whatsapp)}
-                className="btn bg-[#25d366] text-white hover:bg-[#1eb858]"
-                target="_blank"
-                rel="noopener"
-              >
-                <IconoWhatsapp className="size-5" /> Escribir por WhatsApp
-              </a>
-              <a
-                href={`https://instagram.com/${ajustes.instagram}`}
-                className="btn btn-secundario text-white"
-                target="_blank"
-                rel="noopener"
-              >
-                <IconoInstagram /> @{ajustes.instagram}
-              </a>
+              {ajustes.whatsapp && (
+                <a
+                  href={linkWhatsapp(ajustes.whatsapp)}
+                  className="btn bg-[#25d366] text-white hover:bg-[#1eb858]"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <IconoWhatsapp className="size-5" /> Escribir por WhatsApp
+                </a>
+              )}
+              {ajustes.instagram && (
+                <a
+                  href={`https://instagram.com/${ajustes.instagram}`}
+                  className="btn btn-secundario text-white"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <IconoInstagram /> @{ajustes.instagram}
+                </a>
+              )}
               {ajustes.email && (
                 <a href={`mailto:${ajustes.email}`} className="btn btn-secundario text-white">
                   <IconoCorreo /> {ajustes.email}

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AJUSTES_DEMO, SALIDAS_DEMO, salidaDemo } from "@/lib/demo";
+import { obtenerAjustes, obtenerSalida } from "@/lib/data";
 import { cuposLibres, salidaAbierta } from "@/lib/salida-utils";
 import { FormularioInscripcion } from "./FormularioInscripcion";
 
@@ -9,13 +9,12 @@ type Props = { params: Promise<{ id: string }> };
 
 export const metadata: Metadata = { title: "Inscripción", robots: { index: false } };
 
-export function generateStaticParams() {
-  return SALIDAS_DEMO.map((s) => ({ id: s.id }));
-}
+/** Siempre al día: los cupos se revisan en cada visita. */
+export const dynamic = "force-dynamic";
 
 export default async function PaginaInscripcion({ params }: Props) {
-  const salida = salidaDemo((await params).id);
-  if (!salida) notFound();
+  const [salida, ajustes] = await Promise.all([obtenerSalida((await params).id), obtenerAjustes()]);
+  if (!salida || salida.estado === "borrador") notFound();
 
   return (
     <div className="bg-crema py-10 sm:py-14">
@@ -27,7 +26,7 @@ export default async function PaginaInscripcion({ params }: Props) {
           <FormularioInscripcion
             salida={salida}
             maxNinos={Math.min(cuposLibres(salida), 5)}
-            textoAutorizacion={AJUSTES_DEMO.textoAutorizacion}
+            textoAutorizacion={ajustes.textoAutorizacion}
           />
         ) : (
           <div className="mt-6 rounded-2xl bg-white p-8 text-center">
