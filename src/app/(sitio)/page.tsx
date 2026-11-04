@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import fotoPortada from "@/assets/portada-club.jpg";
 import {
   IconoCorazon,
   IconoCorreo,
@@ -37,28 +39,45 @@ export default async function Inicio() {
     <>
       {/* Portada */}
       <section className="relative isolate overflow-hidden bg-marca text-white">
-        <Paisaje variante={0} conNieve className="absolute inset-0 -z-10 size-full" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-marca/95 via-marca/70 to-marca/10" />
-        <div className="mx-auto max-w-6xl px-4 pt-16 pb-24 sm:px-6 md:pt-24 md:pb-36">
-          <p className="mano text-2xl text-[#f6c68f] sm:text-3xl">{SITIO.nombreLargo}</p>
-          <h1 className="mt-3 max-w-2xl text-4xl leading-[1.08] font-semibold sm:text-5xl md:text-6xl">
-            Llevamos a los niños al cerro a ser niños
-          </h1>
-          <p className="mt-6 max-w-xl text-lg text-marca-claro">
-            Salidas a la naturaleza para niños y niñas de {SITIO.edades}: jugar, moverse, explorar, asombrarse y
-            compartir con otros niños, lejos de las pantallas.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link href="#salidas" className="btn btn-primario">
-              Ver próximas fechas <IconoFlecha />
-            </Link>
-            <Link href="#nosotros" className="btn btn-secundario text-white">
-              Conoce el club
-            </Link>
+        <Paisaje variante={0} conNieve className="absolute inset-0 -z-10 size-full opacity-35" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-marca/80 to-marca" />
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-16 sm:px-6 md:pt-20 md:pb-24 lg:grid-cols-[1fr_1.05fr] lg:gap-12">
+          <div>
+            <p className="mano text-2xl text-[#f6c68f] sm:text-3xl">{SITIO.nombreLargo}</p>
+            <h1 className="mt-3 text-4xl leading-[1.08] font-semibold sm:text-5xl lg:text-[3.4rem]">
+              Llevamos a los niños al cerro a ser niños
+            </h1>
+            <p className="mt-6 max-w-xl text-lg text-marca-claro">
+              Salidas a la naturaleza para niños y niñas de {SITIO.edades}: jugar, moverse, explorar, asombrarse y
+              compartir con otros niños, lejos de las pantallas.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="#salidas" className="btn btn-primario">
+                Ver próximas fechas <IconoFlecha />
+              </Link>
+              <Link href="#nosotros" className="btn btn-secundario text-white">
+                Conoce el club
+              </Link>
+            </div>
+            <p className="mt-8 text-sm text-marca-claro">
+              Inspirado en la pedagogía Waldorf · {SITIO.ciudad} · Desde {SITIO.desde}
+            </p>
           </div>
-          <p className="mt-10 text-sm text-marca-claro">
-            Inspirado en la pedagogía Waldorf · {SITIO.ciudad} · Desde {SITIO.desde}
-          </p>
+          <figure className="relative">
+            <div className="overflow-hidden rounded-3xl shadow-2xl shadow-black/30 ring-4 ring-white/10">
+              <Image
+                src={fotoPortada}
+                alt="Foto grupal de niños, niñas y monitores del Club de la Montaña en un sendero del cerro"
+                priority
+                placeholder="blur"
+                sizes="(min-width: 1024px) 560px, 100vw"
+                className="h-auto w-full"
+              />
+            </div>
+            <figcaption className="mano absolute -bottom-5 left-5 -rotate-2 rounded-xl bg-crema px-4 py-1.5 text-2xl text-marca shadow-lg">
+              ¡La familia del club!
+            </figcaption>
+          </figure>
         </div>
       </section>
 
