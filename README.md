@@ -16,18 +16,18 @@ Sitio web del Club de la Montaña (Sally Willmans): las familias ven las próxim
 
 **Siguientes etapas:**
 
-1. Conectar Firebase: las salidas, inscripciones y ajustes salen de Firestore (`src/lib/data.ts`, `src/lib/inscripciones.ts` ya están escritos). Proyecto creado y conectado a Vercel; falta que el sitio lea de Firestore
+1. Conectar Firebase: las salidas, inscripciones y ajustes salen de Firestore (`src/lib/data.ts`, `src/lib/inscripciones.ts` ya están escritos). Listo: el sitio público lee de Firestore
 2. Pago real con Mercado Pago y webhook (`src/lib/mercadopago.ts`)
 3. Avisos por correo (`src/lib/email.ts`)
 4. Contenido real, dominio y SEO
-5. Panel de Sally (se entrega al final): login, crear y editar salidas, fotos, lista de inscritos
+5. Panel de Sally: ya funciona en `/admin` (salidas, inscritos, ajustes). Falta la subida de fotos (necesita Storage con plan Blaze)
 
 ## Firebase
 
 - Proyecto: `clubdelamontana-chile` (consola: https://console.firebase.google.com/project/clubdelamontana-chile)
 - Firestore en `southamerica-west1` (Santiago). Las reglas bloquean el acceso desde el navegador; todo pasa por el servidor con `firebase-admin`.
 - Las credenciales del servidor están como variables de entorno en Vercel (`FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, etc.).
-- Pendiente: activar el login con correo (Authentication) para el panel y el plan Blaze para Storage (fotos).
+- Pendiente: el plan Blaze para Storage (fotos).
 
 Publicar reglas:
 
@@ -40,6 +40,13 @@ Emuladores locales (sin tocar datos reales):
 ```bash
 firebase emulators:start --project demo-club-montana
 ```
+
+## Panel (/admin)
+
+- Se entra con una sola clave, guardada en Vercel como `ADMIN_PASSWORD` (variable secreta).
+- La sesión dura 7 días, en una cookie firmada con `SESSION_SECRET`. Si cambias `SESSION_SECRET`, se cierran todas las sesiones.
+- Para cambiar la clave: Vercel → Settings → Environment Variables → `ADMIN_PASSWORD`, y volver a publicar.
+- Desde el panel se crean, editan, duplican y borran salidas, se ven los inscritos con sus fichas (imprimir o descargar planilla) y se cambian el contacto y el texto de autorización.
 
 ## Desarrollo
 

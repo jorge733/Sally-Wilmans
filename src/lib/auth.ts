@@ -1,38 +1,37 @@
 import "server-only";
+import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getAuth } from "firebase-admin/auth";
-import { app } from "./firebase-admin";
+import { COOKIE_SESION, DURACION_SESION_S, crearToken, tokenValido } from "./sesion";
 
-export const COOKIE_SESION = "__session";
-export const DURACION_SESION_MS = 5 * 24 * 60 * 60 * 1000;
-
-const adminAuth = getAuth(app);
-
-export function esAdmin(email: string | undefined | null): boolean {
-  if (!email) return false;
-  const lista = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  return lista.includes(email.toLowerCase());
+/** Compara la clave ingresada con ADMIN_PASSWORD en tiempo constante. */
+export function claveCorrecta(clave: string): boolean {
+  const real = process.env.ADMIN_PASSWORD;
+  if (!real) throw new Error("Falta ADMIN_PASSWORD");
+  const a = crypto.createHash("sha256").update(clave).digest();
+  const b = crypto.createHash("sha256").update(real).digest();
+  return crypto.timingSafeEqual(a, b);
 }
 
-export async function usuarioActual(): Promise<{ uid: string; email: string } | null> {
-  const cookie = (await cookies()).get(COOKIE_SESION)?.value;
-  if (!cookie) return null;
-  try {
-    const t = await adminAuth.verifySessionCookie(cookie, true);
-    if (!esAdmin(t.email)) return null;
-    return { uid: t.uid, email: t.email! };
-  } catch {
-    return null;
-  }
+export async function abrirSesion(): Promise<void> {
+  (await cookies()).set(COOKIE_SESION, await crearToken(), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: DURACION_SESION_S,
+  });
 }
 
-/** Úsalo al inicio de cada página y acción del panel. */
-export async function requerirAdmin() {
-  const u = await usuarioActual();
-  if (!u) redirect("/admin/login");
-  return u;
+export async function cerrarSesion(): Promise<void> {
+  (await cookies()).delete(COOKIE_SESION);
+}
+
+export async function haySesion(): Promise<boolean> {
+  return tokenValido((await cookies()).get(COOKIE_SESION)?.value);
+}
+
+/** Úsalo al inicio de cada página y acción del panel (el middleware es la primera barrera). */
+export async function requerirAdmin(): Promise<void> {
+  if (!(await haySesion())) redirect("/admin/login");
 }

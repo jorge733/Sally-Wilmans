@@ -11,7 +11,6 @@
     "cargar": "node scripts/cargar-datos.mjs"
   },
   "dependencies": {
-    "firebase": "^13.2.0",
     "firebase-admin": "^14.5.0",
     "mercadopago": "^3.6.1",
     "next": "15.5.29",
