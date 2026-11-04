@@ -1,10 +1,13 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { adminAuth } from "./firebase-admin";
+import { getAuth } from "firebase-admin/auth";
+import { app } from "./firebase-admin";
 
 export const COOKIE_SESION = "__session";
 export const DURACION_SESION_MS = 5 * 24 * 60 * 60 * 1000;
+
+const adminAuth = getAuth(app);
 
 export function esAdmin(email: string | undefined | null): boolean {
   if (!email) return false;

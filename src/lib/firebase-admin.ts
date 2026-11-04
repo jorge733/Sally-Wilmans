@@ -1,6 +1,5 @@
 import "server-only";
 import { cert, getApps, initializeApp, type App } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
@@ -25,8 +24,9 @@ function crearApp(): App {
   });
 }
 
-const app = crearApp();
+// El login (firebase-admin/auth) se importa solo en lib/auth.ts, para que las páginas
+// públicas no carguen sus dependencias.
+export const app = crearApp();
 
 export const db = getFirestore(app);
-export const adminAuth = getAuth(app);
 export const bucket = () => getStorage(app).bucket();
