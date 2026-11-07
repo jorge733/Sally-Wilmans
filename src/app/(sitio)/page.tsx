@@ -1,6 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import fotoPortada from "@/assets/portada-club.jpg";
+import fotoCharla from "@/assets/galeria-charla.jpg";
+import fotoLlegada from "@/assets/galeria-llegada.jpg";
+import fotoPasarela from "@/assets/galeria-pasarela.jpg";
+import fotoGrupal from "@/assets/portada-club.jpg";
+import fotoPortada from "@/assets/portada-puente.jpg";
 import {
   IconoCorazon,
   IconoCorreo,
@@ -19,6 +23,14 @@ import { linkWhatsapp } from "@/lib/format";
 import { CUIDADOS, PASOS, PILARES, PREGUNTAS, SITIO } from "@/lib/site";
 
 const ICONOS_CUIDADO = [IconoGrupo, IconoEscudo, IconoCorazon, IconoSendero];
+
+/** Fotos de la galería. La primera ocupa el recuadro grande y la última el ancho de dos columnas. */
+const GALERIA = [
+  { src: fotoGrupal, alt: "Foto grupal de niños, niñas y monitores del club sentados en un claro del sendero" },
+  { src: fotoPasarela, alt: "Niños y niñas del club en fila sobre una pasarela de madera junto a una monitora" },
+  { src: fotoCharla, alt: "Grupo con mochilas escuchando a los monitores antes de partir la caminata" },
+  { src: fotoLlegada, alt: "Llegada del grupo al inicio del sendero, rodeado de árboles" },
+];
 
 function Hoja({ className = "" }: { className?: string }) {
   return (
@@ -70,7 +82,7 @@ export default async function Inicio() {
             <div className="overflow-hidden rounded-3xl shadow-2xl shadow-black/30 ring-4 ring-white/10">
               <Image
                 src={fotoPortada}
-                alt="Foto grupal de niños, niñas y monitores del Club de la Montaña en un sendero del cerro"
+                alt="Niños, niñas y monitores del Club de la Montaña saludando felices junto a un puente del sendero"
                 priority
                 placeholder="blur"
                 sizes="(min-width: 1024px) 560px, 100vw"
@@ -246,20 +258,23 @@ export default async function Inicio() {
             )}
           </div>
           <div className="mt-10 grid auto-rows-[160px] grid-cols-2 gap-3 sm:auto-rows-[200px] md:grid-cols-4">
-            {[0, 1, 2, 3, 1, 2].map((v, i) => (
+            {GALERIA.map((foto, i) => (
               <div
-                key={i}
+                key={foto.src.src}
                 data-revelar="zoom"
                 style={retraso(i * 80)}
-                className={`group overflow-hidden rounded-2xl ${i === 0 ? "col-span-2 row-span-2" : ""} ${i === 3 ? "md:row-span-2" : ""}`}
+                className={`group overflow-hidden rounded-2xl ${i === 0 ? "col-span-2 row-span-2" : ""} ${i === GALERIA.length - 1 ? "col-span-2" : ""}`}
               >
-                <Paisaje variante={v + i} className="size-full transition duration-700 group-hover:scale-105" />
+                <Image
+                  src={foto.src}
+                  alt={foto.alt}
+                  placeholder="blur"
+                  sizes={i === 0 || i === GALERIA.length - 1 ? "(min-width: 768px) 560px, 100vw" : "(min-width: 768px) 280px, 50vw"}
+                  className="size-full object-cover transition duration-700 group-hover:scale-105"
+                />
               </div>
             ))}
           </div>
-          <p className="mt-4 text-sm text-gris">
-            Aquí van las fotos de las salidas que envíe Sally (con permiso de las familias).
-          </p>
         </div>
       </section>
 
