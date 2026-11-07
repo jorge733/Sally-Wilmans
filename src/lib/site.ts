@@ -37,7 +37,7 @@ export const PASOS = [
   },
   {
     titulo: "Paga en línea",
-    texto: "Con Mercado Pago: débito, crédito o en cuotas. El cupo queda reservado al pagar.",
+    texto: "Con Flow: tarjeta de débito, crédito u otros medios. El cupo queda reservado al pagar.",
   },
   {
     titulo: "¡Nos vemos en el cerro!",
@@ -83,7 +83,7 @@ export const PREGUNTAS = [
   },
   {
     p: "¿Cómo pago?",
-    r: "Con Mercado Pago, usando tarjeta de débito, crédito (también en cuotas) u otros medios que ofrece Mercado Pago.",
+    r: "En línea a través de Flow, con tarjeta de débito o crédito (Webpay) u otros medios de pago que ofrece Flow.",
   },
   {
     p: "¿Qué pasa si llueve o hay mal tiempo?",

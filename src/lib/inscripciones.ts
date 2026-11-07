@@ -4,6 +4,7 @@ import { db } from "./firebase-admin";
 import { aInscripcion, aSalida } from "./data";
 import { cuposLibres, salidaAbierta } from "./salida-utils";
 import { enviarAvisosInscripcion } from "./email";
+import { ESTADO_FLOW, type EstadoFlow } from "./flow";
 import type { Inscripcion, Nino } from "./types";
 
 /** Minutos que se guarda el cupo mientras el apoderado paga. */
@@ -78,7 +79,7 @@ export async function reservar(datos: DatosInscripcion): Promise<Inscripcion> {
       estado: "pendiente",
       cupoReservado: true,
       sobrecupo: false,
-      mp: { preferenceId: null, initPoint: null, paymentId: null, status: null },
+      flow: { token: null, flowOrder: null, url: null, status: null },
       avisosEnviados: false,
       creadoEn: ahora,
       expiraEn: ahora + MINUTOS_RESERVA * 60_000,
@@ -90,13 +91,26 @@ export async function reservar(datos: DatosInscripcion): Promise<Inscripcion> {
   });
 }
 
+/** Deshace una reserva que no alcanzó a llegar a Flow (por ejemplo, si Flow no respondió). */
+export async function cancelarReserva(inscripcionId: string): Promise<void> {
+  const ref = db.collection("inscripciones").doc(inscripcionId);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists || snap.get("estado") !== "pendiente" || !snap.get("cupoReservado")) return;
+    tx.update(ref, { estado: "expirada", cupoReservado: false });
+    tx.update(db.collection("salidas").doc(snap.get("salidaId")), {
+      cuposTomados: FieldValue.increment(-snap.get("cantidad")),
+    });
+  });
+}
+
 /**
- * Registra el resultado de un pago de Mercado Pago. Es idempotente:
- * Mercado Pago puede avisar varias veces el mismo pago.
+ * Registra el resultado de un pago de Flow (según `obtenerEstado`). Es idempotente:
+ * Flow puede avisar varias veces el mismo pago, y el retorno del apoderado también lo consulta.
  */
 export async function registrarPago(
   inscripcionId: string,
-  pago: { id: string; status: string; monto: number },
+  pago: { flowOrder: number; status: EstadoFlow; monto: number },
 ): Promise<void> {
   const ref = db.collection("inscripciones").doc(inscripcionId);
   let enviarAvisos = false;
@@ -108,12 +122,14 @@ export async function registrarPago(
     const salidaRef = db.collection("salidas").doc(insc.salidaId);
     const salidaSnap = await tx.get(salidaRef);
 
-    const cambios: Record<string, unknown> = {
-      "mp.paymentId": pago.id,
-      "mp.status": pago.status,
-    };
+    // Un aviso tardío de un intento anterior rechazado no debe pisar los datos del pago que sí se aprobó.
+    const avisoViejo =
+      insc.estado === "pagada" && pago.status !== ESTADO_FLOW.pagado && pago.status !== ESTADO_FLOW.anulado;
+    const cambios: Record<string, unknown> = avisoViejo
+      ? {}
+      : { "flow.flowOrder": pago.flowOrder, "flow.status": pago.status };
 
-    if (pago.status === "approved") {
+    if (pago.status === ESTADO_FLOW.pagado) {
       if (insc.estado !== "pagada") {
         cambios.estado = "pagada";
         cambios.pagadoEn = Date.now();
@@ -130,9 +146,9 @@ export async function registrarPago(
         cambios.avisosEnviados = true;
         enviarAvisos = true;
       }
-    } else if (["rejected", "cancelled", "refunded", "charged_back"].includes(pago.status)) {
+    } else if (pago.status === ESTADO_FLOW.rechazado || pago.status === ESTADO_FLOW.anulado) {
       // Un pago rechazado no anula la reserva: el apoderado puede reintentar hasta que venza.
-      if (insc.estado === "pagada" && pago.status !== "rejected") {
+      if (insc.estado === "pagada" && pago.status === ESTADO_FLOW.anulado) {
         cambios.estado = "anulada";
         if (insc.cupoReservado) {
           cambios.cupoReservado = false;
@@ -142,7 +158,7 @@ export async function registrarPago(
         cambios.estado = "pendiente";
       }
     }
-    tx.update(ref, cambios);
+    if (Object.keys(cambios).length) tx.update(ref, cambios);
   });
 
   if (enviarAvisos) {

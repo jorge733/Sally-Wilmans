@@ -1,8 +1,8 @@
 # Club de la Montaña
 
-Sitio web del Club de la Montaña (Sally Willmans): las familias ven las próximas salidas, inscriben a sus hijos y pagan en línea con Mercado Pago. Sally administra todo desde su propio panel.
+Sitio web del Club de la Montaña (Sally Willmans): las familias ven las próximas salidas, inscriben a sus hijos y pagan en línea con Flow. Sally administra todo desde su propio panel.
 
-**Stack:** Next.js (Vercel) · Firebase (Firestore, Auth, Storage) · Mercado Pago Checkout Pro · correos por SMTP.
+**Stack:** Next.js (Vercel) · Firebase (Firestore, Auth, Storage) · Flow (flow.cl) · correos por SMTP.
 
 ## Estado
 
@@ -17,7 +17,7 @@ Sitio web del Club de la Montaña (Sally Willmans): las familias ven las próxim
 **Siguientes etapas:**
 
 1. Conectar Firebase: las salidas, inscripciones y ajustes salen de Firestore (`src/lib/data.ts`, `src/lib/inscripciones.ts` ya están escritos). Listo: el sitio público lee de Firestore
-2. Pago real con Mercado Pago y webhook (`src/lib/mercadopago.ts`)
+2. Pago real con Flow (`src/lib/flow.ts`). Listo en el código: falta cargar `FLOW_API_KEY` y `FLOW_SECRET_KEY` en Vercel y hacer una compra de prueba en sandbox.flow.cl
 3. Avisos por correo (`src/lib/email.ts`)
 4. Contenido real, dominio y SEO
 5. Panel de Sally: ya funciona en `/admin` (salidas, inscritos, ajustes). Falta la subida de fotos (necesita Storage con plan Blaze)
@@ -40,6 +40,17 @@ Emuladores locales (sin tocar datos reales):
 ```bash
 firebase emulators:start --project demo-club-montana
 ```
+
+## Pagos (Flow)
+
+1. La ficha llama a `iniciarInscripcion`: reserva el cupo por 30 minutos y crea la orden en Flow.
+2. El apoderado paga en Flow. Flow avisa a `/api/flow/confirmacion` y devuelve al apoderado a `/api/flow/retorno` (con POST), que lo manda a `/inscripcion/[id]`.
+3. En ambos casos se consulta el estado a la API de Flow y se marca la inscripción como pagada. Se envían los correos una sola vez.
+4. Si el pago se rechaza, el cupo sigue guardado y el apoderado puede reintentar desde `/inscripcion/[id]`. Si no paga en 30 minutos, el cupo se libera solo.
+
+Para probar con dinero ficticio: crea una cuenta en https://sandbox.flow.cl, usa sus credenciales y `FLOW_API_URL=https://sandbox.flow.cl/api`. Flow tiene que poder llegar a la URL del sitio, así que se prueba en un deploy de Vercel, no en localhost. En local, `PAGO_SIMULADO=1` salta Flow.
+
+Si corres un segundo servidor de desarrollo en la misma carpeta (por ejemplo, desde otra sesión), usa la configuración `web-aparte` de `.claude/launch.json`: compila en `.next-aparte` en el puerto 3005 para no pisar la carpeta `.next`.
 
 ## Panel (/admin)
 

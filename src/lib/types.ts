@@ -65,11 +65,13 @@ export interface Inscripcion {
   cupoReservado: boolean;
   /** true si se pagó después de que se liberó el cupo y ya no había espacio */
   sobrecupo: boolean;
-  mp: {
-    preferenceId: string | null;
-    initPoint: string | null;
-    paymentId: string | null;
-    status: string | null;
+  /** Datos del pago en Flow */
+  flow: {
+    token: string | null;
+    flowOrder: number | null;
+    url: string | null;
+    /** 1 pendiente · 2 pagado · 3 rechazado · 4 anulado */
+    status: number | null;
   };
   avisosEnviados: boolean;
   creadoEn: number;

@@ -94,7 +94,7 @@ export function Pie({ ajustes }: { ajustes: AjustesSitio }) {
         </div>
         <div className="text-sm">
           <div className="mb-3 font-semibold text-white">Pagos seguros</div>
-          <p>Las inscripciones se pagan con Mercado Pago: débito, crédito o cuotas.</p>
+          <p>Las inscripciones se pagan en línea con Flow: débito, crédito y otros medios.</p>
         </div>
       </div>
       <div className="border-t border-white/10 py-5 text-center text-xs">

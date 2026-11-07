@@ -62,3 +62,8 @@ export function fechaSalida(s: { fecha: string; fechaFin?: string | null }, conA
   const [dIni, mIni] = [ini.split(" de ")[0], ini.split(" de ").slice(1).join(" de ")];
   return mIni === fin.split(" de ").slice(1).join(" de ") ? `${dIni} al ${fin}` : `${ini} al ${fin}`;
 }
+
+/** Hora en Chile, "15:30" */
+export function horaChile(ms: number): string {
+  return new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: TZ }).format(ms);
+}

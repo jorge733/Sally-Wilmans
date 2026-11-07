@@ -1,12 +1,14 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { IconoCheck, IconoFlecha, IconoMochila } from "@/components/Iconos";
+import { IconoFlecha } from "@/components/Iconos";
 import { clp, edades, fechaSalida } from "@/lib/format";
 import type { Nino, Salida } from "@/lib/types";
+import { iniciarInscripcion, simularPago } from "./acciones";
 
-type Paso = "ficha" | "pago" | "listo";
+/** "pago" solo se usa con el pago simulado de desarrollo; en el sitio real se va directo a Flow. */
+type Paso = "ficha" | "pago";
 
 const ninoVacio = (): Nino => ({ nombre: "", edad: 0, salud: "" });
 
@@ -26,6 +28,8 @@ export function FormularioInscripcion({
   const [autoriza, setAutoriza] = useState(false);
   const [error, setError] = useState("");
   const [procesando, setProcesando] = useState(false);
+  const [inscripcionId, setInscripcionId] = useState("");
+  const router = useRouter();
 
   const total = salida.precio * ninos.length;
 
@@ -35,7 +39,7 @@ export function FormularioInscripcion({
     );
   }
 
-  function enviar(e: React.FormEvent) {
+  async function enviar(e: React.FormEvent) {
     e.preventDefault();
     const fueraDeRango = ninos.find((n) => n.edad < salida.edadMin || n.edad > salida.edadMax);
     if (fueraDeRango) {
@@ -45,17 +49,37 @@ export function FormularioInscripcion({
       return;
     }
     setError("");
-    setPaso("pago");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setProcesando(true);
+    try {
+      const r = await iniciarInscripcion({ salidaId: salida.id, ninos, apoderado, emergencia, autoriza });
+      if (!r.ok) {
+        setError(r.error);
+        setProcesando(false);
+        return;
+      }
+      if (r.urlPago) {
+        // Se queda en "procesando" mientras el navegador abre Flow.
+        window.location.assign(r.urlPago);
+        return;
+      }
+      setInscripcionId(r.inscripcionId);
+      setPaso("pago");
+      setProcesando(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      setError("No pudimos enviar la inscripción. Revisa tu conexión e intenta de nuevo.");
+      setProcesando(false);
+    }
   }
 
-  function pagar() {
+  async function pagarSimulado() {
     setProcesando(true);
-    setTimeout(() => {
+    const r = await simularPago(inscripcionId).catch(() => ({ ok: false }));
+    if (r.ok) router.push(`/inscripcion/${inscripcionId}`);
+    else {
+      setError("No se pudo simular el pago.");
       setProcesando(false);
-      setPaso("listo");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 1400);
+    }
   }
 
   const resumen = (
@@ -73,14 +97,14 @@ export function FormularioInscripcion({
       <div className="mt-6 space-y-6">
         {resumen}
         <div className="overflow-hidden rounded-2xl border border-linea bg-white">
-          <div className="flex items-center justify-between bg-[#009ee3] px-6 py-4 text-white">
-            <span className="font-semibold">Mercado Pago</span>
+          <div className="flex items-center justify-between bg-marca px-6 py-4 text-white">
+            <span className="font-semibold">Flow</span>
             <span className="rounded-full bg-white/20 px-3 py-0.5 text-xs font-semibold">Simulación</span>
           </div>
           <div className="space-y-5 p-6">
             <p className="text-sm text-gris">
-              En el sitio real, aquí se abre el pago de Mercado Pago (débito, crédito o cuotas). El cupo queda
-              guardado por 30 minutos mientras pagas.
+              El pago está simulado (PAGO_SIMULADO=1). En el sitio real, aquí se abre Flow. El cupo ya quedó
+              guardado por 30 minutos.
             </p>
             <div className="divide-y divide-linea rounded-xl border border-linea">
               <div className="flex justify-between p-4 text-sm">
@@ -95,77 +119,18 @@ export function FormularioInscripcion({
               </div>
             </div>
             <button
-              onClick={pagar}
+              onClick={pagarSimulado}
               disabled={procesando}
-              className="btn w-full bg-[#009ee3] text-white hover:bg-[#0089c7] disabled:opacity-70"
+              className="btn btn-primario w-full disabled:opacity-70"
             >
               {procesando ? "Procesando pago…" : `Pagar ${clp(total)}`}
             </button>
-            <button
-              onClick={() => setPaso("ficha")}
-              className="w-full text-center text-sm font-medium text-gris hover:text-tinta"
-            >
-              Volver y corregir la ficha
-            </button>
+            {error && (
+              <p role="alert" className="rounded-xl bg-acento/10 px-4 py-3 text-sm font-medium text-acento">
+                {error}
+              </p>
+            )}
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (paso === "listo") {
-    return (
-      <div className="mt-6 space-y-6">
-        <div className="rounded-2xl bg-white p-8 text-center">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-bosque text-white">
-            <IconoCheck className="size-8" />
-          </div>
-          <h1 className="mt-4 text-3xl font-semibold text-marca">¡Inscripción confirmada!</h1>
-          <p className="mt-2 text-gris">
-            Enviamos el comprobante a <b className="text-tinta">{apoderado.email}</b>. Sally también recibió el aviso.
-          </p>
-        </div>
-        {resumen}
-        <div className="rounded-2xl bg-white p-6">
-          <h2 className="text-xl font-semibold text-marca">Comprobante</h2>
-          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-gris">Inscritos</dt>
-              <dd className="font-semibold">
-                {ninos.map((n) => (
-                  <div key={n.nombre}>
-                    {n.nombre} ({n.edad} años)
-                  </div>
-                ))}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gris">Total pagado</dt>
-              <dd className="font-semibold">{clp(total)}</dd>
-            </div>
-            <div className="sm:col-span-2">
-              <dt className="text-gris">Punto de encuentro</dt>
-              <dd className="font-semibold">{salida.puntoEncuentro}</dd>
-            </div>
-          </dl>
-          <h3 className="mt-6 flex items-center gap-2 font-semibold">
-            <IconoMochila className="size-5 text-acento" /> Qué deben llevar
-          </h3>
-          <ul className="mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
-            {salida.queLlevar.map((x) => (
-              <li key={x} className="flex gap-2">
-                <IconoCheck className="size-4 shrink-0 text-bosque" /> {x}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="flex flex-wrap justify-center gap-3">
-          <button onClick={() => window.print()} className="btn btn-secundario text-marca">
-            Imprimir comprobante
-          </button>
-          <Link href="/#salidas" className="btn btn-primario">
-            Ver más salidas
-          </Link>
         </div>
       </div>
     );
@@ -356,8 +321,8 @@ export function FormularioInscripcion({
           </div>
           <div className="text-2xl font-bold">{clp(total)}</div>
         </div>
-        <button type="submit" className="btn btn-primario">
-          Ir a pagar <IconoFlecha />
+        <button type="submit" disabled={procesando} className="btn btn-primario disabled:opacity-70">
+          {procesando ? "Preparando el pago…" : <>Ir a pagar <IconoFlecha /></>}
         </button>
       </div>
     </form>

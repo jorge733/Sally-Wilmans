@@ -111,7 +111,7 @@ export default async function DetalleSalida({ params }: Props) {
                 Esta salida está completa. Escríbenos si quieres quedar en lista de espera.
               </div>
             )}
-            <p className="mt-4 text-center text-xs text-gris">Pago seguro con Mercado Pago · débito, crédito o cuotas</p>
+            <p className="mt-4 text-center text-xs text-gris">Pago seguro con Flow · débito, crédito y otros medios</p>
             <a
               href={linkWhatsapp(ajustes.whatsapp, `Hola, tengo una duda sobre la salida "${salida.titulo}"`)}
               target="_blank"
