@@ -47,13 +47,13 @@ export default async function DetalleSalida({ params }: Props) {
   return (
     <article>
       <div className="relative h-64 overflow-hidden sm:h-80">
-        <Paisaje variante={indice} conNieve className="size-full" />
+        <Paisaje variante={indice} conNieve animado className="size-full" />
         <div className="absolute inset-0 bg-gradient-to-t from-marca/80 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 mx-auto max-w-6xl px-4 pb-8 sm:px-6">
           <Link href="/#salidas" className="text-sm font-medium text-white/80 hover:text-white">
             ← Todas las salidas
           </Link>
-          <h1 className="mt-2 text-3xl font-semibold text-white sm:text-5xl">{salida.titulo}</h1>
+          <h1 className="entrada mt-2 text-3xl font-semibold text-white sm:text-5xl">{salida.titulo}</h1>
         </div>
       </div>
 

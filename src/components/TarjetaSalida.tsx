@@ -19,7 +19,7 @@ export function EstadoCupos({ salida }: { salida: Salida }) {
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-linea">
         <div
-          className={`h-full rounded-full ${abierta ? (libres <= 3 ? "bg-acento" : "bg-bosque") : "bg-gris"}`}
+          className={`barra-cupos h-full rounded-full ${abierta ? (libres <= 3 ? "bg-acento" : "bg-bosque") : "bg-gris"}`}
           style={{ width: `${pct}%` }}
         />
       </div>

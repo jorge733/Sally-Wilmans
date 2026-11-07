@@ -111,7 +111,7 @@ export function BotonWhatsapp({ numero }: { numero: string }) {
       href={linkWhatsapp(numero, "Hola, tengo una consulta sobre las salidas del Club de la Montaña")}
       target="_blank"
       rel="noopener"
-      className="no-print fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-full bg-[#25d366] py-3 pr-4 pl-3 font-semibold text-white shadow-lg shadow-black/15 transition hover:scale-105 sm:right-6 sm:bottom-6"
+      className="no-print fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-full bg-[#25d366] py-3 pr-4 pl-3 font-semibold text-white latido shadow-lg shadow-black/15 transition hover:scale-105 sm:right-6 sm:bottom-6"
       aria-label="Escríbenos por WhatsApp"
     >
       <IconoWhatsapp className="size-7" />

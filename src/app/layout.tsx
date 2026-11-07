@@ -23,7 +23,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es-CL" className={`${inter.variable} ${fraunces.variable} ${amatic.variable}`}>
+    <html
+      lang="es-CL"
+      className={`${inter.variable} ${fraunces.variable} ${amatic.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Marca que hay JS antes de pintar, para ocultar lo que se revela al hacer scroll sin parpadeo. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+      </head>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );

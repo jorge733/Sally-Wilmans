@@ -13,10 +13,13 @@ export function Paisaje({
   variante = 0,
   className = "",
   conNieve = false,
+  animado = false,
 }: {
   variante?: number;
   className?: string;
   conNieve?: boolean;
+  /** El sol brilla y los cerros se mueven suavemente (para la portada). */
+  animado?: boolean;
 }) {
   const p = PALETAS[Math.abs(variante) % PALETAS.length];
   const id = `p${variante}`;
@@ -24,7 +27,7 @@ export function Paisaje({
     <svg
       viewBox="0 0 800 500"
       preserveAspectRatio="xMidYMid slice"
-      className={className}
+      className={`${animado ? "paisaje-animado " : ""}${className}`}
       role="img"
       aria-label="Ilustración de montañas"
     >
@@ -35,15 +38,18 @@ export function Paisaje({
         </linearGradient>
       </defs>
       <rect width="800" height="500" fill={`url(#${id}-cielo)`} />
-      <circle cx="590" cy="150" r="56" fill={p.sol} opacity="0.9" />
+      <circle className="paisaje-sol" cx="590" cy="150" r="56" fill={p.sol} opacity="0.9" />
+      <g className="paisaje-capa-1">
+        <path
+          d="M0 300 L120 190 L210 250 L330 120 L430 220 L520 160 L640 240 L720 180 L800 230 L800 500 L0 500 Z"
+          fill={p.capas[0]}
+        />
+        {conNieve && (
+          <path d="M300 148 L330 120 L362 152 L345 160 L330 150 L316 162 Z" fill="#fff" opacity="0.9" />
+        )}
+      </g>
       <path
-        d="M0 300 L120 190 L210 250 L330 120 L430 220 L520 160 L640 240 L720 180 L800 230 L800 500 L0 500 Z"
-        fill={p.capas[0]}
-      />
-      {conNieve && (
-        <path d="M300 148 L330 120 L362 152 L345 160 L330 150 L316 162 Z" fill="#fff" opacity="0.9" />
-      )}
-      <path
+        className="paisaje-capa-2"
         d="M0 350 L90 280 L180 330 L290 230 L400 320 L500 260 L610 330 L700 280 L800 320 L800 500 L0 500 Z"
         fill={p.capas[1]}
       />
