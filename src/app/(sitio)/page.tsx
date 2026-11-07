@@ -3,6 +3,7 @@ import Link from "next/link";
 import fotoCharla from "@/assets/galeria-charla.jpg";
 import fotoLlegada from "@/assets/galeria-llegada.jpg";
 import fotoPasarela from "@/assets/galeria-pasarela.jpg";
+import fotoEquipo from "@/assets/nosotros-equipo.jpg";
 import fotoGrupal from "@/assets/portada-club.jpg";
 import fotoPortada from "@/assets/portada-puente.jpg";
 import {
@@ -143,8 +144,14 @@ export default async function Inicio() {
       <section id="nosotros" className="scroll-mt-20 bg-crema py-20">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 md:grid-cols-2">
           <div data-revelar="izquierda" className="relative">
-            <div className="aspect-[4/5] overflow-hidden rounded-3xl">
-              <Paisaje variante={1} className="size-full" />
+            <div className="overflow-hidden rounded-3xl shadow-xl shadow-marca/10">
+              <Image
+                src={fotoEquipo}
+                alt="Selfie del equipo de monitores del Club de la Montaña, sonriendo bajo los árboles"
+                placeholder="blur"
+                sizes="(min-width: 768px) 560px, 100vw"
+                className="h-auto w-full"
+              />
             </div>
             <div className="absolute -right-3 -bottom-5 rounded-2xl bg-white px-5 py-4 shadow-xl shadow-marca/10 sm:-right-6">
               <div className="mano text-4xl text-acento">Desde {SITIO.desde}</div>
