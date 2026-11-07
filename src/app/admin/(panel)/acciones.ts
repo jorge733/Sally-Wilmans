@@ -5,7 +5,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { cerrarSesion, requerirAdmin } from "@/lib/auth";
 import { aSalida } from "@/lib/data";
+import { MAX_FOTOS_SALIDA } from "@/lib/salida-utils";
 import { db } from "@/lib/firebase-admin";
+import { borrarImagen, copiarImagen, subirImagen } from "@/lib/storage";
+import type { FotoSalida } from "@/lib/types";
 
 export type EstadoFormulario = { error?: string; ok?: string } | null;
 
@@ -89,7 +92,7 @@ export async function guardarSalida(_: EstadoFormulario, form: FormData): Promis
   await db
     .collection("salidas")
     .doc(nuevo)
-    .set({ ...datos, cuposTomados: 0, fotoUrl: null, fotoPath: null, creadoEn: Date.now() });
+    .set({ ...datos, cuposTomados: 0, fotos: [], fotoUrl: null, fotoPath: null, creadoEn: Date.now() });
   refrescarSitio(nuevo);
   redirect(`/admin/salidas/${nuevo}?creada=1`);
 }
@@ -102,11 +105,16 @@ export async function duplicarSalida(id: string): Promise<void> {
   const nuevo = await idDisponible(`${slug(s.titulo)}-copia`);
   const { id: _id, ...resto } = s;
   void _id;
+  // Cada salida tiene sus propias copias de las fotos, así borrar una no afecta a la otra.
+  const fotos = await Promise.all(
+    s.fotos.map(async (f) => ({ ...f, ...(await copiarImagen(f.path, `salidas/${nuevo}`)) })),
+  );
   await db
     .collection("salidas")
     .doc(nuevo)
     .set({
       ...resto,
+      ...conPortada(fotos),
       titulo: `${s.titulo} (copia)`,
       estado: "borrador",
       cuposTomados: 0,
@@ -123,9 +131,89 @@ export async function eliminarSalida(id: string): Promise<EstadoFormulario> {
   if (!insc.empty) {
     return { error: "Esta salida tiene inscripciones, así que no se puede borrar. Puedes cerrarla o dejarla como borrador." };
   }
+  const d = await db.collection("salidas").doc(id).get();
   await db.collection("salidas").doc(id).delete();
+  if (d.exists) await Promise.all(aSalida(d).fotos.map((f) => borrarImagen(f.path)));
   refrescarSitio(id);
   redirect("/admin?borrada=1");
+}
+
+/* ───────────── Fotos de cada salida ───────────── */
+
+
+/** Campos a guardar cuando cambia la lista de fotos (la portada es la primera). */
+function conPortada(fotos: FotoSalida[]) {
+  return { fotos, fotoUrl: fotos[0]?.url ?? null, fotoPath: fotos[0]?.path ?? null };
+}
+
+/** Lee la salida, aplica un cambio a su lista de fotos y la guarda, todo en una transacción. */
+async function cambiarFotos(
+  id: string,
+  cambio: (fotos: FotoSalida[]) => FotoSalida[] | string,
+): Promise<EstadoFormulario & { fotos?: FotoSalida[] }> {
+  const ref = db.collection("salidas").doc(id);
+  const r = await db.runTransaction(async (tx) => {
+    const d = await tx.get(ref);
+    if (!d.exists) return "La salida ya no existe";
+    const nuevas = cambio([...aSalida(d).fotos]);
+    if (typeof nuevas === "string") return nuevas;
+    tx.update(ref, { ...conPortada(nuevas), actualizadoEn: Date.now() });
+    return nuevas;
+  });
+  if (typeof r === "string") return { error: r };
+  refrescarSitio(id);
+  return { fotos: r };
+}
+
+/** Sube una foto (el navegador las manda de a una, ya achicadas). */
+export async function subirFotoSalida(id: string, form: FormData): Promise<EstadoFormulario & { fotos?: FotoSalida[] }> {
+  await requerirAdmin();
+  const archivo = form.get("foto");
+  if (!(archivo instanceof File) || archivo.size === 0) return { error: "No llegó ninguna foto" };
+  const actual = await db.collection("salidas").doc(id).get();
+  if (!actual.exists) return { error: "La salida ya no existe" };
+  if (aSalida(actual).fotos.length >= MAX_FOTOS_SALIDA) {
+    return { error: `Cada salida puede tener hasta ${MAX_FOTOS_SALIDA} fotos.` };
+  }
+
+  let subida: { url: string; path: string };
+  try {
+    subida = await subirImagen(archivo, `salidas/${id}`);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "No se pudo subir la foto" };
+  }
+  const r = await cambiarFotos(id, (fotos) =>
+    fotos.length >= MAX_FOTOS_SALIDA
+      ? `Cada salida puede tener hasta ${MAX_FOTOS_SALIDA} fotos.`
+      : [...fotos, { ...subida, alt: "" }],
+  );
+  if (r.error) await borrarImagen(subida.path);
+  return r;
+}
+
+export async function borrarFotoSalida(id: string, path: string) {
+  await requerirAdmin();
+  const r = await cambiarFotos(id, (fotos) => fotos.filter((f) => f.path !== path));
+  if (!r.error) await borrarImagen(path);
+  return r;
+}
+
+/** Mueve una foto a otra posición (0 = portada). */
+export async function moverFotoSalida(id: string, path: string, posicion: number) {
+  await requerirAdmin();
+  return cambiarFotos(id, (fotos) => {
+    const i = fotos.findIndex((f) => f.path === path);
+    if (i < 0) return "Esa foto ya no está";
+    const [foto] = fotos.splice(i, 1);
+    fotos.splice(Math.max(0, Math.min(posicion, fotos.length)), 0, foto);
+    return fotos;
+  });
+}
+
+export async function describirFotoSalida(id: string, path: string, alt: string) {
+  await requerirAdmin();
+  const texto = alt.trim().slice(0, 200);
+  return cambiarFotos(id, (fotos) => fotos.map((f) => (f.path === path ? { ...f, alt: texto } : f)));
 }
 
 const esquemaAjustes = z.object({

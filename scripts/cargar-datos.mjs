@@ -67,6 +67,7 @@ for (const { id, ...s } of datos.salidas ?? []) {
   if (!id) throw new Error(`Falta el id en la salida "${s.titulo}"`);
   const doc = {
     fechaFin: null,
+    fotos: [],
     fotoUrl: null,
     fotoPath: null,
     cuposTomados: 0,

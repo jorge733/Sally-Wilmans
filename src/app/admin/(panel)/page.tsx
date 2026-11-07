@@ -17,6 +17,23 @@ function Fila({ s }: { s: Salida }) {
   const libres = cuposLibres(s);
   return (
     <li className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl bg-white p-5">
+      <Link
+        href={`/admin/salidas/${s.id}`}
+        className="relative hidden h-16 w-24 shrink-0 overflow-hidden rounded-xl bg-crema sm:block"
+        title={s.fotos.length ? `${s.fotos.length} foto${s.fotos.length === 1 ? "" : "s"}` : "Sin fotos"}
+      >
+        {s.fotoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={s.fotoUrl} alt="" className="size-full object-cover" />
+        ) : (
+          <span className="flex size-full items-center justify-center text-[11px] text-gris">Sin fotos</span>
+        )}
+        {s.fotos.length > 1 && (
+          <span className="absolute right-1 bottom-1 rounded bg-tinta/75 px-1.5 text-[10px] font-semibold text-white">
+            {s.fotos.length}
+          </span>
+        )}
+      </Link>
       <div className="min-w-0 flex-1 basis-64">
         <div className="flex flex-wrap items-center gap-2">
           <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${e.clase}`}>{e.texto}</span>

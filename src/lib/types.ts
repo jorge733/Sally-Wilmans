@@ -20,11 +20,21 @@ export interface Salida {
   cuposTomados: number;
   descripcion: string;
   queLlevar: string[];
+  /** Fotos de la salida, en orden. La primera es la portada. */
+  fotos: FotoSalida[];
+  /** Copia de la portada (fotos[0]), para lecturas rápidas */
   fotoUrl: string | null;
   fotoPath: string | null;
   estado: EstadoSalida;
   creadoEn: number;
   actualizadoEn: number;
+}
+
+export interface FotoSalida {
+  url: string;
+  path: string;
+  /** Descripción breve (texto alternativo y pie de foto) */
+  alt: string;
 }
 
 export type EstadoInscripcion = "pendiente" | "pagada" | "rechazada" | "expirada" | "anulada";

@@ -10,6 +10,7 @@ import {
   IconoNinos,
   IconoReloj,
 } from "@/components/Iconos";
+import { GaleriaSalida } from "@/components/GaleriaSalida";
 import { Paisaje } from "@/components/Paisaje";
 import { EstadoCupos } from "@/components/TarjetaSalida";
 import { obtenerAjustes, obtenerSalida } from "@/lib/data";
@@ -27,7 +28,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const s = await obtenerSalida((await params).id);
   if (!s || s.estado === "borrador") return {};
-  return { title: s.titulo, description: `${fechaSalida(s)} · ${s.lugar}. ${s.descripcion}` };
+  return {
+    title: s.titulo,
+    description: `${fechaSalida(s)} · ${s.lugar}. ${s.descripcion}`,
+    ...(s.fotoUrl ? { openGraph: { images: [s.fotoUrl] } } : {}),
+  };
 }
 
 export default async function DetalleSalida({ params }: Props) {
@@ -47,7 +52,12 @@ export default async function DetalleSalida({ params }: Props) {
   return (
     <article>
       <div className="relative h-64 overflow-hidden sm:h-80">
-        <Paisaje variante={indice} conNieve animado className="size-full" />
+        {salida.fotoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={salida.fotoUrl} alt="" className="size-full object-cover" />
+        ) : (
+          <Paisaje variante={indice} conNieve animado className="size-full" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-marca/80 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 mx-auto max-w-6xl px-4 pb-8 sm:px-6">
           <Link href="/#salidas" className="text-sm font-medium text-white/80 hover:text-white">
@@ -80,6 +90,13 @@ export default async function DetalleSalida({ params }: Props) {
               </p>
             )}
           </section>
+
+          {salida.fotos.length > 1 && (
+            <section>
+              <h2 className="text-2xl font-semibold text-marca">Fotos</h2>
+              <GaleriaSalida fotos={salida.fotos} titulo={salida.titulo} />
+            </section>
+          )}
 
           <section>
             <h2 className="flex items-center gap-2 text-2xl font-semibold text-marca">

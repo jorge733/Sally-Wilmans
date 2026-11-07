@@ -16,3 +16,6 @@ export function varianteDe(id: string): number {
   for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return h % 97;
 }
+
+/** Máximo de fotos por salida */
+export const MAX_FOTOS_SALIDA = 12;

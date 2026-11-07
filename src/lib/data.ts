@@ -26,6 +26,11 @@ export function aSalida(d: Doc): Salida {
     cuposTomados: x.cuposTomados ?? 0,
     descripcion: x.descripcion ?? "",
     queLlevar: x.queLlevar ?? [],
+    fotos: Array.isArray(x.fotos)
+      ? x.fotos
+      : x.fotoUrl
+        ? [{ url: x.fotoUrl, path: x.fotoPath ?? "", alt: "" }]
+        : [],
     fotoUrl: x.fotoUrl ?? null,
     fotoPath: x.fotoPath ?? null,
     estado: x.estado ?? "borrador",

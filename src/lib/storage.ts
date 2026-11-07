@@ -22,10 +22,29 @@ export async function subirImagen(archivo: File, carpeta: string): Promise<{ url
     },
   });
 
+  return { url: urlPublica(b.name, path, token), path };
+}
+
+function urlPublica(bucketName: string, path: string, token: string): string {
   const emu = process.env.FIREBASE_STORAGE_EMULATOR_HOST;
   const host = emu ? `http://${emu}` : "https://firebasestorage.googleapis.com";
-  const url = `${host}/v0/b/${b.name}/o/${encodeURIComponent(path)}?alt=media&token=${token}`;
-  return { url, path };
+  return `${host}/v0/b/${bucketName}/o/${encodeURIComponent(path)}?alt=media&token=${token}`;
+}
+
+/** Copia una imagen ya subida a otra carpeta, con su propia URL. */
+export async function copiarImagen(origen: string, carpeta: string): Promise<{ url: string; path: string }> {
+  const ext = origen.split(".").pop() ?? "jpg";
+  const path = `public/${carpeta}/${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
+  const token = crypto.randomUUID();
+  const b = bucket();
+  const [meta] = await b.file(origen).getMetadata();
+  await b.file(origen).copy(b.file(path), {
+    // Estas opciones son el objeto destino: se repiten tipo y caché porque si no se pierden.
+    contentType: meta.contentType,
+    cacheControl: meta.cacheControl,
+    metadata: { firebaseStorageDownloadTokens: token },
+  });
+  return { url: urlPublica(b.name, path, token), path };
 }
 
 export async function borrarImagen(path: string | null | undefined): Promise<void> {

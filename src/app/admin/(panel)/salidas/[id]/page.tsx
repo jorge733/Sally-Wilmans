@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { obtenerSalida } from "@/lib/data";
 import { FormularioSalida } from "../FormularioSalida";
 import { AccionesSalida } from "./AccionesSalida";
+import { FotosSalida } from "./FotosSalida";
 
 export const metadata = { title: "Editar salida" };
 
@@ -37,6 +38,7 @@ export default async function EditarSalida({ params, searchParams }: Props) {
         </p>
       )}
       <FormularioSalida salida={salida} />
+      <FotosSalida id={id} fotosIniciales={salida.fotos} />
       <AccionesSalida id={id} />
     </>
   );

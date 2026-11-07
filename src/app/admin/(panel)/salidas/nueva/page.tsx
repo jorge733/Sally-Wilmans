@@ -11,6 +11,10 @@ export default function NuevaSalida() {
       </Link>
       <h1 className="mt-2 mb-6 text-3xl font-semibold text-marca">Nueva salida</h1>
       <FormularioSalida />
+      <p className="mt-6 rounded-2xl border border-dashed border-linea p-6 text-sm text-gris">
+        Las fotos se agregan después de crear la salida: al guardarla se abre su página de edición, con la sección
+        <b> Fotos</b> para subirlas.
+      </p>
     </>
   );
 }
