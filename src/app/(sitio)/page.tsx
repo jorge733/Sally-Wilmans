@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import fotoCaminata from "@/assets/galeria-caminata.jpg";
+import fotoCerro from "@/assets/galeria-cerro.jpg";
 import fotoCharla from "@/assets/galeria-charla.jpg";
 import fotoLlegada from "@/assets/galeria-llegada.jpg";
 import fotoPasarela from "@/assets/galeria-pasarela.jpg";
+import fotoRio from "@/assets/galeria-rio.jpg";
+import fotoSendero from "@/assets/galeria-sendero.jpg";
 import fotoEquipo from "@/assets/nosotros-equipo.jpg";
 import fotoGrupal from "@/assets/portada-club.jpg";
 import fotoPortada from "@/assets/portada-puente.jpg";
@@ -25,13 +29,25 @@ import { CUIDADOS, PASOS, PILARES, PREGUNTAS, SITIO } from "@/lib/site";
 
 const ICONOS_CUIDADO = [IconoGrupo, IconoEscudo, IconoCorazon, IconoSendero];
 
-/** Fotos de la galería. La primera ocupa el recuadro grande y la última el ancho de dos columnas. */
+/** Recuadro que ocupa cada foto en la grilla de la galería. */
+const FORMATOS_GALERIA = {
+  grande: { clase: "col-span-2 row-span-2", sizes: "(min-width: 768px) 560px, 100vw" },
+  ancha: { clase: "col-span-2", sizes: "(min-width: 768px) 560px, 100vw" },
+  normal: { clase: "", sizes: "(min-width: 768px) 280px, 50vw" },
+  vertical: { clase: "row-span-2", sizes: "(min-width: 768px) 280px, 50vw" },
+};
+
+/** Fotos de la galería, en orden. Los formatos deben llenar filas completas de cuatro columnas. */
 const GALERIA = [
-  { src: fotoGrupal, alt: "Foto grupal de niños, niñas y monitores del club sentados en un claro del sendero" },
-  { src: fotoPasarela, alt: "Niños y niñas del club en fila sobre una pasarela de madera junto a una monitora" },
-  { src: fotoCharla, alt: "Grupo con mochilas escuchando a los monitores antes de partir la caminata" },
-  { src: fotoLlegada, alt: "Llegada del grupo al inicio del sendero, rodeado de árboles" },
-];
+  { src: fotoGrupal, formato: "grande", alt: "Foto grupal de niños, niñas y monitores del club sentados en un claro del sendero" },
+  { src: fotoPasarela, formato: "normal", alt: "Niños y niñas del club en fila sobre una pasarela de madera junto a una monitora" },
+  { src: fotoCharla, formato: "normal", alt: "Grupo con mochilas escuchando a los monitores antes de partir la caminata" },
+  { src: fotoLlegada, formato: "ancha", alt: "Llegada del grupo al inicio del sendero, rodeado de árboles" },
+  { src: fotoSendero, formato: "vertical", alt: "Niños y niñas con mochilas subiendo en fila por un sendero de cerro, con la cordillera al fondo" },
+  { src: fotoRio, formato: "vertical", alt: "Niños jugando en un estero y armando torres de piedras" },
+  { src: fotoCerro, formato: "vertical", alt: "Grupo caminando entre rocas y cactus en un cerro, con la ciudad a lo lejos" },
+  { src: fotoCaminata, formato: "vertical", alt: "Monitora caminando junto a niños y niñas de la mano por un camino de tierra" },
+] as const;
 
 function Hoja({ className = "" }: { className?: string }) {
   return (
@@ -269,13 +285,13 @@ export default async function Inicio() {
                 key={foto.src.src}
                 data-revelar="zoom"
                 style={retraso(i * 80)}
-                className={`group overflow-hidden rounded-2xl ${i === 0 ? "col-span-2 row-span-2" : ""} ${i === GALERIA.length - 1 ? "col-span-2" : ""}`}
+                className={`group overflow-hidden rounded-2xl ${FORMATOS_GALERIA[foto.formato].clase}`}
               >
                 <Image
                   src={foto.src}
                   alt={foto.alt}
                   placeholder="blur"
-                  sizes={i === 0 || i === GALERIA.length - 1 ? "(min-width: 768px) 560px, 100vw" : "(min-width: 768px) 280px, 50vw"}
+                  sizes={FORMATOS_GALERIA[foto.formato].sizes}
                   className="size-full object-cover transition duration-700 group-hover:scale-105"
                 />
               </div>
