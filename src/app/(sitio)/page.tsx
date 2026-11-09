@@ -49,7 +49,6 @@ export const revalidate = 60;
 
 export default async function Inicio() {
   const [salidas, ajustes] = await Promise.all([salidasPublicas(), obtenerAjustes()]);
-  const anios = new Date().getFullYear() - SITIO.desde;
 
   return (
     <>
@@ -155,7 +154,7 @@ export default async function Inicio() {
             </div>
             <div className="absolute -right-3 -bottom-5 rounded-2xl bg-white px-5 py-4 shadow-xl shadow-marca/10 sm:-right-6">
               <div className="mano text-4xl text-acento">Desde {SITIO.desde}</div>
-              <div className="text-sm text-gris">{anios} años llevando niños al cerro</div>
+              <div className="text-sm text-gris">llevando niños al cerro</div>
             </div>
           </div>
           <div data-revelar="derecha" style={retraso(150)}>

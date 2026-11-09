@@ -180,7 +180,17 @@ export async function subirFotoSalida(id: string, form: FormData): Promise<Estad
   try {
     subida = await subirImagen(archivo, `salidas/${id}`);
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "No se pudo subir la foto" };
+    const mensaje = e instanceof Error ? e.message : "";
+    // Errores de validación nuestros (tipo o peso): se muestran tal cual.
+    if (mensaje.startsWith("La foto")) return { error: mensaje };
+    console.error("Error al subir foto de salida", e);
+    if (/bucket does not exist|notFound/i.test(mensaje)) {
+      return {
+        error:
+          "El almacenamiento de fotos todavía no está activado en Firebase (Storage). Hay que activarlo para poder subir fotos.",
+      };
+    }
+    return { error: "No se pudo subir la foto. Inténtalo de nuevo en un rato." };
   }
   const r = await cambiarFotos(id, (fotos) =>
     fotos.length >= MAX_FOTOS_SALIDA
