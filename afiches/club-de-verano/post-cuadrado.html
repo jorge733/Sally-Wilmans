@@ -1,0 +1,54 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@500;600;700&display=block" rel="stylesheet">
+<style>
+:root{--tinta:#23291f;--marca:#2f4a34;--claro:#d5dfcc;--acento:#c0663a;--sol:#f6c68f;--papel:#fbf8f1}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--papel);font-family:Inter,sans-serif;color:var(--tinta);overflow:hidden;position:relative}
+.marca{display:flex;align-items:center;gap:16px;font-family:Fraunces,serif;font-weight:600;color:var(--marca)}
+.temp{font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--acento)}
+.mano{font-family:"Amatic SC",cursive;line-height:.9;color:var(--acento)}
+h1{font-family:Fraunces,serif;font-weight:700;line-height:1.02;color:var(--marca);letter-spacing:-.01em}
+.foto{position:absolute;overflow:hidden}.foto img{width:100%;height:100%;object-fit:cover}
+.sticker{position:absolute;border-radius:50%;background:var(--sol);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(8deg);color:var(--marca);box-shadow:0 10px 30px rgba(35,41,31,.18);z-index:2}
+.sticker b{font-family:"Amatic SC";line-height:.85}.sticker span{font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.f{border-radius:28px;background:var(--marca);color:#fff}.f.b{background:var(--acento)}
+.f .mes{font-weight:600;letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.f .dias{font-family:Fraunces,serif;font-weight:700;line-height:1}.f .dias small{font-weight:600;opacity:.9;margin:0 6px}
+.pilares{position:absolute;display:flex;justify-content:space-between;align-items:center;font-family:"Amatic SC";color:var(--marca)}
+.pilares i{width:10px;height:10px;border-radius:50%;background:var(--acento)}
+.pie{position:absolute;left:0;right:0;bottom:0;background:var(--marca);color:#fff}
+.ins{font-family:Fraunces,serif;font-weight:600}.ins span{display:block;font-family:Inter;font-weight:500;color:var(--claro);margin-top:4px}
+.contacto{font-weight:600;line-height:1.5}.contacto div{display:flex;align-items:center;gap:12px}.contacto svg{fill:var(--sol)}
+.cerros{position:absolute;left:0;display:block}
+
+body{width:1080px;height:1080px}
+.foto{left:0;top:0;bottom:0;width:470px;border-radius:0 40px 40px 0}.foto img{object-position:58% center}
+.der{position:absolute;left:530px;right:56px;top:52px}
+.marca{font-size:26px}.marca svg{width:52px;height:52px}
+.temp{font-size:17px;margin-top:40px}
+.mano{font-size:118px;margin-top:8px}h1{font-size:60px;margin-top:8px}
+.sticker{left:360px;top:56px;width:170px;height:170px}.sticker b{font-size:58px}.sticker span{font-size:15px}
+.fechas{display:grid;gap:18px;margin-top:40px}
+.f{padding:22px 30px;display:flex;align-items:center;justify-content:space-between}
+.f .mes{font-size:18px}.f .dias{font-size:72px}.f .dias small{font-size:32px}
+.pilares{left:530px;right:56px;top:880px;font-size:33px}.pilares i{width:8px;height:8px}
+.pie{left:470px;height:110px;display:flex;align-items:center;justify-content:space-between;padding:0 56px 0 60px;border-top-left-radius:0}
+.ins{font-size:26px}.ins span{font-size:15px}
+.contacto{font-size:19px;text-align:right}.contacto div{justify-content:flex-end;gap:10px}.contacto svg{width:22px;height:22px}
+</style></head><body>
+<div class="foto"><img src="foto.jpg" alt=""></div>
+<div class="sticker"><b>5 a 12</b><span>años</span></div>
+<div class="der">
+ <div class="marca"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#2f4a34"/><circle cx="46" cy="19" r="6" fill="#f6c68f"/><path d="M6 52 L24 24 L33 37 L40 28 L58 52 Z" fill="#d5dfcc"/><path d="M24 24 L19.5 31 L23 29.5 L26 32 L28.5 30 Z" fill="#fbf8f1"/><path d="M6 52 L22 40 L34 46 L46 39 L58 52 Z" fill="#c0663a"/></svg> Club de la Montaña</div>
+ <div class="temp">Verano 2026 · 2027</div>
+ <div class="mano">Club de Verano</div>
+ <h1>Este verano,<br>¡a la montaña!</h1>
+ <div class="fechas">
+  <div class="f"><div class="mes">Diciembre<br>2026</div><div class="dias">9<small>al</small>30</div></div>
+  <div class="f b"><div class="mes">Enero<br>2027</div><div class="dias">4<small>al</small>29</div></div>
+ </div>
+</div>
+<div class="pilares">Naturaleza<i></i>Senderismo<i></i>Juego libre<i></i>Vida sana</div>
+<div class="pie"><div class="ins">¡Cupos limitados!<span>Inscripciones abiertas</span></div>
+ <div class="contacto"><div><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.800 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.3.4c-.1.1-.3.3-.1.6.2.3.7 1.2 1.6 2 1.1 1 2 1.3 2.3 1.4.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.4.2.5.3.1.2.1.6-.1 1.1z"/></svg>+56 9 8232 6966</div><div><svg viewBox="0 0 24 24"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM17.5 5.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>@clubdelamontanachile</div></div></div>
+</body></html>
