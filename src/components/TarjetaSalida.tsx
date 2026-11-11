@@ -1,11 +1,44 @@
 import Link from "next/link";
 import { clp, edades, fechaCorta } from "@/lib/format";
-import { cuposLibres, salidaAbierta } from "@/lib/salida-utils";
+import { cuposLibres, libresSemana, porSemanas, salidaAbierta, semanaAbierta, semanasVigentes } from "@/lib/salida-utils";
 import type { Salida } from "@/lib/types";
 import { IconoFlecha, IconoLugar, IconoNinos, IconoReloj } from "./Iconos";
 import { Paisaje } from "./Paisaje";
 
+/** Precio que se muestra: en salidas por semanas, el de la semana más barata. */
+export function textoPrecio(salida: Salida): { valor: string; detalle: string } {
+  if (!porSemanas(salida)) return { valor: clp(salida.precio), detalle: "por niño" };
+  const distintos = new Set(salida.semanas.map((w) => w.precio)).size > 1;
+  return { valor: `${distintos ? "Desde " : ""}${clp(salida.precio)}`, detalle: "por niño, cada semana" };
+}
+
+function EstadoSemanas({ salida }: { salida: Salida }) {
+  const vigentes = semanasVigentes(salida);
+  const conCupo = vigentes.filter((w) => semanaAbierta(w)).length;
+  const abierta = salidaAbierta(salida);
+  const cupos = vigentes.reduce((t, w) => t + w.cupos, 0);
+  const pct = cupos ? Math.min(100, (vigentes.reduce((t, w) => t + w.cupos - libresSemana(w), 0) / cupos) * 100) : 100;
+  return (
+    <div>
+      <div className="mb-1.5 flex justify-between text-xs font-medium">
+        <span className={abierta ? "text-bosque" : "text-gris"}>
+          {!abierta
+            ? "Semanas completas"
+            : conCupo === 1
+              ? "Queda 1 semana con cupos"
+              : `${conCupo} semanas con cupos`}
+        </span>
+        <span className="text-gris">{salida.semanas.length} semanas</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-linea">
+        <div className={`barra-cupos h-full rounded-full ${abierta ? "bg-bosque" : "bg-gris"}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
 export function EstadoCupos({ salida }: { salida: Salida }) {
+  if (porSemanas(salida)) return <EstadoSemanas salida={salida} />;
   const libres = cuposLibres(salida);
   const pct = Math.min(100, (salida.cuposTomados / salida.cupos) * 100);
   const abierta = salidaAbierta(salida);
@@ -82,8 +115,8 @@ export function TarjetaSalida({ salida, indice }: { salida: Salida; indice: numb
           <EstadoCupos salida={salida} />
           <div className="flex items-center justify-between border-t border-linea pt-4">
             <div>
-              <div className="text-xs text-gris">por niño</div>
-              <div className="text-lg font-bold">{clp(salida.precio)}</div>
+              <div className="text-xs text-gris">{textoPrecio(salida).detalle}</div>
+              <div className="text-lg font-bold">{textoPrecio(salida).valor}</div>
             </div>
             <span
               className={`inline-flex items-center gap-1.5 text-sm font-semibold ${abierta ? "text-acento" : "text-gris"}`}

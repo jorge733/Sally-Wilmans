@@ -1,7 +1,7 @@
 import "server-only";
 import { Resend } from "resend";
 import { obtenerAjustes } from "./data";
-import { clp, edades, fechaSalida } from "./format";
+import { clp, edades, fechaSalida, rangoDias } from "./format";
 import { SITIO } from "./site";
 import type { Inscripcion, Salida } from "./types";
 
@@ -62,9 +62,12 @@ function filas(pares: [string, string][]): string {
 export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida): Promise<void> {
   const ajustes = await obtenerAjustes();
   const ninos = insc.ninos.map((n) => `${esc(n.nombre)} (${n.edad} años)`).join("<br>");
+  const semanas = insc.semanas?.length
+    ? insc.semanas.map((w) => `${rangoDias(w.inicio, w.fin)} (${clp(w.precio)})`).join("<br>")
+    : "";
   const detalle = filas([
     ["Salida", esc(salida.titulo)],
-    ["Fecha", fechaSalida(salida, true)],
+    semanas ? [insc.semanas!.length === 1 ? "Semana" : "Semanas", semanas] : ["Fecha", fechaSalida(salida, true)],
     ["Horario", `${salida.horaInicio} a ${salida.horaFin} h`],
     ["Lugar", esc(salida.lugar)],
     ["Punto de encuentro", esc(salida.puntoEncuentro || "Se avisará por WhatsApp")],
@@ -93,10 +96,22 @@ export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida)
     "Nueva inscripción pagada",
     `${filas([
       ["Salida", `${esc(salida.titulo)} · ${fechaSalida(salida)}`],
+      ...(semanas ? [[insc.semanas!.length === 1 ? "Semana" : "Semanas", semanas] as [string, string]] : []),
       ["Apoderado", `${esc(insc.apoderado.nombre)}<br>${esc(insc.apoderado.telefono)}<br>${esc(insc.apoderado.email)}`],
       ["Emergencia", `${esc(insc.emergencia.nombre)} (${esc(insc.emergencia.relacion)})<br>${esc(insc.emergencia.telefono)}`],
       ["Total", clp(insc.total)],
-      ["Cupos", `${salida.cuposTomados} de ${salida.cupos} tomados`],
+      semanas
+        ? [
+            "Cupos",
+            insc
+              .semanas!.map((elegida) => {
+                const w = salida.semanas.find((x) => x.id === elegida.id);
+                return w ? `${rangoDias(w.inicio, w.fin)}: ${w.cuposTomados} de ${w.cupos}` : "";
+              })
+              .filter(Boolean)
+              .join("<br>"),
+          ]
+        : ["Cupos", `${salida.cuposTomados} de ${salida.cupos} tomados`],
     ])}<ul style="padding-left:20px">${fichas}</ul>${
       insc.sobrecupo
         ? `<p style="color:#c0663a;font-weight:bold">Atención: este pago llegó después de que venció la reserva y la salida ya estaba llena. Revisa los cupos en el panel.</p>`

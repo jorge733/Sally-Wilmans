@@ -49,10 +49,19 @@ function Fila({ s }: { s: Salida }) {
         </div>
       </div>
       <div className="text-sm">
-        <div className="font-semibold">
-          {s.cuposTomados} / {s.cupos} cupos
-        </div>
-        <div className="text-gris">{clp(s.precio)} por niño</div>
+        {s.semanas.length ? (
+          <>
+            <div className="font-semibold">{s.semanas.length} semanas</div>
+            <div className="text-gris">Desde {clp(s.precio)} por semana</div>
+          </>
+        ) : (
+          <>
+            <div className="font-semibold">
+              {s.cuposTomados} / {s.cupos} cupos
+            </div>
+            <div className="text-gris">{clp(s.precio)} por niño</div>
+          </>
+        )}
       </div>
       <div className="flex gap-2">
         <Link href={`/admin/salidas/${s.id}/inscritos`} className="btn btn-secundario px-4 py-2 text-sm text-marca">

@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { db } from "./firebase-admin";
 import { hoyChile } from "./format";
+import { ultimoDia } from "./salida-utils";
 export { cuposLibres, salidaAbierta } from "./salida-utils";
 import { AJUSTES_POR_DEFECTO } from "./site";
 import type { AjustesSitio, FotoGaleria, Inscripcion, Salida } from "./types";
@@ -24,6 +25,7 @@ export function aSalida(d: Doc): Salida {
     precio: x.precio ?? 0,
     cupos: x.cupos ?? 0,
     cuposTomados: x.cuposTomados ?? 0,
+    semanas: Array.isArray(x.semanas) ? x.semanas : [],
     descripcion: x.descripcion ?? "",
     queLlevar: x.queLlevar ?? [],
     fotos: Array.isArray(x.fotos)
@@ -48,7 +50,7 @@ export async function salidasPublicas(): Promise<Salida[]> {
   const hoy = hoyChile();
   return snap.docs
     .map(aSalida)
-    .filter((s) => s.fecha >= hoy)
+    .filter((s) => ultimoDia(s) >= hoy)
     .sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio));
 }
 

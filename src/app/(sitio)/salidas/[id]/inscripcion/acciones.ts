@@ -11,6 +11,7 @@ const texto = (max: number, mensaje: string) => z.string().trim().min(1, mensaje
 
 const esquema = z.object({
   salidaId: z.string().min(1).max(120),
+  semanas: z.array(z.string().max(40)).max(30).default([]),
   ninos: z
     .array(
       z.object({
@@ -71,6 +72,7 @@ export async function iniciarInscripcion(datos: DatosFicha): Promise<ResultadoIn
       apoderado: { ...d.apoderado, email: d.apoderado.email.toLowerCase() },
       emergencia: d.emergencia,
       ninos: d.ninos,
+      semanas: d.semanas,
       textoAutorizacion: ajustes.textoAutorizacion,
     });
     inscripcionId = insc.id;

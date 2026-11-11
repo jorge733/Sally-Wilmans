@@ -2,10 +2,13 @@ import "server-only";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "./firebase-admin";
 import { aInscripcion, aSalida } from "./data";
-import { cuposLibres, salidaAbierta } from "./salida-utils";
+import { rangoDias } from "./format";
+import { cuposLibres, libresSemana, porSemanas, salidaAbierta, semanaAbierta } from "./salida-utils";
 import { enviarAvisosInscripcion } from "./email";
 import { ESTADO_FLOW, type EstadoFlow } from "./flow";
-import type { Inscripcion, Nino } from "./types";
+import type { Inscripcion, Nino, SemanaInscrita } from "./types";
+
+type Doc = FirebaseFirestore.DocumentSnapshot;
 
 /** Minutos que se guarda el cupo mientras el apoderado paga. */
 export const MINUTOS_RESERVA = 30;
@@ -17,7 +20,27 @@ export interface DatosInscripcion {
   apoderado: Inscripcion["apoderado"];
   emergencia: Inscripcion["emergencia"];
   ninos: Nino[];
+  /** Ids de las semanas elegidas (solo en salidas por semanas) */
+  semanas: string[];
   textoAutorizacion: string;
+}
+
+/**
+ * Cambios en la salida para tomar (signo 1) o devolver (signo -1) los cupos de una inscripción.
+ * En salidas por semanas se mueve el cupo de cada semana elegida (y el total, que es la suma).
+ */
+function cambiosCupos(
+  salidaSnap: Doc,
+  insc: { cantidad: number; semanas?: SemanaInscrita[] },
+  signo: 1 | -1,
+): Record<string, unknown> {
+  const delta = signo * insc.cantidad;
+  if (!insc.semanas?.length) return { cuposTomados: FieldValue.increment(delta) };
+  const ids = new Set(insc.semanas.map((w) => w.id));
+  const semanas = aSalida(salidaSnap).semanas.map((w) =>
+    ids.has(w.id) ? { ...w, cuposTomados: Math.max(0, w.cuposTomados + delta) } : w,
+  );
+  return { semanas, cuposTomados: semanas.reduce((t, w) => t + w.cuposTomados, 0) };
 }
 
 /**
@@ -36,10 +59,10 @@ export async function liberarReservasVencidas(salidaId: string): Promise<void> {
     await db.runTransaction(async (tx) => {
       const fresca = await tx.get(doc.ref);
       if (fresca.get("estado") !== "pendiente" || !fresca.get("cupoReservado")) return;
+      const salidaRef = db.collection("salidas").doc(salidaId);
+      const salidaSnap = await tx.get(salidaRef);
       tx.update(doc.ref, { estado: "expirada", cupoReservado: false });
-      tx.update(db.collection("salidas").doc(salidaId), {
-        cuposTomados: FieldValue.increment(-fresca.get("cantidad")),
-      });
+      if (salidaSnap.exists) tx.update(salidaRef, cambiosCupos(salidaSnap, aInscripcion(fresca), -1));
     });
   }
 }
@@ -57,25 +80,47 @@ export async function reservar(datos: DatosInscripcion): Promise<Inscripcion> {
     if (!snap.exists) throw new ErrorInscripcion("La salida no existe.");
     const salida = aSalida(snap);
     if (!salidaAbierta(salida)) throw new ErrorInscripcion("Esta salida ya no recibe inscripciones.");
-    const libres = cuposLibres(salida);
-    if (cantidad > libres) {
-      throw new ErrorInscripcion(
-        libres === 1 ? "Solo queda 1 cupo en esta salida." : `Solo quedan ${libres} cupos en esta salida.`,
-      );
+
+    let semanas: SemanaInscrita[] | undefined;
+    let precioUnitario = salida.precio;
+    if (porSemanas(salida)) {
+      const elegidas = salida.semanas.filter((w) => datos.semanas.includes(w.id));
+      if (!elegidas.length || elegidas.length !== new Set(datos.semanas).size) {
+        throw new ErrorInscripcion("Elige al menos una semana.");
+      }
+      for (const w of elegidas) {
+        const libres = libresSemana(w);
+        if (!semanaAbierta(w)) throw new ErrorInscripcion(`La semana del ${rangoDias(w.inicio, w.fin)} ya no recibe inscripciones.`);
+        if (cantidad > libres) {
+          throw new ErrorInscripcion(
+            `En la semana del ${rangoDias(w.inicio, w.fin)} ${libres === 1 ? "solo queda 1 cupo" : `solo quedan ${libres} cupos`}.`,
+          );
+        }
+      }
+      semanas = elegidas.map(({ id, inicio, fin, precio }) => ({ id, inicio, fin, precio }));
+      precioUnitario = semanas.reduce((t, w) => t + w.precio, 0);
+    } else {
+      const libres = cuposLibres(salida);
+      if (cantidad > libres) {
+        throw new ErrorInscripcion(
+          libres === 1 ? "Solo queda 1 cupo en esta salida." : `Solo quedan ${libres} cupos en esta salida.`,
+        );
+      }
     }
 
     const ahora = Date.now();
     const insc: Omit<Inscripcion, "id"> = {
       salidaId: salida.id,
       salidaTitulo: salida.titulo,
-      salidaFecha: salida.fecha,
+      salidaFecha: semanas?.[0]?.inicio ?? salida.fecha,
       apoderado: datos.apoderado,
       emergencia: datos.emergencia,
       ninos: datos.ninos,
+      ...(semanas ? { semanas } : {}),
       autorizacion: { aceptada: true, texto: datos.textoAutorizacion, fecha: ahora },
       cantidad,
-      precioUnitario: salida.precio,
-      total: salida.precio * cantidad,
+      precioUnitario,
+      total: precioUnitario * cantidad,
       estado: "pendiente",
       cupoReservado: true,
       sobrecupo: false,
@@ -86,8 +131,17 @@ export async function reservar(datos: DatosInscripcion): Promise<Inscripcion> {
       pagadoEn: null,
     };
     tx.set(inscRef, insc);
-    tx.update(salidaRef, { cuposTomados: FieldValue.increment(cantidad) });
+    tx.update(salidaRef, cambiosCupos(snap, { cantidad, semanas }, 1));
     return { id: inscRef.id, ...insc };
+  });
+}
+
+/** true si ya no caben los niños de la inscripción (en la salida o en alguna de sus semanas). */
+function hayMenosCupos(salida: ReturnType<typeof aSalida>, insc: Inscripcion): boolean {
+  if (!insc.semanas?.length) return Math.max(0, salida.cupos - salida.cuposTomados) < insc.cantidad;
+  return insc.semanas.some((elegida) => {
+    const w = salida.semanas.find((x) => x.id === elegida.id);
+    return !w || libresSemana(w) < insc.cantidad;
   });
 }
 
@@ -97,10 +151,10 @@ export async function cancelarReserva(inscripcionId: string): Promise<void> {
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists || snap.get("estado") !== "pendiente" || !snap.get("cupoReservado")) return;
+    const salidaRef = db.collection("salidas").doc(snap.get("salidaId"));
+    const salidaSnap = await tx.get(salidaRef);
     tx.update(ref, { estado: "expirada", cupoReservado: false });
-    tx.update(db.collection("salidas").doc(snap.get("salidaId")), {
-      cuposTomados: FieldValue.increment(-snap.get("cantidad")),
-    });
+    if (salidaSnap.exists) tx.update(salidaRef, cambiosCupos(salidaSnap, aInscripcion(snap), -1));
   });
 }
 
@@ -136,10 +190,9 @@ export async function registrarPago(
         if (pago.monto < insc.total) cambios.montoIncompleto = true;
         if (!insc.cupoReservado) {
           // Pagó después de que venció la reserva: se vuelve a tomar el cupo.
-          const libres = salidaSnap.exists ? cuposLibres(aSalida(salidaSnap)) : 0;
           cambios.cupoReservado = true;
-          cambios.sobrecupo = libres < insc.cantidad;
-          tx.update(salidaRef, { cuposTomados: FieldValue.increment(insc.cantidad) });
+          cambios.sobrecupo = !salidaSnap.exists || hayMenosCupos(aSalida(salidaSnap), insc);
+          if (salidaSnap.exists) tx.update(salidaRef, cambiosCupos(salidaSnap, insc, 1));
         }
       }
       if (!insc.avisosEnviados) {
@@ -152,7 +205,7 @@ export async function registrarPago(
         cambios.estado = "anulada";
         if (insc.cupoReservado) {
           cambios.cupoReservado = false;
-          tx.update(salidaRef, { cuposTomados: FieldValue.increment(-insc.cantidad) });
+          if (salidaSnap.exists) tx.update(salidaRef, cambiosCupos(salidaSnap, insc, -1));
         }
       } else if (insc.estado === "pendiente") {
         cambios.estado = "pendiente";

@@ -73,7 +73,7 @@ export async function crearPago(
   const r = await llamar<{ url: string; token: string; flowOrder: number }>("POST", "/payment/create", {
     // El id de la inscripción es único, así Flow rechaza una orden duplicada.
     commerceOrder: intento ? `${insc.id}.${intento}` : insc.id,
-    subject: `${insc.salidaTitulo} (${insc.cantidad} ${insc.cantidad === 1 ? "niño" : "niños"}) · ${SITIO.nombre}`,
+    subject: `${insc.salidaTitulo}${semanasTexto(insc)} (${insc.cantidad} ${insc.cantidad === 1 ? "niño" : "niños"}) · ${SITIO.nombre}`,
     currency: "CLP",
     amount: insc.total,
     email: insc.apoderado.email,
@@ -100,4 +100,9 @@ export async function obtenerEstado(token: string) {
     /** id de la inscripción (sin el sufijo de reintento) */
     referencia: (r.commerceOrder ?? "").split(".")[0],
   };
+}
+
+function semanasTexto(insc: Inscripcion): string {
+  const n = insc.semanas?.length ?? 0;
+  return n ? `, ${n} ${n === 1 ? "semana" : "semanas"}` : "";
 }

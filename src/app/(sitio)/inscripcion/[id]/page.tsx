@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { IconoCheck, IconoMochila } from "@/components/Iconos";
 import { obtenerInscripcion, obtenerSalida } from "@/lib/data";
 import { ESTADO_FLOW } from "@/lib/flow";
-import { clp, fechaHora, fechaSalida, horaChile } from "@/lib/format";
+import { clp, fechaHora, fechaSalida, horaChile, rangoDias } from "@/lib/format";
 import { BotonImprimir, BotonReintentar, Refrescar } from "./Clientes";
 
 type Props = { params: Promise<{ id: string }> };
@@ -29,6 +29,12 @@ export default async function PaginaEstadoInscripcion({ params }: Props) {
           {fechaSalida(salida)} · {salida.horaInicio} a {salida.horaFin} h
         </div>
       )}
+      {insc.semanas?.length ? (
+        <div className="mt-3 border-t border-white/20 pt-3 text-sm">
+          <span className="text-marca-claro">{insc.semanas.length === 1 ? "Semana:" : "Semanas:"}</span>{" "}
+          {insc.semanas.map((w) => rangoDias(w.inicio, w.fin)).join(" · ")}
+        </div>
+      ) : null}
     </div>
   );
 

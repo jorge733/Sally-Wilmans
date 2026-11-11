@@ -67,3 +67,35 @@ export function fechaSalida(s: { fecha: string; fechaFin?: string | null }, conA
 export function horaChile(ms: number): string {
   return new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: TZ }).format(ms);
 }
+
+/** "2026-12-21", "2026-12-23" -> "21 al 23 de diciembre"; si cruza de mes, "28 de diciembre al 1 de enero". */
+export function rangoDias(inicio: string, fin: string): string {
+  const parte = (f: string) => {
+    const [y, m, d] = f.split("-").map(Number);
+    const mes = new Intl.DateTimeFormat("es-CL", { month: "long", timeZone: "UTC" }).format(
+      new Date(Date.UTC(y, m - 1, d, 12)),
+    );
+    return { d, mes };
+  };
+  const a = parte(inicio);
+  const b = parte(fin);
+  if (inicio === fin) return `${a.d} de ${a.mes}`;
+  return a.mes === b.mes ? `${a.d} al ${b.d} de ${b.mes}` : `${a.d} de ${a.mes} al ${b.d} de ${b.mes}`;
+}
+
+/** Días hábiles (lunes a viernes) entre dos fechas, ambas incluidas. */
+export function diasHabiles(inicio: string, fin: string): number {
+  let n = 0;
+  for (let f = inicio; f <= fin; f = sumarDias(f, 1)) {
+    const dia = new Date(`${f}T12:00:00Z`).getUTCDay();
+    if (dia !== 0 && dia !== 6) n++;
+  }
+  return n;
+}
+
+/** Suma días a una fecha YYYY-MM-DD. */
+export function sumarDias(fecha: string, dias: number): string {
+  const d = new Date(`${fecha}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
+}

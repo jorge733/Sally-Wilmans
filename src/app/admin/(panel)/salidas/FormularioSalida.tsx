@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { clp } from "@/lib/format";
 import type { Salida } from "@/lib/types";
 import { guardarSalida } from "../acciones";
+import { EditorSemanas, type FilaSemana } from "./EditorSemanas";
 
 const VACIA: Partial<Salida> = {
   edadMin: 5,
@@ -20,6 +21,19 @@ export function FormularioSalida({ salida }: { salida?: Salida }) {
   const [estado, accion, guardando] = useActionState(guardarSalida, null);
   const [varios, setVarios] = useState(Boolean(s.fechaFin));
   const [precio, setPrecio] = useState(String(s.precio ?? ""));
+  const [cupos, setCupos] = useState(String(s.cupos ?? ""));
+  const [desde, setDesde] = useState(s.fecha ?? "");
+  const [hasta, setHasta] = useState(s.fechaFin ?? "");
+  const [porSem, setPorSem] = useState(Boolean(s.semanas?.length));
+  const [semanas, setSemanas] = useState<FilaSemana[]>(
+    (s.semanas ?? []).map((w) => ({ ...w, precio: String(w.precio), cupos: String(w.cupos) })),
+  );
+  const conSemanas = varios && porSem;
+  const jsonSemanas = conSemanas
+    ? JSON.stringify(
+        semanas.map(({ id, inicio, fin, precio, cupos }) => ({ id, inicio, fin, precio: Number(precio), cupos: Number(cupos) })),
+      )
+    : "";
 
   return (
     <form action={accion} className="space-y-6">
@@ -62,18 +76,31 @@ export function FormularioSalida({ salida }: { salida?: Salida }) {
       <section className="space-y-4 rounded-2xl bg-white p-6">
         <h2 className="text-lg font-semibold">Fecha y horario</h2>
         <label className="flex items-center gap-2 text-sm font-medium">
-          <input type="checkbox" checked={varios} onChange={(e) => setVarios(e.target.checked)} className="size-4 accent-acento" />
+          <input
+            type="checkbox"
+            checked={varios}
+            disabled={Boolean(salida?.semanas.some((w) => w.cuposTomados > 0))}
+            onChange={(e) => setVarios(e.target.checked)}
+            className="size-4 accent-acento"
+          />
           Dura varios días (por ejemplo, una semana del Club de Verano)
         </label>
         <div className="grid gap-4 sm:grid-cols-4">
           <label className="block">
             <span className="rotulo">{varios ? "Desde" : "Fecha"}</span>
-            <input name="fecha" type="date" required defaultValue={s.fecha} className="campo" />
+            <input name="fecha" type="date" required value={desde} onChange={(e) => setDesde(e.target.value)} className="campo" />
           </label>
           {varios ? (
             <label className="block">
               <span className="rotulo">Hasta</span>
-              <input name="fechaFin" type="date" required defaultValue={s.fechaFin ?? ""} className="campo" />
+              <input
+                name="fechaFin"
+                type="date"
+                required
+                value={hasta}
+                onChange={(e) => setHasta(e.target.value)}
+                className="campo"
+              />
             </label>
           ) : (
             <input type="hidden" name="fechaFin" value="" />
@@ -89,8 +116,43 @@ export function FormularioSalida({ salida }: { salida?: Salida }) {
         </div>
       </section>
 
+      {varios && (
+        <section className="space-y-4 rounded-2xl bg-white p-6">
+          <h2 className="text-lg font-semibold">Inscripción por semanas</h2>
+          <label className="flex items-start gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              name="porSemanas"
+              value="1"
+              checked={porSem}
+              disabled={Boolean(salida?.semanas.some((w) => w.cuposTomados > 0))}
+              onChange={(e) => setPorSem(e.target.checked)}
+              className="mt-0.5 size-4 accent-acento"
+            />
+            <span>
+              Las familias eligen qué semanas toman
+              <span className="block font-normal text-gris">
+                Cada semana se inscribe completa y tiene su propio precio y cupos. Las fechas, el precio «desde» y los
+                cupos totales de la salida salen de las semanas.
+              </span>
+            </span>
+          </label>
+          {conSemanas && (
+            <EditorSemanas
+              filas={semanas}
+              cambiar={setSemanas}
+              desde={desde}
+              hasta={hasta}
+              precioBase={precio}
+              cuposBase={cupos}
+            />
+          )}
+        </section>
+      )}
+      <input type="hidden" name="semanas" value={jsonSemanas} />
+
       <section className="space-y-4 rounded-2xl bg-white p-6">
-        <h2 className="text-lg font-semibold">Edades, cupos y precio</h2>
+        <h2 className="text-lg font-semibold">{conSemanas && semanas.length ? "Edades" : "Edades, cupos y precio"}</h2>
         <div className="grid gap-4 sm:grid-cols-4">
           <label className="block">
             <span className="rotulo">Edad desde</span>
@@ -100,14 +162,23 @@ export function FormularioSalida({ salida }: { salida?: Salida }) {
             <span className="rotulo">Edad hasta</span>
             <input name="edadMax" type="number" min={1} max={18} required defaultValue={s.edadMax} className="campo" />
           </label>
+          {conSemanas && semanas.length ? (
+            <>
+              {/* El servidor los recalcula desde las semanas */}
+              <input type="hidden" name="cupos" value="1" />
+              <input type="hidden" name="precio" value="0" />
+            </>
+          ) : (
+          <>
           <label className="block">
-            <span className="rotulo">Cupos</span>
+            <span className="rotulo">{conSemanas ? "Cupos por semana" : "Cupos"}</span>
             <input
               name="cupos"
               type="number"
               min={Math.max(1, s.cuposTomados ?? 0)}
               required
-              defaultValue={s.cupos}
+              value={cupos}
+              onChange={(e) => setCupos(e.target.value)}
               className="campo"
             />
             {salida && salida.cuposTomados > 0 && (
@@ -115,7 +186,7 @@ export function FormularioSalida({ salida }: { salida?: Salida }) {
             )}
           </label>
           <label className="block">
-            <span className="rotulo">Precio por niño (CLP)</span>
+            <span className="rotulo">{conSemanas ? "Precio por semana (CLP)" : "Precio por niño (CLP)"}</span>
             <input
               name="precio"
               type="number"
@@ -128,6 +199,8 @@ export function FormularioSalida({ salida }: { salida?: Salida }) {
             />
             {precio && <span className="mt-1 block text-xs text-gris">{clp(Number(precio))}</span>}
           </label>
+          </>
+          )}
         </div>
       </section>
 

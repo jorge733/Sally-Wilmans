@@ -18,6 +18,13 @@ export interface Salida {
   precio: number;
   cupos: number;
   cuposTomados: number;
+  /**
+   * Si tiene semanas, la familia elige semanas completas (Club de Verano) y cada una
+   * tiene su precio y sus cupos. En ese caso `precio` es el menor precio, `cupos` y
+   * `cuposTomados` suman los de todas las semanas, y `fecha`/`fechaFin` van de la
+   * primera a la última semana.
+   */
+  semanas: Semana[];
   descripcion: string;
   queLlevar: string[];
   /** Fotos de la salida, en orden. La primera es la portada. */
@@ -29,6 +36,21 @@ export interface Salida {
   creadoEn: number;
   actualizadoEn: number;
 }
+
+export interface Semana {
+  /** Id estable: no cambia si se editan las fechas */
+  id: string;
+  /** YYYY-MM-DD */
+  inicio: string;
+  fin: string;
+  /** Precio por niño de la semana completa, en CLP */
+  precio: number;
+  cupos: number;
+  cuposTomados: number;
+}
+
+/** Copia de la semana al momento de inscribir (fechas y precio pagado). */
+export type SemanaInscrita = Pick<Semana, "id" | "inicio" | "fin" | "precio">;
 
 export interface FotoSalida {
   url: string;
@@ -62,12 +84,15 @@ export interface Inscripcion {
     relacion: string;
   };
   ninos: Nino[];
+  /** Semanas elegidas, en salidas por semanas. Todos los niños van a las mismas. */
+  semanas?: SemanaInscrita[];
   autorizacion: {
     aceptada: boolean;
     texto: string;
     fecha: number;
   };
   cantidad: number;
+  /** Por niño; en salidas por semanas, la suma de las semanas elegidas */
   precioUnitario: number;
   total: number;
   estado: EstadoInscripcion;

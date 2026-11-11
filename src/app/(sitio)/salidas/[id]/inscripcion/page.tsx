@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { obtenerAjustes, obtenerSalida } from "@/lib/data";
-import { cuposLibres, salidaAbierta } from "@/lib/salida-utils";
+import { liberarReservasVencidas } from "@/lib/inscripciones";
+import { cuposLibres, salidaAbierta, semanaAbierta } from "@/lib/salida-utils";
 import { FormularioInscripcion } from "./FormularioInscripcion";
 
 type Props = { params: Promise<{ id: string }> };
@@ -13,7 +14,10 @@ export const metadata: Metadata = { title: "Inscripción", robots: { index: fals
 export const dynamic = "force-dynamic";
 
 export default async function PaginaInscripcion({ params }: Props) {
-  const [salida, ajustes] = await Promise.all([obtenerSalida((await params).id), obtenerAjustes()]);
+  const { id } = await params;
+  // Así un cupo de una reserva que venció sin pagar vuelve a aparecer libre.
+  await liberarReservasVencidas(id).catch((e) => console.error("No se pudieron liberar reservas vencidas", e));
+  const [salida, ajustes] = await Promise.all([obtenerSalida(id), obtenerAjustes()]);
   if (!salida || salida.estado === "borrador") notFound();
 
   return (
@@ -26,6 +30,7 @@ export default async function PaginaInscripcion({ params }: Props) {
           <FormularioInscripcion
             salida={salida}
             maxNinos={Math.min(cuposLibres(salida), 5)}
+            semanasAbiertas={salida.semanas.filter((w) => semanaAbierta(w)).map((w) => w.id)}
             textoAutorizacion={ajustes.textoAutorizacion}
           />
         ) : (

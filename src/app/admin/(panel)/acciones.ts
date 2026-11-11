@@ -8,7 +8,7 @@ import { aSalida } from "@/lib/data";
 import { MAX_FOTOS_SALIDA } from "@/lib/salida-utils";
 import { db } from "@/lib/firebase-admin";
 import { borrarImagen, copiarImagen, subirImagen } from "@/lib/storage";
-import type { FotoSalida } from "@/lib/types";
+import type { FotoSalida, Semana } from "@/lib/types";
 
 export type EstadoFormulario = { error?: string; ok?: string } | null;
 
@@ -34,6 +34,53 @@ const esquemaSalida = z
   })
   .refine((s) => s.edadMin <= s.edadMax, { message: "La edad mínima no puede ser mayor que la máxima" })
   .refine((s) => !s.fechaFin || s.fechaFin >= s.fecha, { message: "La fecha de término es anterior al inicio" });
+
+const esquemaSemanas = z
+  .array(
+    z.object({
+      id: z.string().regex(/^[a-z0-9-]{1,40}$/),
+      inicio: fecha,
+      fin: fecha,
+      precio: z.number().int("El precio va sin decimales").min(0).max(10_000_000),
+      cupos: z.number().int().min(1, "Cada semana debe tener al menos 1 cupo").max(500),
+    }),
+  )
+  .max(30, "Máximo 30 semanas")
+  .refine((ws) => ws.every((w) => w.fin >= w.inicio), { message: "Hay una semana que termina antes de empezar" })
+  .refine((ws) => new Set(ws.map((w) => w.id)).size === ws.length, { message: "Semanas repetidas" })
+  .refine(
+    (ws) => {
+      const orden = [...ws].sort((a, b) => a.inicio.localeCompare(b.inicio));
+      return orden.every((w, i) => i === 0 || w.inicio > orden[i - 1].fin);
+    },
+    { message: "Hay semanas que se cruzan entre sí" },
+  );
+
+/** Lee las semanas del formulario (JSON). Sin semanas = salida normal. */
+function leerSemanas(form: FormData): { semanas: Omit<Semana, "cuposTomados">[] } | { error: string } {
+  const crudo = String(form.get("semanas") ?? "");
+  if (!crudo) return { semanas: [] };
+  let json: unknown;
+  try {
+    json = JSON.parse(crudo);
+  } catch {
+    return { error: "No se pudieron leer las semanas" };
+  }
+  const r = esquemaSemanas.safeParse(json);
+  if (!r.success) return { error: r.error.issues[0]?.message ?? "Revisa las semanas" };
+  return { semanas: [...r.data].sort((a, b) => a.inicio.localeCompare(b.inicio)) };
+}
+
+/** Campos de la salida que salen de sus semanas: fechas, precio "desde" y cupos totales. */
+function resumenSemanas(semanas: Semana[]) {
+  return {
+    semanas,
+    fecha: semanas[0].inicio,
+    fechaFin: semanas[semanas.length - 1].fin,
+    precio: Math.min(...semanas.map((w) => w.precio)),
+    cupos: semanas.reduce((t, w) => t + w.cupos, 0),
+  };
+}
 
 function slug(texto: string): string {
   return texto
@@ -63,9 +110,15 @@ export async function guardarSalida(_: EstadoFormulario, form: FormData): Promis
   const r = esquemaSalida.safeParse(Object.fromEntries(form));
   if (!r.success) return { error: r.error.issues[0]?.message ?? "Revisa los datos" };
   const s = r.data;
+  const leidas = leerSemanas(form);
+  if ("error" in leidas) return { error: leidas.error };
+  if (form.get("porSemanas") === "1" && s.fechaFin && !leidas.semanas.length) {
+    return { error: "Agrega al menos una semana, o desmarca la inscripción por semanas." };
+  }
   const datos = {
     ...s,
     fechaFin: s.fechaFin || null,
+    semanas: [] as Semana[],
     queLlevar: s.queLlevar
       .split("\n")
       .map((x) => x.replace(/^[-•*]\s*/, "").trim())
@@ -78,7 +131,23 @@ export async function guardarSalida(_: EstadoFormulario, form: FormData): Promis
     const error = await db.runTransaction(async (tx) => {
       const actual = await tx.get(ref);
       if (!actual.exists) return "La salida ya no existe";
-      const tomados = aSalida(actual).cuposTomados;
+      const previa = aSalida(actual);
+      if (leidas.semanas.length || previa.semanas.length) {
+        // Los cupos tomados de cada semana los lleva el servidor; del formulario solo vienen fechas, precio y cupos.
+        const antes = new Map(previa.semanas.map((w) => [w.id, w]));
+        if (!previa.semanas.length && previa.cuposTomados > 0) {
+          return "Esta salida ya tiene inscritos, así que no se puede pasar a inscripción por semanas.";
+        }
+        const semanas = leidas.semanas.map((w) => ({ ...w, cuposTomados: antes.get(w.id)?.cuposTomados ?? 0 }));
+        const sobra = semanas.find((w) => w.cupos < w.cuposTomados);
+        if (sobra) return `La semana que parte el ${sobra.inicio} ya tiene ${sobra.cuposTomados} inscritos: no puedes dejarle menos cupos.`;
+        const quitada = previa.semanas.find((w) => w.cuposTomados > 0 && !semanas.some((n) => n.id === w.id));
+        if (quitada) return `La semana que parte el ${quitada.inicio} tiene inscritos, así que no se puede quitar.`;
+        if (semanas.length) Object.assign(datos, resumenSemanas(semanas));
+        tx.update(ref, { ...datos, cuposTomados: semanas.reduce((t, w) => t + w.cuposTomados, 0) });
+        return null;
+      }
+      const tomados = previa.cuposTomados;
       if (datos.cupos < tomados) return `Ya hay ${tomados} cupos tomados: no puedes dejar menos que eso.`;
       tx.update(ref, datos);
       return null;
@@ -88,7 +157,8 @@ export async function guardarSalida(_: EstadoFormulario, form: FormData): Promis
     return { ok: "Cambios guardados" };
   }
 
-  const nuevo = await idDisponible(`${slug(s.titulo)}-${s.fecha}`);
+  if (leidas.semanas.length) Object.assign(datos, resumenSemanas(leidas.semanas.map((w) => ({ ...w, cuposTomados: 0 }))));
+  const nuevo = await idDisponible(`${slug(datos.titulo)}-${datos.fecha}`);
   await db
     .collection("salidas")
     .doc(nuevo)
@@ -118,6 +188,7 @@ export async function duplicarSalida(id: string): Promise<void> {
       titulo: `${s.titulo} (copia)`,
       estado: "borrador",
       cuposTomados: 0,
+      semanas: s.semanas.map((w) => ({ ...w, cuposTomados: 0 })),
       creadoEn: Date.now(),
       actualizadoEn: Date.now(),
     });

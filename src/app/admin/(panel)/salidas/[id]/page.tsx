@@ -23,7 +23,7 @@ export default async function EditarSalida({ params, searchParams }: Props) {
         <h1 className="text-3xl font-semibold text-marca">{salida.titulo}</h1>
         <div className="flex flex-wrap gap-2">
           <Link href={`/admin/salidas/${id}/inscritos`} className="btn btn-secundario px-4 py-2 text-sm text-marca">
-            Inscritos ({salida.cuposTomados})
+            {salida.semanas.length ? "Inscritos" : `Inscritos (${salida.cuposTomados})`}
           </Link>
           {salida.estado !== "borrador" && (
             <Link href={`/salidas/${id}`} target="_blank" className="btn btn-secundario px-4 py-2 text-sm text-marca">

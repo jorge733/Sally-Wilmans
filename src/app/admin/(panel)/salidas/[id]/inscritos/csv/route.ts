@@ -1,5 +1,6 @@
 import { haySesion } from "@/lib/auth";
 import { inscripcionesDeSalida, obtenerSalida } from "@/lib/data";
+import { rangoDias } from "@/lib/format";
 
 const celda = (v: unknown) => {
   const s = String(v ?? "");
@@ -14,14 +15,23 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const [salida, inscripciones] = await Promise.all([obtenerSalida(id), inscripcionesDeSalida(id)]);
   if (!salida) return new Response("No existe", { status: 404 });
 
+  const conSemanas = salida.semanas.length > 0;
+  // Una columna por semana (con una X si va), para poder filtrar en Excel.
+  const columnasSemanas = salida.semanas.map((w) => `Semana ${rangoDias(w.inicio, w.fin)}`);
   const filas = [
-    ["Niño", "Edad", "Salud", "Apoderado", "RUT", "Teléfono", "Correo", "Emergencia", "Relación", "Tel. emergencia", "N.º inscripción"],
+    ["Niño", "Edad", ...(conSemanas ? ["Semanas", ...columnasSemanas] : []), "Salud", "Apoderado", "RUT", "Teléfono", "Correo", "Emergencia", "Relación", "Tel. emergencia", "N.º inscripción"],
   ];
   for (const i of inscripciones.filter((x) => x.estado === "pagada")) {
     for (const n of i.ninos) {
       filas.push([
         n.nombre,
         String(n.edad),
+        ...(conSemanas
+          ? [
+              String(i.semanas?.length ?? 0),
+              ...salida.semanas.map((w) => (i.semanas?.some((x) => x.id === w.id) ? "X" : "")),
+            ]
+          : []),
         n.salud,
         i.apoderado.nombre,
         i.apoderado.rut,

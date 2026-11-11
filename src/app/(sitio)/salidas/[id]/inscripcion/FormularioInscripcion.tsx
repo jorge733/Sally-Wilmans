@@ -3,9 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { IconoFlecha } from "@/components/Iconos";
-import { clp, edades, fechaSalida } from "@/lib/format";
+import { clp, edades, fechaSalida, rangoDias } from "@/lib/format";
+import { libresSemana } from "@/lib/salida-utils";
 import type { Nino, Salida } from "@/lib/types";
 import { iniciarInscripcion, simularPago } from "./acciones";
+import { SelectorSemanas } from "./SelectorSemanas";
 
 /** "pago" solo se usa con el pago simulado de desarrollo; en el sitio real se va directo a Flow. */
 type Paso = "ficha" | "pago";
@@ -14,11 +16,14 @@ const ninoVacio = (): Nino => ({ nombre: "", edad: 0, salud: "" });
 
 export function FormularioInscripcion({
   salida,
-  maxNinos,
+  maxNinos: maxNinosSalida,
+  semanasAbiertas,
   textoAutorizacion,
 }: {
   salida: Salida;
   maxNinos: number;
+  /** Ids de las semanas que todavía reciben inscripciones (salidas por semanas) */
+  semanasAbiertas: string[];
   textoAutorizacion: string;
 }) {
   const [paso, setPaso] = useState<Paso>("ficha");
@@ -29,9 +34,23 @@ export function FormularioInscripcion({
   const [error, setError] = useState("");
   const [procesando, setProcesando] = useState(false);
   const [inscripcionId, setInscripcionId] = useState("");
+  const [elegidas, setElegidas] = useState<string[]>([]);
   const router = useRouter();
 
-  const total = salida.precio * ninos.length;
+  const conSemanas = salida.semanas.length > 0;
+  // En el orden del calendario, aunque se hayan elegido en otro orden.
+  const semanasElegidas = salida.semanas.filter((w) => elegidas.includes(w.id));
+  const precioNino = conSemanas ? semanasElegidas.reduce((t, w) => t + w.precio, 0) : salida.precio;
+  const total = precioNino * ninos.length;
+  // No se pueden agregar más niños de los que caben en la semana más llena de las elegidas.
+  const maxNinos = semanasElegidas.length
+    ? Math.min(maxNinosSalida, ...semanasElegidas.map(libresSemana))
+    : maxNinosSalida;
+  const detallePrecio = conSemanas
+    ? semanasElegidas.length === 0
+      ? "Elige al menos una semana"
+      : `${ninos.length} ${ninos.length === 1 ? "niño" : "niños"} × ${semanasElegidas.length} ${semanasElegidas.length === 1 ? "semana" : "semanas"}`
+    : `${ninos.length} × ${clp(salida.precio)}`;
 
   function cambiarNino(i: number, campo: keyof Nino, valor: string) {
     setNinos((prev) =>
@@ -41,6 +60,11 @@ export function FormularioInscripcion({
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
+    if (conSemanas && semanasElegidas.length === 0) {
+      setError("Elige al menos una semana del club.");
+      document.getElementById("semanas")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     const fueraDeRango = ninos.find((n) => n.edad < salida.edadMin || n.edad > salida.edadMax);
     if (fueraDeRango) {
       setError(
@@ -51,7 +75,14 @@ export function FormularioInscripcion({
     setError("");
     setProcesando(true);
     try {
-      const r = await iniciarInscripcion({ salidaId: salida.id, ninos, apoderado, emergencia, autoriza });
+      const r = await iniciarInscripcion({
+        salidaId: salida.id,
+        semanas: semanasElegidas.map((w) => w.id),
+        ninos,
+        apoderado,
+        emergencia,
+        autoriza,
+      });
       if (!r.ok) {
         setError(r.error);
         setProcesando(false);
@@ -110,6 +141,9 @@ export function FormularioInscripcion({
               <div className="flex justify-between p-4 text-sm">
                 <span>
                   {salida.titulo} × {ninos.length}
+                  {conSemanas && (
+                    <span className="block text-gris">{semanasElegidas.map((w) => rangoDias(w.inicio, w.fin)).join(" · ")}</span>
+                  )}
                 </span>
                 <span>{clp(total)}</span>
               </div>
@@ -140,6 +174,26 @@ export function FormularioInscripcion({
     <form onSubmit={enviar} className="mt-6 space-y-6">
       {resumen}
       <h1 className="text-3xl font-semibold text-marca">Ficha de inscripción</h1>
+
+      {conSemanas && (
+        <fieldset id="semanas" className="scroll-mt-24 rounded-2xl bg-white p-6">
+          <legend className="float-left mb-1 w-full text-lg font-semibold">¿Qué semanas vienen?</legend>
+          <p className="clear-both mb-5 text-sm text-gris">
+            Toca cada semana que quieras tomar. Se inscriben completas y el precio es por niño.
+            {ninos.length > 1 && " Todos los niños van a las mismas semanas."}
+          </p>
+          <SelectorSemanas
+            semanas={salida.semanas}
+            abiertas={semanasAbiertas}
+            elegidas={elegidas}
+            cambiar={(ids) => {
+              setElegidas(ids);
+              setError("");
+            }}
+            ninos={ninos.length}
+          />
+        </fieldset>
+      )}
 
       <fieldset className="space-y-4 rounded-2xl bg-white p-6">
         <legend className="float-left mb-2 w-full text-lg font-semibold">
@@ -316,9 +370,7 @@ export function FormularioInscripcion({
 
       <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-between gap-4 border-t border-linea bg-white/95 px-4 py-4 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border-0 sm:px-6">
         <div>
-          <div className="text-xs text-gris">
-            {ninos.length} × {clp(salida.precio)}
-          </div>
+          <div className="text-xs text-gris">{detallePrecio}</div>
           <div className="text-2xl font-bold">{clp(total)}</div>
         </div>
         <button type="submit" disabled={procesando} className="btn btn-primario disabled:opacity-70">
