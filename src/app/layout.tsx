@@ -12,11 +12,18 @@ export const metadata: Metadata = {
   metadataBase: new URL(urlSitio()),
   title: { default: `${SITIO.nombre} · ${SITIO.bajada}`, template: `%s · ${SITIO.nombre}` },
   description: SITIO.descripcion,
+  applicationName: SITIO.nombre,
+  keywords: ["salidas al cerro", "niños", "senderismo", "naturaleza", "Waldorf", "Santiago", "club de verano"],
   openGraph: {
     type: "website",
     locale: "es_CL",
     siteName: SITIO.nombre,
-    title: SITIO.nombre,
+    title: `${SITIO.nombre} · ${SITIO.bajada}`,
+    description: SITIO.descripcion,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITIO.nombre} · ${SITIO.bajada}`,
     description: SITIO.descripcion,
   },
 };

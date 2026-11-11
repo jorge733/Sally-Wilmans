@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import fotoCaminata from "@/assets/galeria-caminata.jpg";
@@ -61,6 +62,8 @@ function Hoja({ className = "" }: { className?: string }) {
 const retraso = (ms: number) => ({ "--retraso": `${ms}ms` }) as React.CSSProperties;
 
 /** Se regenera cada minuto para mostrar fechas y cupos al día. */
+export const metadata: Metadata = { alternates: { canonical: "/" } };
+
 export const revalidate = 60;
 
 export default async function Inicio() {

@@ -16,6 +16,7 @@ import { EstadoCupos } from "@/components/TarjetaSalida";
 import { obtenerAjustes, obtenerSalida } from "@/lib/data";
 import { clp, edades, fechaSalida, linkWhatsapp } from "@/lib/format";
 import { salidaAbierta, varianteDe } from "@/lib/salida-utils";
+import { SITIO } from "@/lib/site";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -26,12 +27,21 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const s = await obtenerSalida((await params).id);
+  const { id } = await params;
+  const s = await obtenerSalida(id);
   if (!s || s.estado === "borrador") return {};
+  const fecha = fechaSalida(s);
+  const resumen = `${fecha.charAt(0).toUpperCase() + fecha.slice(1)} · ${s.lugar} · ${edades(s.edadMin, s.edadMax)}.`;
+  const texto = `${resumen} ${s.descripcion}`.replace(/\s+/g, " ").trim();
+  const description = texto.length > 200 ? `${texto.slice(0, 197).replace(/\s+\S*$/, "")}…` : texto;
+  const url = `/salidas/${id}`;
+  // La imagen la arma opengraph-image.tsx (foto de la salida + fecha, lugar y cupos).
   return {
     title: s.titulo,
-    description: `${fechaSalida(s)} · ${s.lugar}. ${s.descripcion}`,
-    ...(s.fotoUrl ? { openGraph: { images: [s.fotoUrl] } } : {}),
+    description,
+    alternates: { canonical: url },
+    openGraph: { type: "website", locale: "es_CL", siteName: SITIO.nombre, title: s.titulo, description, url },
+    twitter: { card: "summary_large_image", title: s.titulo, description },
   };
 }
 
