@@ -3,6 +3,7 @@ import { obtenerSalida } from "@/lib/data";
 import { clp, edades, fechaSalida } from "@/lib/format";
 import {
   COLORES,
+  comoJpeg,
   FondoCerros,
   FondoFoto,
   Logo,
@@ -42,7 +43,7 @@ export default async function ImagenSalida({
 
   const fonts = await fuentesOg(titulo + fecha + detalle + (etiqueta ?? ""));
 
-  return new ImageResponse(
+  const imagen = new ImageResponse(
     <div
       style={{
         position: "relative",
@@ -129,4 +130,5 @@ export default async function ImagenSalida({
     </div>,
     { ...size, fonts },
   );
+  return comoJpeg(imagen);
 }

@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import {
   COLORES,
+  comoJpeg,
   FondoFoto,
   Logo,
   OG_TAMANO,
@@ -23,7 +24,7 @@ export default async function ImagenSitio() {
     fuentesOg(TITULO + BAJADA + PILARES.join("") + "clubdelamontana"),
   ]);
 
-  return new ImageResponse(
+  const imagen = new ImageResponse(
     <div
       style={{
         position: "relative",
@@ -97,4 +98,5 @@ export default async function ImagenSitio() {
     </div>,
     { ...size, fonts },
   );
+  return comoJpeg(imagen);
 }

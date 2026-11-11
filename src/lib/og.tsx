@@ -4,10 +4,28 @@
  */
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { ImageResponse } from "next/og";
+import sharp from "sharp";
 import { SITIO } from "@/lib/site";
 
 export const OG_TAMANO = { width: 1200, height: 630 };
-export const OG_TIPO = "image/png";
+export const OG_TIPO = "image/jpeg";
+
+/**
+ * Pasa la imagen a JPEG: con foto de fondo, el PNG pesa más de 1 MB y WhatsApp
+ * a veces no muestra la vista previa. En JPEG queda en unos 100 a 200 KB.
+ */
+export async function comoJpeg(imagen: ImageResponse): Promise<Response> {
+  const png = Buffer.from(await imagen.arrayBuffer());
+  const jpg = await sharp(png).jpeg({ quality: 82, mozjpeg: true }).toBuffer();
+  return new Response(new Uint8Array(jpg), {
+    headers: {
+      "content-type": OG_TIPO,
+      "cache-control":
+        imagen.headers.get("cache-control") ?? "public, max-age=3600",
+    },
+  });
+}
 
 export const COLORES = {
   tinta: "#23291f",
@@ -82,9 +100,23 @@ export function Logo({ tamano = 64 }: { tamano?: number }) {
 /** Foto de fondo a todo el ancho con un degradado oscuro abajo para que el texto se lea. */
 export function FondoFoto({ src }: { src: string }) {
   return (
-    <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", display: "flex" }}>
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        display: "flex",
+      }}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-      <img src={src} width={OG_TAMANO.width} height={OG_TAMANO.height} style={{ objectFit: "cover" }} />
+      <img
+        src={src}
+        width={OG_TAMANO.width}
+        height={OG_TAMANO.height}
+        style={{ objectFit: "cover" }}
+      />
       <div
         style={{
           position: "absolute",
