@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Amatic_SC, Fraunces, Inter } from "next/font/google";
-import { SITIO, urlSitio } from "@/lib/site";
+import { OG_BASE, SITIO, urlSitio } from "@/lib/site";
 
 import "./globals.css";
 
@@ -14,13 +14,7 @@ export const metadata: Metadata = {
   description: SITIO.descripcion,
   applicationName: SITIO.nombre,
   keywords: ["salidas al cerro", "niños", "senderismo", "naturaleza", "Waldorf", "Santiago", "club de verano"],
-  openGraph: {
-    type: "website",
-    locale: "es_CL",
-    siteName: SITIO.nombre,
-    title: `${SITIO.nombre} · ${SITIO.bajada}`,
-    description: SITIO.descripcion,
-  },
+  openGraph: OG_BASE,
   twitter: {
     card: "summary_large_image",
     title: `${SITIO.nombre} · ${SITIO.bajada}`,

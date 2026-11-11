@@ -15,6 +15,18 @@ export const SITIO = {
   edades: "5 a 12 años",
 };
 
+/**
+ * Open Graph común. Next reemplaza el bloque openGraph entero cuando una página
+ * define el suyo, así que cada página parte de esta base y agrega lo propio.
+ */
+export const OG_BASE = {
+  type: "website",
+  locale: "es_CL",
+  siteName: SITIO.nombre,
+  title: `${SITIO.nombre} · ${SITIO.bajada}`,
+  description: SITIO.descripcion,
+} as const;
+
 /** Los cuatro pilares que aparecen en los afiches del club. */
 export const PILARES = ["Naturaleza", "Senderismo", "Juego libre", "Vida sana"];
 

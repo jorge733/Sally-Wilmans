@@ -16,7 +16,7 @@ import { EstadoCupos } from "@/components/TarjetaSalida";
 import { obtenerAjustes, obtenerSalida } from "@/lib/data";
 import { clp, edades, fechaSalida, linkWhatsapp } from "@/lib/format";
 import { salidaAbierta, varianteDe } from "@/lib/salida-utils";
-import { SITIO } from "@/lib/site";
+import { OG_BASE } from "@/lib/site";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: s.titulo,
     description,
     alternates: { canonical: url },
-    openGraph: { type: "website", locale: "es_CL", siteName: SITIO.nombre, title: s.titulo, description, url },
+    openGraph: { ...OG_BASE, title: s.titulo, description, url },
     twitter: { card: "summary_large_image", title: s.titulo, description },
   };
 }
