@@ -1,35 +1,39 @@
 import "server-only";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { obtenerAjustes } from "./data";
 import { clp, edades, fechaSalida } from "./format";
 import { SITIO } from "./site";
 import type { Inscripcion, Salida } from "./types";
 
-function transporte() {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return null;
-  const port = Number(SMTP_PORT || 465);
-  return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port,
-    secure: port === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-  });
+let cliente: Resend | null | undefined;
+function resend(): Resend | null {
+  if (cliente === undefined) cliente = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+  return cliente;
 }
 
-async function enviar(para: string, asunto: string, html: string, replyTo?: string) {
-  const t = transporte();
-  if (!t) {
-    console.info(`[correo sin SMTP] Para: ${para} · ${asunto}`);
+/**
+ * Envía un correo con Resend. `clave` evita duplicados: si Flow avisa dos veces o
+ * se reintenta tras un error, Resend no vuelve a mandar el mismo correo (24 h).
+ */
+async function enviar(para: string, asunto: string, html: string, clave: string, replyTo?: string) {
+  const r = resend();
+  if (!r) {
+    console.info(`[correo sin RESEND_API_KEY] Para: ${para} · ${asunto}`);
     return;
   }
-  await t.sendMail({
-    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
-    to: para,
-    subject: asunto,
-    html,
-    replyTo,
-  });
+  const { error } = await r.emails.send(
+    {
+      from: process.env.EMAIL_FROM || `${SITIO.nombre} <onboarding@resend.dev>`,
+      to: para,
+      subject: asunto,
+      html,
+      replyTo,
+    },
+    { idempotencyKey: clave },
+  );
+  // Misma clave con otro contenido (p. ej. cambió el conteo de cupos): ese correo ya salió antes.
+  if (error?.name === "invalid_idempotent_request") return;
+  if (error) throw new Error(`Resend: ${error.name} · ${error.message}`);
 }
 
 const esc = (s: string) =>
@@ -102,7 +106,7 @@ export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida)
 
   const avisoA = process.env.ADMIN_NOTIFY_EMAIL || ajustes.email;
   await Promise.all([
-    enviar(insc.apoderado.email, `Inscripción confirmada: ${salida.titulo}`, apoderado, ajustes.email || undefined),
-    avisoA ? enviar(avisoA, `Nueva inscripción: ${salida.titulo} (${insc.cantidad})`, aviso, insc.apoderado.email) : null,
+    enviar(insc.apoderado.email, `Inscripción confirmada: ${salida.titulo}`, apoderado, `insc-${insc.id}-apoderado`, ajustes.email || undefined),
+    avisoA ? enviar(avisoA, `Nueva inscripción: ${salida.titulo} (${insc.cantidad})`, aviso, `insc-${insc.id}-aviso`, insc.apoderado.email) : null,
   ]);
 }

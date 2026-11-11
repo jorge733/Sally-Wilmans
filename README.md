@@ -2,7 +2,7 @@
 
 Sitio web del Club de la Montaña (Sally Willmans): las familias ven las próximas salidas, inscriben a sus hijos y pagan en línea con Flow. Sally administra todo desde su propio panel.
 
-**Stack:** Next.js (Vercel) · Firebase (Firestore, Auth, Storage) · Flow (flow.cl) · correos por SMTP.
+**Stack:** Next.js (Vercel) · Firebase (Firestore, Auth, Storage) · Flow (flow.cl) · correos con Resend.
 
 ## Estado
 
