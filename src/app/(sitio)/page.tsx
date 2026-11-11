@@ -132,7 +132,7 @@ export default async function Inicio() {
               <h2 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">Próximas fechas</h2>
             </div>
             <p className="max-w-md text-gris">
-              Salidas de sábado en la mañana y nuestro Club de Verano en enero. Los cupos son limitados y la
+              Salidas de sábado en la mañana y nuestro Club de Verano en diciembre y enero. Los cupos son limitados y la
               inscripción se cierra sola cuando se llenan.
             </p>
           </div>
@@ -203,7 +203,7 @@ export default async function Inicio() {
             <div className="absolute inset-0 -z-10 hidden bg-gradient-to-r from-acento via-acento/90 to-transparent md:block" />
             <p className="mano text-3xl text-[#fde3c3]">Club de Verano</p>
             <h2 className="mt-1 max-w-lg text-3xl font-semibold sm:text-4xl">
-              Las últimas tres semanas de enero, en la montaña
+              Del 9 al 30 de diciembre y del 4 al 29 de enero, en la Quebrada de Macul
             </h2>
             <p className="mt-4 max-w-lg text-white/90">
               De lunes a viernes, de 9:00 a 13:00. Una semana completa de naturaleza, talleres y juego libre.
