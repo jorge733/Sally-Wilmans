@@ -6,33 +6,56 @@ Sitio web del Club de la Montaña (Sally Willmans): las familias ven las próxim
 
 ## Estado
 
-**Etapa 1: prototipo (actual).** El sitio público funciona con datos de ejemplo (`src/lib/demo.ts`) y el pago está simulado. Sirve para revisar diseño y textos con Sally.
+El sitio público y el panel funcionan con datos reales en Firestore. Lo que queda está en **Pendiente**.
 
-- Inicio: portada, próximas salidas, cómo funciona, quiénes somos, cuidados, galería, preguntas y contacto
-- Detalle de cada salida: fecha, lugar, edades, horario, qué llevar, precio y cupos
-- Ficha de inscripción: datos de cada niño, salud, apoderado, contacto de emergencia y autorización
-- Pago simulado y comprobante
-- Botón de WhatsApp
+**Sitio público**
 
-**Siguientes etapas:**
+- Inicio: portada, próximas salidas, cómo funciona, quiénes somos, cuidados, galería, preguntas y contacto. Textos y fotos se editan desde el panel.
+- Detalle de cada salida: fecha, lugar, edades, horario, qué llevar, precio, cupos y fotos de la salida.
+- Ficha de inscripción: datos de cada niño, salud, apoderado, contacto de emergencia y autorización.
+- Club de Verano por semanas: la familia elige semanas completas (y días sueltos si la salida tiene precio por día); los cupos se cuentan por día.
+- Pago con Flow, comprobante en `/inscripcion/[id]` y reintento si el pago falla.
+- Encuesta para jóvenes de 13 a 16 años en `/encuesta` (juegos, actividades, temas y formatos). Se puede destacar con un aviso en el inicio desde el panel.
+- Imágenes para compartir (WhatsApp, Instagram) del sitio, de cada salida y de la encuesta (`opengraph-image.tsx`).
+- Animaciones al hacer scroll, favicon y botón de WhatsApp.
 
-1. Conectar Firebase: las salidas, inscripciones y ajustes salen de Firestore (`src/lib/data.ts`, `src/lib/inscripciones.ts` ya están escritos). Listo: el sitio público lee de Firestore
-2. Pago real con Flow (`src/lib/flow.ts`). Listo en el código: falta cargar `FLOW_API_KEY` y `FLOW_SECRET_KEY` en Vercel y hacer una compra de prueba en sandbox.flow.cl
-3. Avisos por correo (`src/lib/email.ts`)
-4. Contenido real, dominio y SEO
-5. Panel de Sally: ya funciona en `/admin` (salidas, inscritos, ajustes). Falta la subida de fotos (necesita Storage con plan Blaze)
+**Correos (Resend)**
+
+- Al pagar: confirmación al apoderado y aviso a `ADMIN_NOTIFY_EMAIL`. Cada correo sale una sola vez aunque Flow avise dos veces.
+- Cada respuesta de la encuesta llega también por correo.
+- Sin `RESEND_API_KEY` los correos solo se anotan en la consola.
+
+**Pendiente**
+
+1. Pago real: cargar `FLOW_API_KEY` y `FLOW_SECRET_KEY` de Sally en Vercel y hacer una compra de prueba en sandbox.flow.cl.
+2. Verificar el dominio del remitente en Resend.
+3. Dominio propio y SEO final.
+
+## Panel (/admin)
+
+- **Salidas**: crear, editar, duplicar y borrar salidas; armar las semanas del Club de Verano; subir fotos de cada salida.
+- **Inscritos**: fichas de cada salida, para imprimir o descargar en planilla (CSV).
+- **Encuesta**: resumen de respuestas y borrar las que no sirvan.
+- **Contenido**: textos de la página de inicio y fotos (portada, quiénes somos y galería, con formato normal, ancha, alta o grande). Lo que no se edite usa los textos de `src/lib/site.ts`.
+- **Ajustes**: contacto y texto de autorización.
+
+Acceso:
+
+- Se entra con una sola clave, guardada en Vercel como `ADMIN_PASSWORD` (variable secreta).
+- La sesión dura 7 días, en una cookie firmada con `SESSION_SECRET`. Si cambias `SESSION_SECRET`, se cierran todas las sesiones.
+- Para cambiar la clave: Vercel → Settings → Environment Variables → `ADMIN_PASSWORD`, y volver a publicar.
 
 ## Firebase
 
 - Proyecto: `clubdelamontana-chile` (consola: https://console.firebase.google.com/project/clubdelamontana-chile)
 - Firestore en `southamerica-west1` (Santiago). Las reglas bloquean el acceso desde el navegador; todo pasa por el servidor con `firebase-admin`.
 - Las credenciales del servidor están como variables de entorno en Vercel (`FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, etc.).
-- Pendiente: el plan Blaze para Storage (fotos).
+- Storage guarda las fotos que se suben desde el panel (carpeta `public/`, solo lectura para el público; `storage.rules`). Las fotos se achican en el navegador (lado mayor 1920 px) antes de subirse.
 
 Publicar reglas:
 
 ```bash
-firebase deploy --only firestore:rules,firestore:indexes
+firebase deploy --only firestore:rules,firestore:indexes,storage
 ```
 
 Emuladores locales (sin tocar datos reales):
@@ -52,13 +75,6 @@ Para probar con dinero ficticio: crea una cuenta en https://sandbox.flow.cl, usa
 
 Si corres un segundo servidor de desarrollo en la misma carpeta (por ejemplo, desde otra sesión), usa la configuración `web-aparte` de `.claude/launch.json`: compila en `.next-aparte` en el puerto 3005 para no pisar la carpeta `.next`.
 
-## Panel (/admin)
-
-- Se entra con una sola clave, guardada en Vercel como `ADMIN_PASSWORD` (variable secreta).
-- La sesión dura 7 días, en una cookie firmada con `SESSION_SECRET`. Si cambias `SESSION_SECRET`, se cierran todas las sesiones.
-- Para cambiar la clave: Vercel → Settings → Environment Variables → `ADMIN_PASSWORD`, y volver a publicar.
-- Desde el panel se crean, editan, duplican y borran salidas, se ven los inscritos con sus fichas (imprimir o descargar planilla) y se cambian el contacto y el texto de autorización.
-
 ## Desarrollo
 
 ```bash
@@ -67,3 +83,11 @@ npm run dev
 ```
 
 Abre http://localhost:3000. Las variables de entorno están descritas en `.env.example`.
+
+Para cargar salidas desde un JSON (por ejemplo `scripts/datos-ejemplo.json`):
+
+```bash
+npm run cargar -- --emulador scripts/datos-ejemplo.json
+```
+
+En `logo/` están los logos del club y en `redes/` el material para anunciar el sitio en Instagram.
