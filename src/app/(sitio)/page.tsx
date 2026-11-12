@@ -1,16 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import fotoCaminata from "@/assets/galeria-caminata.jpg";
-import fotoCerro from "@/assets/galeria-cerro.jpg";
-import fotoCharla from "@/assets/galeria-charla.jpg";
-import fotoLlegada from "@/assets/galeria-llegada.jpg";
-import fotoPasarela from "@/assets/galeria-pasarela.jpg";
-import fotoRio from "@/assets/galeria-rio.jpg";
-import fotoSendero from "@/assets/galeria-sendero.jpg";
-import fotoEquipo from "@/assets/nosotros-equipo.jpg";
-import fotoGrupal from "@/assets/portada-club.jpg";
-import fotoPortada from "@/assets/portada-puente.jpg";
 import {
   IconoCorazon,
   IconoCorreo,
@@ -24,7 +14,8 @@ import {
 import { Paisaje } from "@/components/Paisaje";
 import { TarjetaSalida } from "@/components/TarjetaSalida";
 import { varianteDe } from "@/lib/salida-utils";
-import { obtenerAjustes, obtenerContenido, salidasPublicas } from "@/lib/data";
+import { obtenerAjustes, obtenerContenido, obtenerFotosSitio, salidasPublicas } from "@/lib/data";
+import { FOTOS_INCLUIDAS, type FotoSitio } from "@/lib/fotos-sitio";
 import { linkWhatsapp } from "@/lib/format";
 import { OG_BASE, SITIO } from "@/lib/site";
 
@@ -41,49 +32,6 @@ const FORMATOS_GALERIA = {
   vertical: { clase: "row-span-2", sizes: "(min-width: 768px) 280px, 50vw" },
 };
 
-/** Fotos de la galería, en orden. Los formatos deben llenar filas completas de cuatro columnas. */
-const GALERIA = [
-  {
-    src: fotoGrupal,
-    formato: "grande",
-    alt: "Foto grupal de niños, niñas y monitores del club sentados en un claro del sendero",
-  },
-  {
-    src: fotoPasarela,
-    formato: "normal",
-    alt: "Niños y niñas del club en fila sobre una pasarela de madera junto a una monitora",
-  },
-  {
-    src: fotoCharla,
-    formato: "normal",
-    alt: "Grupo con mochilas escuchando a los monitores antes de partir la caminata",
-  },
-  {
-    src: fotoLlegada,
-    formato: "ancha",
-    alt: "Llegada del grupo al inicio del sendero, rodeado de árboles",
-  },
-  {
-    src: fotoSendero,
-    formato: "vertical",
-    alt: "Niños y niñas con mochilas subiendo en fila por un sendero de cerro, con la cordillera al fondo",
-  },
-  {
-    src: fotoRio,
-    formato: "vertical",
-    alt: "Niños jugando en un estero y armando torres de piedras",
-  },
-  {
-    src: fotoCerro,
-    formato: "vertical",
-    alt: "Grupo caminando entre rocas y cactus en un cerro, con la ciudad a lo lejos",
-  },
-  {
-    src: fotoCaminata,
-    formato: "vertical",
-    alt: "Monitora caminando junto a niños y niñas de la mano por un camino de tierra",
-  },
-] as const;
 
 function Hoja({ className = "" }: { className?: string }) {
   return (
@@ -97,6 +45,43 @@ function Hoja({ className = "" }: { className?: string }) {
     >
       <path d="M12 21c0-7 0-11 0-17M12 9c-3-1-5-3-5.5-5.5C9.5 4 11.5 6 12 9Zm0 4c3-1 5-3 5.5-5.5-3 .5-5 2.5-5.5 5.5Zm0 4c-3-1-5-3-5.5-5.5C9.5 12 11.5 14 12 17Z" />
     </svg>
+  );
+}
+
+/** Foto de la página: las incluidas van optimizadas por Next; las subidas, tal cual (ya vienen achicadas). */
+function Foto({
+  foto,
+  sizes,
+  className,
+  priority,
+}: {
+  foto: FotoSitio;
+  sizes: string;
+  className?: string;
+  priority?: boolean;
+}) {
+  const incluida = foto.clave ? FOTOS_INCLUIDAS[foto.clave] : undefined;
+  if (incluida) {
+    return (
+      <Image
+        src={incluida}
+        alt={foto.alt}
+        priority={priority}
+        placeholder="blur"
+        sizes={sizes}
+        className={className}
+      />
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={foto.url}
+      alt={foto.alt}
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : undefined}
+      className={className}
+    />
   );
 }
 
@@ -139,10 +124,11 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function Inicio() {
-  const [salidas, ajustes, c] = await Promise.all([
+  const [salidas, ajustes, c, fotos] = await Promise.all([
     salidasPublicas(),
     obtenerAjustes(),
     obtenerContenido(),
+    obtenerFotosSitio(),
   ]);
 
   return (
@@ -210,11 +196,9 @@ export default async function Inicio() {
           </div>
           <figure className="entrada-foto relative">
             <div className="overflow-hidden rounded-3xl shadow-2xl shadow-black/30 ring-4 ring-white/10">
-              <Image
-                src={fotoPortada}
-                alt="Niños, niñas y monitores del Club de la Montaña saludando felices junto a un puente del sendero"
+              <Foto
+                foto={fotos.portada}
                 priority
-                placeholder="blur"
                 sizes="(min-width: 1024px) 560px, 100vw"
                 className="h-auto w-full"
               />
@@ -307,10 +291,8 @@ export default async function Inicio() {
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 md:grid-cols-2">
           <div data-revelar="izquierda" className="relative">
             <div className="overflow-hidden rounded-3xl shadow-xl shadow-marca/10">
-              <Image
-                src={fotoEquipo}
-                alt="Selfie del equipo de monitores del Club de la Montaña, sonriendo bajo los árboles"
-                placeholder="blur"
+              <Foto
+                foto={fotos.nosotros}
                 sizes="(min-width: 768px) 560px, 100vw"
                 className="h-auto w-full"
               />
@@ -422,6 +404,7 @@ export default async function Inicio() {
       </section>
 
       {/* Galería */}
+      {fotos.galeria.length > 0 && (
       <section className="py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -442,18 +425,16 @@ export default async function Inicio() {
               </a>
             )}
           </div>
-          <div className="mt-10 grid auto-rows-[160px] grid-cols-2 gap-3 sm:auto-rows-[200px] md:grid-cols-4">
-            {GALERIA.map((foto, i) => (
+          <div className="mt-10 grid auto-rows-[160px] grid-flow-dense grid-cols-2 gap-3 sm:auto-rows-[200px] md:grid-cols-4">
+            {fotos.galeria.map((foto, i) => (
               <div
-                key={foto.src.src}
+                key={foto.id}
                 data-revelar="zoom"
                 style={retraso(i * 80)}
                 className={`group overflow-hidden rounded-2xl ${FORMATOS_GALERIA[foto.formato].clase}`}
               >
-                <Image
-                  src={foto.src}
-                  alt={foto.alt}
-                  placeholder="blur"
+                <Foto
+                  foto={foto}
                   sizes={FORMATOS_GALERIA[foto.formato].sizes}
                   className="size-full object-cover transition duration-700 group-hover:scale-105"
                 />
@@ -462,6 +443,7 @@ export default async function Inicio() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Preguntas */}
       <section className="bg-crema py-20">

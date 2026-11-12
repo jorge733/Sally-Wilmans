@@ -7,6 +7,7 @@ export { cuposLibres, salidaAbierta } from "./salida-utils";
 import type { RespuestaEncuesta } from "./encuesta";
 import { AJUSTES_POR_DEFECTO } from "./site";
 import { completarContenido, type ContenidoSitio } from "./contenido";
+import { completarFotos, type FotosSitio } from "./fotos-sitio";
 import type { AjustesSitio, FotoGaleria, Inscripcion, Salida } from "./types";
 
 type Doc = FirebaseFirestore.DocumentSnapshot;
@@ -87,6 +88,11 @@ export const obtenerAjustes = cache(async (): Promise<AjustesSitio> => {
 export const obtenerContenido = cache(async (): Promise<ContenidoSitio> => {
   const d = await db.collection("ajustes").doc("contenido").get();
   return completarContenido(d.data());
+});
+
+export const obtenerFotosSitio = cache(async (): Promise<FotosSitio> => {
+  const d = await db.collection("ajustes").doc("fotos").get();
+  return completarFotos(d.data() as Partial<FotosSitio> | undefined);
 });
 
 export async function obtenerGaleria(): Promise<FotoGaleria[]> {
