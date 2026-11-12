@@ -3,13 +3,18 @@ import { OG_BASE } from "@/lib/site";
 import { FormularioEncuesta } from "./FormularioEncuesta";
 
 const titulo = "Encuesta para jóvenes de 13 a 16 años";
+// Al compartir el link (WhatsApp, Instagram) se ve esta pregunta, que invita más que el título de la página.
+const tituloCompartir = "¿Qué te gustaría hacer en la montaña?";
 const descripcion =
-  "Cuéntanos qué juegos, actividades y temas de conversación te gustaría tener en el Club de la Montaña.";
+  "¿Tienes entre 13 y 16 años? Ayúdanos a armar el nuevo grupo de jóvenes del Club de la Montaña: elige juegos, actividades y temas para conversar o debatir. Toma 3 minutos.";
 
 export const metadata: Metadata = {
   title: titulo,
   description: descripcion,
-  openGraph: { ...OG_BASE, title: titulo, description: descripcion, url: "/encuesta" },
+  alternates: { canonical: "/encuesta" },
+  // La imagen sale de opengraph-image.tsx de esta carpeta.
+  openGraph: { ...OG_BASE, title: tituloCompartir, description: descripcion, url: "/encuesta" },
+  twitter: { card: "summary_large_image", title: tituloCompartir, description: descripcion },
 };
 
 export default function PaginaEncuesta() {
