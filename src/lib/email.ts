@@ -1,8 +1,10 @@
 import "server-only";
 import { Resend } from "resend";
 import { obtenerAjustes } from "./data";
-import { clp, edades, fechaSalida, rangoDias } from "./format";
-import { SITIO } from "./site";
+import { clp, edadNino, edades, fechaSalida, nombreNino, rangoDias } from "./format";
+import { textoSemanaInscrita } from "./salida-utils";
+import { PREGUNTAS_ENCUESTA, type RespuestaEncuesta } from "./encuesta";
+import { SITIO, urlSitio } from "./site";
 import type { Inscripcion, Salida } from "./types";
 
 let cliente: Resend | null | undefined;
@@ -61,13 +63,13 @@ function filas(pares: [string, string][]): string {
 
 export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida): Promise<void> {
   const ajustes = await obtenerAjustes();
-  const ninos = insc.ninos.map((n) => `${esc(n.nombre)} (${n.edad} años)`).join("<br>");
+  const ninos = insc.ninos.map((n) => `${esc(nombreNino(n))} (${edadNino(n)})`).join("<br>");
   const semanas = insc.semanas?.length
-    ? insc.semanas.map((w) => `${rangoDias(w.inicio, w.fin)} (${clp(w.precio)})`).join("<br>")
+    ? insc.semanas.map((w) => `${textoSemanaInscrita(w)} (${clp(w.precio)} por niño)`).join("<br>")
     : "";
   const detalle = filas([
     ["Salida", esc(salida.titulo)],
-    semanas ? [insc.semanas!.length === 1 ? "Semana" : "Semanas", semanas] : ["Fecha", fechaSalida(salida, true)],
+    semanas ? ["Fechas", semanas] : ["Fecha", fechaSalida(salida, true)],
     ["Horario", `${salida.horaInicio} a ${salida.horaFin} h`],
     ["Lugar", esc(salida.lugar)],
     ["Punto de encuentro", esc(salida.puntoEncuentro || "Se avisará por WhatsApp")],
@@ -90,15 +92,25 @@ export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida)
   );
 
   const fichas = insc.ninos
-    .map((n) => `<li><b>${esc(n.nombre)}</b>, ${n.edad} años. Salud: ${esc(n.salud || "Sin observaciones")}</li>`)
+    .map(
+      (n) =>
+        `<li><b>${esc(nombreNino(n))}</b>${n.rut ? ` (${esc(n.rut)})` : ""}, ${edadNino(n)}.` +
+        (n.alergias !== undefined ? ` Alergias: ${esc(n.alergias || "ninguna")}.` : "") +
+        ` Salud: ${esc(n.salud || "Sin observaciones")}.` +
+        (n.grupoSanguineo ? ` Grupo ${esc(n.grupoSanguineo)}.` : "") +
+        `</li>`,
+    )
     .join("");
   const aviso = marco(
     "Nueva inscripción pagada",
     `${filas([
       ["Salida", `${esc(salida.titulo)} · ${fechaSalida(salida)}`],
-      ...(semanas ? [[insc.semanas!.length === 1 ? "Semana" : "Semanas", semanas] as [string, string]] : []),
+      ...(semanas ? [["Fechas", semanas] as [string, string]] : []),
       ["Apoderado", `${esc(insc.apoderado.nombre)}<br>${esc(insc.apoderado.telefono)}<br>${esc(insc.apoderado.email)}`],
       ["Emergencia", `${esc(insc.emergencia.nombre)} (${esc(insc.emergencia.relacion)})<br>${esc(insc.emergencia.telefono)}`],
+      ...(insc.retiro ? [["Retira", `${esc(insc.retiro.nombre)}<br>${esc(insc.retiro.telefono)}`] as [string, string]] : []),
+      ...(insc.centroMedico ? [["Centro médico", esc(insc.centroMedico)] as [string, string]] : []),
+      ...(insc.comentarios ? [["Comentarios", esc(insc.comentarios).replace(/\n/g, "<br>")] as [string, string]] : []),
       ["Total", clp(insc.total)],
       semanas
         ? [
@@ -106,7 +118,7 @@ export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida)
             insc
               .semanas!.map((elegida) => {
                 const w = salida.semanas.find((x) => x.id === elegida.id);
-                return w ? `${rangoDias(w.inicio, w.fin)}: ${w.cuposTomados} de ${w.cupos}` : "";
+                return w ? `${rangoDias(w.inicio, w.fin)}: ${w.cuposTomados} de ${w.cupos} (día más lleno)` : "";
               })
               .filter(Boolean)
               .join("<br>"),
@@ -124,4 +136,26 @@ export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida)
     enviar(insc.apoderado.email, `Inscripción confirmada: ${salida.titulo}`, apoderado, `insc-${insc.id}-apoderado`, ajustes.email || undefined),
     avisoA ? enviar(avisoA, `Nueva inscripción: ${salida.titulo} (${insc.cantidad})`, aviso, `insc-${insc.id}-aviso`, insc.apoderado.email) : null,
   ]);
+}
+
+/** Aviso a Sally cuando alguien responde la encuesta de jóvenes. */
+export async function enviarAvisoEncuesta(r: RespuestaEncuesta): Promise<void> {
+  const ajustes = await obtenerAjustes();
+  const avisoA = process.env.ADMIN_NOTIFY_EMAIL || ajustes.email;
+  if (!avisoA) return;
+  const lista = (xs: string[]) => (xs.length ? xs.map(esc).join("<br>") : `<span style="color:#9a9f92">—</span>`);
+  const html = marco(
+    "Nueva respuesta a la encuesta",
+    `<p>Alguien del grupo de 13 a 16 años respondió la encuesta.</p>${filas([
+      ["Nombre", r.nombre ? esc(r.nombre) : "Sin nombre"],
+      ["Edad", `${r.edad} años`],
+      ...PREGUNTAS_ENCUESTA.map(
+        (p) => [p.titulo, lista([...r.elegidas[p.id], ...(r.otros[p.id] ? [`Otro: ${r.otros[p.id]}`] : [])])] as [string, string],
+      ),
+      ["Frecuencia", r.frecuencia ? esc(r.frecuencia) : "—"],
+      ["Días", lista(r.dias)],
+      ["Comentario", r.comentario ? esc(r.comentario).replace(/\n/g, "<br>") : "—"],
+    ])}<p style="margin-top:20px"><a href="${urlSitio()}/admin/encuesta" style="color:#2f4a34;font-weight:bold">Ver todas las respuestas en el panel</a></p>`,
+  );
+  await enviar(avisoA, `Encuesta jóvenes: nueva respuesta (${r.edad} años)`, html, `encuesta-${r.id}`);
 }

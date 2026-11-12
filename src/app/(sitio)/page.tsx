@@ -140,6 +140,21 @@ export default async function Inicio() {
 
   return (
     <>
+      {/* Banner: encuesta del grupo de jóvenes */}
+      <Link
+        href="/encuesta"
+        className="group block bg-acento px-4 py-3 text-center text-sm text-white transition-colors hover:bg-acento-oscuro sm:text-base"
+      >
+        <span className="font-semibold">¿Tienes entre 13 y 16 años?</span>{" "}
+        Cuéntanos qué te gustaría hacer en el nuevo grupo de jóvenes.{" "}
+        <span className="font-semibold whitespace-nowrap underline underline-offset-4">
+          Responde la encuesta
+          <span aria-hidden className="ml-1 inline-block transition-transform group-hover:translate-x-1">
+            →
+          </span>
+        </span>
+      </Link>
+
       {/* Portada */}
       <section className="relative isolate overflow-hidden bg-marca text-white">
         <Paisaje
@@ -262,6 +277,26 @@ export default async function Inicio() {
               </p>
             </div>
           )}
+
+          {/* Invitación a la encuesta del grupo de jóvenes */}
+          <div
+            data-revelar
+            className="mt-12 flex flex-col gap-5 rounded-3xl bg-crema p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8"
+          >
+            <div>
+              <p className="etiqueta">¿Tienes entre 13 y 16 años?</p>
+              <h3 className="mt-2 text-2xl font-semibold text-marca">
+                Ayúdanos a armar el grupo de jóvenes
+              </h3>
+              <p className="mt-2 max-w-xl text-gris">
+                Cuéntanos qué juegos, actividades, deportes y temas para
+                conversar o debatir te gustaría tener. Son solo 3 minutos.
+              </p>
+            </div>
+            <Link href="/encuesta" className="btn btn-primario shrink-0">
+              Responder la encuesta
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -326,19 +361,20 @@ export default async function Inicio() {
             <div className="absolute inset-0 -z-10 hidden bg-gradient-to-r from-acento via-acento/90 to-transparent md:block" />
             <p className="mano text-3xl text-[#fde3c3]">Club de Verano</p>
             <h2 className="mt-1 max-w-lg text-3xl font-semibold sm:text-4xl">
-              Del 9 al 30 de diciembre y del 4 al 29 de enero, en la Quebrada de
-              Macul
+              Del 9 al 30 de diciembre y del 4 al 29 de enero, en el Parque
+              Natural Aguas de Ramón
             </h2>
             <p className="mt-4 max-w-lg text-white/90">
-              De lunes a viernes, de 9:00 a 13:00. Una semana completa de
-              naturaleza, talleres y juego libre. Puedes inscribir a tus hijos
-              por semana.
+              De lunes a viernes, de 9:00 a 13:00, con recepción desde las 8:30.
+              Juego libre, caminatas y juegos tradicionales para niños y niñas
+              de 5 a 12 años. Puedes inscribir a tus hijos por día ($18.500) o por
+              semana completa ($80.000), con la entrada al parque incluida.
             </p>
             <Link
               href="#salidas"
               className="btn mt-7 bg-white text-acento hover:bg-crema"
             >
-              Ver semanas disponibles <IconoFlecha />
+              Ver días y semanas <IconoFlecha />
             </Link>
           </div>
         </div>

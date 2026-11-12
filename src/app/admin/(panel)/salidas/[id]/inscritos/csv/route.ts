@@ -1,6 +1,7 @@
 import { haySesion } from "@/lib/auth";
 import { inscripcionesDeSalida, obtenerSalida } from "@/lib/data";
-import { rangoDias } from "@/lib/format";
+import { listaDias, rangoDias } from "@/lib/format";
+import { diasInscritos, semanaCompleta, textoSemanaInscrita } from "@/lib/salida-utils";
 
 const celda = (v: unknown) => {
   const s = String(v ?? "");
@@ -16,23 +17,59 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   if (!salida) return new Response("No existe", { status: 404 });
 
   const conSemanas = salida.semanas.length > 0;
-  // Una columna por semana (con una X si va), para poder filtrar en Excel.
+  // Una columna por semana (X si va la semana completa, o los días que va), para poder filtrar en Excel.
   const columnasSemanas = salida.semanas.map((w) => `Semana ${rangoDias(w.inicio, w.fin)}`);
   const filas = [
-    ["Niño", "Edad", ...(conSemanas ? ["Semanas", ...columnasSemanas] : []), "Salud", "Apoderado", "RUT", "Teléfono", "Correo", "Emergencia", "Relación", "Tel. emergencia", "N.º inscripción"],
+    [
+      "Nombres",
+      "Primer apellido",
+      "Segundo apellido",
+      "RUT niño",
+      "Años",
+      "Meses",
+      ...(conSemanas ? ["Fechas", ...columnasSemanas] : []),
+      "Alergias",
+      "Enfermedades o condiciones",
+      "Grupo sanguíneo",
+      "Centro médico",
+      "Retira",
+      "Tel. retira",
+      "Apoderado",
+      "RUT apoderado",
+      "Teléfono",
+      "Correo",
+      "Emergencia",
+      "Relación",
+      "Tel. emergencia",
+      "Comentarios",
+      "N.º inscripción",
+    ],
   ];
   for (const i of inscripciones.filter((x) => x.estado === "pagada")) {
     for (const n of i.ninos) {
       filas.push([
         n.nombre,
+        n.apellidoPaterno ?? "",
+        n.apellidoMaterno ?? "",
+        n.rut ?? "",
         String(n.edad),
+        String(n.meses ?? ""),
         ...(conSemanas
           ? [
-              String(i.semanas?.length ?? 0),
-              ...salida.semanas.map((w) => (i.semanas?.some((x) => x.id === w.id) ? "X" : "")),
+              (i.semanas ?? []).map(textoSemanaInscrita).join(" · "),
+              ...salida.semanas.map((w) => {
+                const elegida = i.semanas?.find((x) => x.id === w.id);
+                if (!elegida) return "";
+                return semanaCompleta(elegida) ? "X" : listaDias(diasInscritos(elegida));
+              }),
             ]
           : []),
+        n.alergias ?? "",
         n.salud,
+        n.grupoSanguineo ?? "",
+        i.centroMedico ?? "",
+        i.retiro?.nombre ?? "",
+        i.retiro?.telefono ?? "",
         i.apoderado.nombre,
         i.apoderado.rut,
         i.apoderado.telefono,
@@ -40,6 +77,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
         i.emergencia.nombre,
         i.emergencia.relacion,
         i.emergencia.telefono,
+        i.comentarios ?? "",
         i.id,
       ]);
     }

@@ -25,6 +25,11 @@ export interface Salida {
    * primera a la última semana.
    */
   semanas: Semana[];
+  /**
+   * Precio por niño de un día suelto, en salidas por semanas. Si lo tiene, la familia
+   * puede elegir días sueltos además de semanas completas; si no, solo semanas completas.
+   */
+  precioDia: number | null;
   descripcion: string;
   queLlevar: string[];
   /** Fotos de la salida, en orden. La primera es la portada. */
@@ -45,12 +50,22 @@ export interface Semana {
   fin: string;
   /** Precio por niño de la semana completa, en CLP */
   precio: number;
+  /** Cupos por día */
   cupos: number;
+  /** Niños en el día más lleno de la semana */
   cuposTomados: number;
+  /**
+   * Niños inscritos cada día (YYYY-MM-DD → cantidad). Las semanas guardadas antes de que
+   * existieran los días sueltos no lo tienen: ahí todos los días valen `cuposTomados`.
+   */
+  tomadosDia?: Record<string, number>;
 }
 
-/** Copia de la semana al momento de inscribir (fechas y precio pagado). */
-export type SemanaInscrita = Pick<Semana, "id" | "inicio" | "fin" | "precio">;
+/** Copia de la semana al momento de inscribir (fechas, días elegidos y precio pagado por niño). */
+export type SemanaInscrita = Pick<Semana, "id" | "inicio" | "fin" | "precio"> & {
+  /** Días elegidos (YYYY-MM-DD). Si no está, la semana completa. */
+  dias?: string[];
+};
 
 export interface FotoSalida {
   url: string;
@@ -62,10 +77,23 @@ export interface FotoSalida {
 export type EstadoInscripcion = "pendiente" | "pagada" | "rechazada" | "expirada" | "anulada";
 
 export interface Nino {
+  /** Nombres (en inscripciones antiguas, el nombre completo) */
   nombre: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+  /** Con guion y sin puntos: 12345678-9 */
+  rut?: string;
+  /** Años cumplidos */
   edad: number;
+  /** Meses cumplidos además de los años (0 a 11) */
+  meses?: number;
+  alergias?: string;
+  grupoSanguineo?: string;
+  /** Enfermedades, diagnósticos o condiciones que el club debe saber */
   salud: string;
 }
+
+export const GRUPOS_SANGUINEOS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 
 export interface Inscripcion {
   id: string;
@@ -83,6 +111,15 @@ export interface Inscripcion {
     telefono: string;
     relacion: string;
   };
+  /** Persona que retira a los niños (inscripciones antiguas no lo tienen) */
+  retiro?: {
+    nombre: string;
+    telefono: string;
+  };
+  /** Centro médico al que llevarlos en caso de accidente */
+  centroMedico?: string;
+  /** Información adicional que la familia quiso compartir */
+  comentarios?: string;
   ninos: Nino[];
   /** Semanas elegidas, en salidas por semanas. Todos los niños van a las mismas. */
   semanas?: SemanaInscrita[];

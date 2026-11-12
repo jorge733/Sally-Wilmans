@@ -99,3 +99,53 @@ export function sumarDias(fecha: string, dias: number): string {
   d.setUTCDate(d.getUTCDate() + dias);
   return d.toISOString().slice(0, 10);
 }
+
+/** ["2026-12-09", "2026-12-10", "2027-01-04"] -> "9 y 10 de diciembre, 4 de enero" */
+export function listaDias(dias: string[]): string {
+  const meses = new Map<string, number[]>();
+  for (const f of [...dias].sort()) {
+    const mes = new Intl.DateTimeFormat("es-CL", { month: "long", timeZone: "UTC" }).format(new Date(`${f}T12:00:00Z`));
+    meses.set(mes, [...(meses.get(mes) ?? []), Number(f.slice(8))]);
+  }
+  return [...meses]
+    .map(([mes, ds]) => `${ds.length > 1 ? `${ds.slice(0, -1).join(", ")} y ${ds[ds.length - 1]}` : ds[0]} de ${mes}`)
+    .join(", ");
+}
+
+/** Nombre completo de un niño: nombres y apellidos. */
+export function nombreNino(n: { nombre: string; apellidoPaterno?: string; apellidoMaterno?: string }): string {
+  return [n.nombre, n.apellidoPaterno, n.apellidoMaterno].filter(Boolean).join(" ");
+}
+
+/** "6 años", "6 años y 1 mes", "6 años y 4 meses" */
+export function edadNino(n: { edad: number; meses?: number }): string {
+  const anios = `${n.edad} ${n.edad === 1 ? "año" : "años"}`;
+  if (!n.meses) return anios;
+  return `${anios} y ${n.meses} ${n.meses === 1 ? "mes" : "meses"}`;
+}
+
+/** true si el texto dice algo más que «ninguna», «no», «-», etc. */
+export function hayDato(v: string | undefined | null): v is string {
+  return Boolean(v && !/^(ningun[ao]?|nada|no|sin|-|n\/a|no tiene|no presenta)\.?$/i.test(v.trim()));
+}
+
+/** RUT con guion y sin puntos, dígito verificador en mayúscula: "12.345.678-k" -> "12345678-K". */
+export function normalizarRut(v: string): string {
+  const limpio = v.replace(/[^0-9kK]/g, "").toUpperCase();
+  return limpio.length < 2 ? limpio : `${limpio.slice(0, -1)}-${limpio.slice(-1)}`;
+}
+
+/** Valida el dígito verificador de un RUT chileno. */
+export function rutValido(v: string): boolean {
+  const r = normalizarRut(v);
+  const m = /^(\d{6,8})-([\dK])$/.exec(r);
+  if (!m) return false;
+  let suma = 0;
+  let factor = 2;
+  for (let i = m[1].length - 1; i >= 0; i--) {
+    suma += Number(m[1][i]) * factor;
+    factor = factor === 7 ? 2 : factor + 1;
+  }
+  const dv = 11 - (suma % 11);
+  return m[2] === (dv === 11 ? "0" : dv === 10 ? "K" : String(dv));
+}

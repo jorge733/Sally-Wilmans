@@ -4,20 +4,31 @@ import { z } from "zod";
 import { obtenerAjustes, obtenerInscripcion, obtenerSalida } from "@/lib/data";
 import { crearPago, ESTADO_FLOW, pagoSimulado } from "@/lib/flow";
 import { db } from "@/lib/firebase-admin";
-import { edades } from "@/lib/format";
+import { edades, nombreNino, normalizarRut, rutValido } from "@/lib/format";
+import { GRUPOS_SANGUINEOS } from "@/lib/types";
 import { cancelarReserva, ErrorInscripcion, registrarPago, reservar } from "@/lib/inscripciones";
 
 const texto = (max: number, mensaje: string) => z.string().trim().min(1, mensaje).max(max);
 
 const esquema = z.object({
   salidaId: z.string().min(1).max(120),
-  semanas: z.array(z.string().max(40)).max(30).default([]),
+  dias: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).max(150).default([]),
   ninos: z
     .array(
       z.object({
-        nombre: texto(120, "Falta el nombre de un niño"),
+        nombre: texto(80, "Falta el nombre de un niño"),
+        apellidoPaterno: texto(60, "Falta el primer apellido de un niño"),
+        apellidoMaterno: texto(60, "Falta el segundo apellido de un niño"),
+        rut: z
+          .string()
+          .trim()
+          .refine(rutValido, "Revisa el RUT de cada niño")
+          .transform(normalizarRut),
         edad: z.number().int().min(1).max(18),
-        salud: texto(1000, "Completa los cuidados de salud de cada niño"),
+        meses: z.number().int().min(0).max(11),
+        alergias: texto(500, "Indica si cada niño tiene alergias (o escribe «ninguna»)"),
+        grupoSanguineo: z.enum([...GRUPOS_SANGUINEOS, ""]).default(""),
+        salud: texto(1000, "Indica si cada niño tiene alguna enfermedad o condición (o escribe «ninguna»)"),
       }),
     )
     .min(1, "Agrega al menos un niño")
@@ -36,6 +47,12 @@ const esquema = z.object({
     telefono: texto(30, "Falta el teléfono del contacto de emergencia"),
     relacion: texto(60, "Indica la relación del contacto de emergencia"),
   }),
+  retiro: z.object({
+    nombre: texto(120, "Falta el nombre de quien retira a los niños"),
+    telefono: texto(30, "Falta el teléfono de quien retira a los niños"),
+  }),
+  centroMedico: texto(160, "Indica a qué centro médico llevarlos en caso de accidente"),
+  comentarios: z.string().trim().max(2000).default(""),
   autoriza: z.boolean().refine((v) => v, "Debes aceptar la autorización"),
 });
 
@@ -61,7 +78,7 @@ export async function iniciarInscripcion(datos: DatosFicha): Promise<ResultadoIn
   if (fuera) {
     return {
       ok: false,
-      error: `${fuera.nombre} no está en el rango de edad de esta salida (${edades(salida.edadMin, salida.edadMax)}).`,
+      error: `${nombreNino(fuera)} no está en el rango de edad de esta salida (${edades(salida.edadMin, salida.edadMax)}).`,
     };
   }
 
@@ -71,8 +88,11 @@ export async function iniciarInscripcion(datos: DatosFicha): Promise<ResultadoIn
       salidaId: salida.id,
       apoderado: { ...d.apoderado, email: d.apoderado.email.toLowerCase() },
       emergencia: d.emergencia,
+      retiro: d.retiro,
+      centroMedico: d.centroMedico,
+      comentarios: d.comentarios,
       ninos: d.ninos,
-      semanas: d.semanas,
+      dias: d.dias,
       textoAutorizacion: ajustes.textoAutorizacion,
     });
     inscripcionId = insc.id;

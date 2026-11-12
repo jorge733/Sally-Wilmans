@@ -52,7 +52,9 @@ function Fila({ s }: { s: Salida }) {
         {s.semanas.length ? (
           <>
             <div className="font-semibold">{s.semanas.length} semanas</div>
-            <div className="text-gris">Desde {clp(s.precio)} por semana</div>
+            <div className="text-gris">
+              Desde {clp(s.precio)} por semana{s.precioDia ? ` · ${clp(s.precioDia)} por día` : ""}
+            </div>
           </>
         ) : (
           <>

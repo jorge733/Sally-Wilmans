@@ -28,6 +28,9 @@ const esquemaSalida = z
     edadMax: z.coerce.number().int().min(1).max(18),
     precio: z.coerce.number().int("El precio va sin decimales").min(0).max(10_000_000),
     cupos: z.coerce.number().int().min(1, "Debe haber al menos 1 cupo").max(500),
+    precioDia: z
+      .union([z.literal(""), z.coerce.number().int("El precio por día va sin decimales").min(0).max(10_000_000)])
+      .optional(),
     descripcion: z.string().trim().max(2000),
     queLlevar: z.string().max(3000),
     estado: z.enum(["publicada", "borrador", "cerrada"]),
@@ -119,6 +122,7 @@ export async function guardarSalida(_: EstadoFormulario, form: FormData): Promis
     ...s,
     fechaFin: s.fechaFin || null,
     semanas: [] as Semana[],
+    precioDia: leidas.semanas.length && s.precioDia ? s.precioDia : null,
     queLlevar: s.queLlevar
       .split("\n")
       .map((x) => x.replace(/^[-•*]\s*/, "").trim())
@@ -138,7 +142,19 @@ export async function guardarSalida(_: EstadoFormulario, form: FormData): Promis
         if (!previa.semanas.length && previa.cuposTomados > 0) {
           return "Esta salida ya tiene inscritos, así que no se puede pasar a inscripción por semanas.";
         }
-        const semanas = leidas.semanas.map((w) => ({ ...w, cuposTomados: antes.get(w.id)?.cuposTomados ?? 0 }));
+        const movida = leidas.semanas.find((w) => {
+          const previaW = antes.get(w.id);
+          return previaW && previaW.cuposTomados > 0 && (previaW.inicio !== w.inicio || previaW.fin !== w.fin);
+        });
+        if (movida) return `La semana que partía el ${antes.get(movida.id)!.inicio} tiene inscritos, así que no se le pueden cambiar las fechas.`;
+        const semanas: Semana[] = leidas.semanas.map((w) => {
+          const previaW = antes.get(w.id);
+          return {
+            ...w,
+            cuposTomados: previaW?.cuposTomados ?? 0,
+            ...(previaW?.tomadosDia ? { tomadosDia: previaW.tomadosDia } : {}),
+          };
+        });
         const sobra = semanas.find((w) => w.cupos < w.cuposTomados);
         if (sobra) return `La semana que parte el ${sobra.inicio} ya tiene ${sobra.cuposTomados} inscritos: no puedes dejarle menos cupos.`;
         const quitada = previa.semanas.find((w) => w.cuposTomados > 0 && !semanas.some((n) => n.id === w.id));
@@ -188,7 +204,7 @@ export async function duplicarSalida(id: string): Promise<void> {
       titulo: `${s.titulo} (copia)`,
       estado: "borrador",
       cuposTomados: 0,
-      semanas: s.semanas.map((w) => ({ ...w, cuposTomados: 0 })),
+      semanas: s.semanas.map((w) => ({ ...w, cuposTomados: 0, tomadosDia: {} })),
       creadoEn: Date.now(),
       actualizadoEn: Date.now(),
     });
@@ -323,4 +339,11 @@ export async function guardarAjustes(_: EstadoFormulario, form: FormData): Promi
 export async function salir(): Promise<void> {
   await cerrarSesion();
   redirect("/admin/login");
+}
+
+export async function borrarRespuestaEncuesta(id: string): Promise<void> {
+  await requerirAdmin();
+  if (!id || id.includes("/")) return;
+  await db.collection("encuestaJovenes").doc(id).delete();
+  revalidatePath("/admin/encuesta");
 }

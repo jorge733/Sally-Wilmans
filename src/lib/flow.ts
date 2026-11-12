@@ -103,6 +103,12 @@ export async function obtenerEstado(token: string) {
 }
 
 function semanasTexto(insc: Inscripcion): string {
-  const n = insc.semanas?.length ?? 0;
-  return n ? `, ${n} ${n === 1 ? "semana" : "semanas"}` : "";
+  if (!insc.semanas?.length) return "";
+  const completas = insc.semanas.filter((w) => !w.dias).length;
+  const dias = insc.semanas.reduce((t, w) => t + (w.dias?.length ?? 0), 0);
+  const partes = [
+    completas ? `${completas} ${completas === 1 ? "semana" : "semanas"}` : "",
+    dias ? `${dias} ${dias === 1 ? "día" : "días"}` : "",
+  ].filter(Boolean);
+  return `, ${partes.join(" y ")}`;
 }

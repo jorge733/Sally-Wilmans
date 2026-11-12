@@ -88,7 +88,7 @@ export function EditorSemanas({
                     <input type="date" required value={w.fin} min={w.inicio} onChange={(e) => editar(i, "fin", e.target.value)} className="campo" />
                   </label>
                   <label className="block">
-                    <span className="rotulo">Precio por niño</span>
+                    <span className="rotulo">Precio semana</span>
                     <input
                       type="number"
                       required
@@ -100,7 +100,7 @@ export function EditorSemanas({
                     />
                   </label>
                   <label className="block">
-                    <span className="rotulo">Cupos</span>
+                    <span className="rotulo">Cupos por día</span>
                     <input
                       type="number"
                       required

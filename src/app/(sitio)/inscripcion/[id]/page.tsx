@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { IconoCheck, IconoMochila } from "@/components/Iconos";
 import { obtenerInscripcion, obtenerSalida } from "@/lib/data";
 import { ESTADO_FLOW } from "@/lib/flow";
-import { clp, fechaHora, fechaSalida, horaChile, rangoDias } from "@/lib/format";
+import { clp, fechaHora, fechaSalida, horaChile, rangoDias, edadNino, nombreNino } from "@/lib/format";
+import { textoSemanaInscrita } from "@/lib/salida-utils";
 import { BotonImprimir, BotonReintentar, Refrescar } from "./Clientes";
 
 type Props = { params: Promise<{ id: string }> };
@@ -31,8 +32,7 @@ export default async function PaginaEstadoInscripcion({ params }: Props) {
       )}
       {insc.semanas?.length ? (
         <div className="mt-3 border-t border-white/20 pt-3 text-sm">
-          <span className="text-marca-claro">{insc.semanas.length === 1 ? "Semana:" : "Semanas:"}</span>{" "}
-          {insc.semanas.map((w) => rangoDias(w.inicio, w.fin)).join(" · ")}
+          <span className="text-marca-claro">Fechas:</span> {insc.semanas.map(textoSemanaInscrita).join(" · ")}
         </div>
       ) : null}
     </div>
@@ -62,7 +62,7 @@ export default async function PaginaEstadoInscripcion({ params }: Props) {
               <dd className="font-semibold">
                 {insc.ninos.map((n, i) => (
                   <div key={i}>
-                    {n.nombre} ({n.edad} años)
+                    {nombreNino(n)} ({edadNino(n)})
                   </div>
                 ))}
               </dd>

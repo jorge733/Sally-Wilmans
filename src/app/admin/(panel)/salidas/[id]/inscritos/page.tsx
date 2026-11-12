@@ -1,24 +1,33 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { inscripcionesDeSalida, obtenerSalida } from "@/lib/data";
-import { clp, edades, fechaHora, fechaSalida, rangoDias } from "@/lib/format";
+import { clp, edadNino, edades, fechaHora, fechaLarga, fechaSalida, hayDato, nombreNino, rangoDias } from "@/lib/format";
+import { diasInscritos, diasSemana, semanaCompleta, textoSemanaInscrita, tomadosEn } from "@/lib/salida-utils";
 import { BotonImprimir } from "./BotonImprimir";
 
 export const metadata = { title: "Inscritos" };
 
-type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ semana?: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ semana?: string; dia?: string }> };
 
 export default async function Inscritos({ params, searchParams }: Props) {
-  const [{ id }, { semana: semanaId }] = await Promise.all([params, searchParams]);
+  const [{ id }, { semana: semanaId, dia: diaPedido }] = await Promise.all([params, searchParams]);
   const [salida, todas] = await Promise.all([obtenerSalida(id), inscripcionesDeSalida(id)]);
   if (!salida) notFound();
   const semana = salida.semanas.find((w) => w.id === semanaId);
-  const enSemana = (i: (typeof todas)[number]) => !semana || Boolean(i.semanas?.some((w) => w.id === semana.id));
+  const dia = semana && diaPedido && diasSemana(semana).includes(diaPedido) ? diaPedido : null;
+  const enSemana = (i: (typeof todas)[number]) => {
+    if (!semana) return true;
+    const elegida = i.semanas?.find((w) => w.id === semana.id);
+    return Boolean(elegida && (!dia || diasInscritos(elegida).includes(dia)));
+  };
+  /** Lo que eligió la inscripción en la semana filtrada. */
+  const eleccionSemana = (i: (typeof todas)[number]) => (semana ? i.semanas?.find((w) => w.id === semana.id) : undefined);
   const pagadas = todas.filter((i) => i.estado === "pagada" && enSemana(i));
   const pendientes = todas.filter((i) => i.estado === "pendiente" && i.expiraEn > Date.now() && enSemana(i));
   const nombreSemana = (w: { inicio: string; fin: string }) => rangoDias(w.inicio, w.fin);
   const ninos = pagadas.flatMap((i) => i.ninos.map((n) => ({ ...n, insc: i })));
-  const conSalud = ninos.filter((n) => n.salud && !/^(ninguna?|no|sin|-|n\/a)\.?$/i.test(n.salud.trim()));
+  const conSalud = ninos.filter((n) => hayDato(n.salud) || hayDato(n.alergias));
+  const conComentarios = pagadas.filter((i) => hayDato(i.comentarios));
 
   return (
     <>
@@ -29,7 +38,7 @@ export default async function Inscritos({ params, searchParams }: Props) {
         <div>
           <h1 className="text-3xl font-semibold text-marca">Inscritos</h1>
           <p className="mt-1 text-gris first-letter:uppercase">
-            {salida.titulo} · {semana ? `Semana del ${nombreSemana(semana)}` : fechaSalida(salida, true)} ·{" "}
+            {salida.titulo} · {dia ? fechaLarga(dia, true) : semana ? `Semana del ${nombreSemana(semana)}` : fechaSalida(salida, true)} ·{" "}
             {salida.horaInicio} a {salida.horaFin} h ·{" "}
             {edades(salida.edadMin, salida.edadMax)}
           </p>
@@ -66,11 +75,43 @@ export default async function Inscritos({ params, searchParams }: Props) {
         </nav>
       )}
 
+      {semana && (
+        <nav className="no-print mt-3 flex flex-wrap gap-2" aria-label="Filtrar por día">
+          {[null, ...diasSemana(semana)].map((f) => {
+            const activa = dia === f;
+            return (
+              <Link
+                key={f ?? "todos"}
+                href={f ? `?semana=${semana.id}&dia=${f}` : `?semana=${semana.id}`}
+                aria-current={activa ? "page" : undefined}
+                className={`rounded-full border px-3 py-1 text-xs font-medium first-letter:uppercase ${
+                  activa ? "border-bosque bg-bosque text-white" : "border-linea bg-white text-tinta hover:border-bosque"
+                }`}
+              >
+                {f ? (
+                  <>
+                    {fechaLarga(f).replace(/ de .*/, "")}
+                    <span className={activa ? "text-white/75" : "text-gris"}>
+                      {" "}
+                      · {tomadosEn(semana, f)}/{semana.cupos}
+                    </span>
+                  </>
+                ) : (
+                  "Todos los días"
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
+
       <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           ["Niños inscritos", `${ninos.length}`],
-          semana
-            ? ["Cupos de la semana", `${semana.cuposTomados} / ${semana.cupos}`]
+          dia && semana
+            ? ["Cupos del día", `${tomadosEn(semana, dia)} / ${semana.cupos}`]
+            : semana
+            ? ["Cupos (día más lleno)", `${semana.cuposTomados} / ${semana.cupos}`]
             : salida.semanas.length
               ? ["Semanas", `${salida.semanas.length}`]
               : ["Cupos", `${salida.cuposTomados} / ${salida.cupos}`],
@@ -78,7 +119,8 @@ export default async function Inscritos({ params, searchParams }: Props) {
           [
             semana ? "Recaudado en la semana" : "Recaudado",
             clp(
-              pagadas.reduce((t, i) => {
+              // Con un día elegido, igual se suma lo de toda la semana (el precio se paga por semana).
+              todas.filter((i) => i.estado === "pagada" && (!semana || eleccionSemana(i))).reduce((t, i) => {
                 if (!semana) return t + i.total;
                 const w = i.semanas?.find((x) => x.id === semana.id);
                 return t + (w ? w.precio * i.cantidad : 0);
@@ -99,7 +141,8 @@ export default async function Inscritos({ params, searchParams }: Props) {
           <ul className="mt-2 space-y-1 text-sm">
             {conSalud.map((n, i) => (
               <li key={i}>
-                <b>{n.nombre}</b> ({n.edad}): {n.salud}
+                <b>{nombreNino(n)}</b> ({n.edad}):{" "}
+                {[hayDato(n.alergias) && `Alergias: ${n.alergias}`, hayDato(n.salud) && n.salud].filter(Boolean).join(" · ")}
               </li>
             ))}
           </ul>
@@ -108,7 +151,7 @@ export default async function Inscritos({ params, searchParams }: Props) {
 
       {ninos.length === 0 ? (
         <p className="mt-8 rounded-2xl border border-dashed border-linea bg-white p-10 text-center text-gris">
-          Todavía no hay inscripciones pagadas {semana ? "en esta semana" : "en esta salida"}.
+          Todavía no hay inscripciones pagadas {dia ? "para este día" : semana ? "en esta semana" : "en esta salida"}.
         </p>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-2xl bg-white">
@@ -117,10 +160,10 @@ export default async function Inscritos({ params, searchParams }: Props) {
               <tr>
                 <th className="p-3">#</th>
                 <th className="p-3">Niño o niña</th>
-                {salida.semanas.length > 0 && !semana && <th className="p-3">Semanas</th>}
+                {salida.semanas.length > 0 && !dia && <th className="p-3">{semana ? "Días" : "Fechas"}</th>}
                 <th className="p-3">Salud</th>
                 <th className="p-3">Apoderado</th>
-                <th className="p-3">Emergencia</th>
+                <th className="p-3">Emergencia y retiro</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-linea">
@@ -128,19 +171,32 @@ export default async function Inscritos({ params, searchParams }: Props) {
                 <tr key={i} className="align-top">
                   <td className="p-3 text-gris">{i + 1}</td>
                   <td className="p-3">
-                    <b>{n.nombre}</b>
-                    <div className="text-gris">{n.edad} años</div>
+                    <b>{nombreNino(n)}</b>
+                    <div className="text-gris">{edadNino(n)}</div>
+                    {n.rut && <div className="text-gris">{n.rut}</div>}
                   </td>
-                  {salida.semanas.length > 0 && !semana && (
+                  {salida.semanas.length > 0 && !dia && (
                     <td className="p-3">
-                      {n.insc.semanas?.map((w) => (
-                        <div key={w.id} className="whitespace-nowrap">
-                          {nombreSemana(w)}
-                        </div>
-                      ))}
+                      {semana ? (
+                        (() => {
+                          const w = eleccionSemana(n.insc);
+                          return w && (semanaCompleta(w) ? "Semana completa" : textoSemanaInscrita(w));
+                        })()
+                      ) : (
+                        n.insc.semanas?.map((w) => (
+                          <div key={w.id} className="whitespace-nowrap">
+                            {textoSemanaInscrita(w)}
+                          </div>
+                        ))
+                      )}
                     </td>
                   )}
-                  <td className="p-3">{n.salud || "—"}</td>
+                  <td className="p-3">
+                    {n.alergias !== undefined && <div>Alergias: {n.alergias || "—"}</div>}
+                    <div>{n.salud || "—"}</div>
+                    {n.grupoSanguineo && <div className="text-gris">Grupo {n.grupoSanguineo}</div>}
+                    {n.insc.centroMedico && <div className="text-gris">Centro médico: {n.insc.centroMedico}</div>}
+                  </td>
                   <td className="p-3">
                     {n.insc.apoderado.nombre}
                     <div className="text-gris">
@@ -153,12 +209,33 @@ export default async function Inscritos({ params, searchParams }: Props) {
                     <div className="text-gris">
                       <a href={`tel:${n.insc.emergencia.telefono}`}>{n.insc.emergencia.telefono}</a>
                     </div>
+                    {n.insc.retiro && (
+                      <div className="mt-2">
+                        <span className="text-gris">Retira:</span> {n.insc.retiro.nombre}
+                        <div className="text-gris">
+                          <a href={`tel:${n.insc.retiro.telefono}`}>{n.insc.retiro.telefono}</a>
+                        </div>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {conComentarios.length > 0 && (
+        <section className="mt-6 rounded-2xl bg-white p-5">
+          <h2 className="font-semibold text-marca">Lo que nos contaron las familias</h2>
+          <ul className="mt-2 space-y-2 text-sm">
+            {conComentarios.map((i) => (
+              <li key={i.id}>
+                <b>{i.ninos.map(nombreNino).join(", ")}</b>: {i.comentarios}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {pendientes.length > 0 && (

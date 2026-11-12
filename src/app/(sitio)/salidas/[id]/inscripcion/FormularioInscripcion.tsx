@@ -3,72 +3,112 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { IconoFlecha } from "@/components/Iconos";
-import { clp, edades, fechaSalida, rangoDias } from "@/lib/format";
-import { libresSemana } from "@/lib/salida-utils";
-import type { Nino, Salida } from "@/lib/types";
-import { iniciarInscripcion, simularPago } from "./acciones";
+import { clp, edades, fechaSalida, nombreNino, rutValido } from "@/lib/format";
+import { diasSemana, libresDia, precioEleccion, textoSemanaInscrita } from "@/lib/salida-utils";
+import { GRUPOS_SANGUINEOS, type Salida } from "@/lib/types";
+import { iniciarInscripcion, simularPago, type DatosFicha } from "./acciones";
+
+type NinoFicha = DatosFicha["ninos"][number];
 import { SelectorSemanas } from "./SelectorSemanas";
 
 /** "pago" solo se usa con el pago simulado de desarrollo; en el sitio real se va directo a Flow. */
 type Paso = "ficha" | "pago";
 
-const ninoVacio = (): Nino => ({ nombre: "", edad: 0, salud: "" });
+const ninoVacio = (): NinoFicha => ({
+  nombre: "",
+  apellidoPaterno: "",
+  apellidoMaterno: "",
+  rut: "",
+  edad: 0,
+  meses: 0,
+  alergias: "",
+  grupoSanguineo: "",
+  salud: "",
+});
 
 export function FormularioInscripcion({
   salida,
   maxNinos: maxNinosSalida,
-  semanasAbiertas,
+  diasAbiertos,
   textoAutorizacion,
 }: {
   salida: Salida;
   maxNinos: number;
-  /** Ids de las semanas que todavía reciben inscripciones (salidas por semanas) */
-  semanasAbiertas: string[];
+  /** Días (YYYY-MM-DD) que todavía reciben inscripciones (salidas por semanas) */
+  diasAbiertos: string[];
   textoAutorizacion: string;
 }) {
   const [paso, setPaso] = useState<Paso>("ficha");
-  const [ninos, setNinos] = useState<Nino[]>([ninoVacio()]);
+  const [ninos, setNinos] = useState<NinoFicha[]>([ninoVacio()]);
   const [apoderado, setApoderado] = useState({ nombre: "", rut: "", email: "", telefono: "" });
   const [emergencia, setEmergencia] = useState({ nombre: "", telefono: "", relacion: "" });
+  const [retiro, setRetiro] = useState({ nombre: "", telefono: "" });
+  const [centroMedico, setCentroMedico] = useState("");
+  const [comentarios, setComentarios] = useState("");
   const [autoriza, setAutoriza] = useState(false);
   const [error, setError] = useState("");
   const [procesando, setProcesando] = useState(false);
   const [inscripcionId, setInscripcionId] = useState("");
-  const [elegidas, setElegidas] = useState<string[]>([]);
+  const [elegidos, setElegidos] = useState<string[]>([]);
   const router = useRouter();
 
   const conSemanas = salida.semanas.length > 0;
-  // En el orden del calendario, aunque se hayan elegido en otro orden.
-  const semanasElegidas = salida.semanas.filter((w) => elegidas.includes(w.id));
-  const precioNino = conSemanas ? semanasElegidas.reduce((t, w) => t + w.precio, 0) : salida.precio;
+  const conDias = conSemanas && Boolean(salida.precioDia);
+  // Lo elegido en cada semana, en el orden del calendario.
+  const eleccion = salida.semanas
+    .map((w) => ({ w, dias: diasSemana(w).filter((f) => elegidos.includes(f)) }))
+    .filter((x) => x.dias.length > 0);
+  const precioNino = conSemanas
+    ? eleccion.reduce((t, { w, dias }) => t + precioEleccion(w, dias.length, salida.precioDia), 0)
+    : salida.precio;
   const total = precioNino * ninos.length;
-  // No se pueden agregar más niños de los que caben en la semana más llena de las elegidas.
-  const maxNinos = semanasElegidas.length
-    ? Math.min(maxNinosSalida, ...semanasElegidas.map(libresSemana))
+  // No se pueden agregar más niños de los que caben en el día más lleno de los elegidos.
+  const maxNinos = eleccion.length
+    ? Math.min(maxNinosSalida, ...eleccion.flatMap(({ w, dias }) => dias.map((f) => libresDia(w, f))))
     : maxNinosSalida;
+  const semanasCompletas = eleccion.filter(({ w, dias }) => dias.length === diasSemana(w).length).length;
+  const diasSueltos = eleccion.reduce((t, { w, dias }) => t + (dias.length === diasSemana(w).length ? 0 : dias.length), 0);
+  const plural = (n: number, uno: string, varios: string) => `${n} ${n === 1 ? uno : varios}`;
   const detallePrecio = conSemanas
-    ? semanasElegidas.length === 0
-      ? "Elige al menos una semana"
-      : `${ninos.length} ${ninos.length === 1 ? "niño" : "niños"} × ${semanasElegidas.length} ${semanasElegidas.length === 1 ? "semana" : "semanas"}`
+    ? eleccion.length === 0
+      ? conDias
+        ? "Elige al menos un día"
+        : "Elige al menos una semana"
+      : `${plural(ninos.length, "niño", "niños")} × ${[
+          semanasCompletas ? plural(semanasCompletas, "semana", "semanas") : "",
+          diasSueltos ? plural(diasSueltos, "día", "días") : "",
+        ]
+          .filter(Boolean)
+          .join(" y ")}`
     : `${ninos.length} × ${clp(salida.precio)}`;
+  const textoEleccion = eleccion
+    .map(({ w, dias }) => textoSemanaInscrita({ ...w, dias }))
+    .join(" · ");
 
-  function cambiarNino(i: number, campo: keyof Nino, valor: string) {
+  function cambiarNino(i: number, campo: keyof NinoFicha, valor: string) {
     setNinos((prev) =>
-      prev.map((n, j) => (j === i ? { ...n, [campo]: campo === "edad" ? Number(valor) : valor } : n)),
+      prev.map((n, j) =>
+        j === i ? { ...n, [campo]: campo === "edad" || campo === "meses" ? Number(valor) : valor } : n,
+      ),
     );
   }
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
-    if (conSemanas && semanasElegidas.length === 0) {
-      setError("Elige al menos una semana del club.");
+    if (conSemanas && eleccion.length === 0) {
+      setError(conDias ? "Elige al menos un día del club." : "Elige al menos una semana del club.");
       document.getElementById("semanas")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const rutMalo = ninos.find((n) => !rutValido(n.rut ?? ""));
+    if (rutMalo) {
+      setError(`Revisa el RUT de ${nombreNino(rutMalo) || "uno de los niños"}.`);
       return;
     }
     const fueraDeRango = ninos.find((n) => n.edad < salida.edadMin || n.edad > salida.edadMax);
     if (fueraDeRango) {
       setError(
-        `${fueraDeRango.nombre || "Uno de los niños"} no está en el rango de edad de esta salida (${edades(salida.edadMin, salida.edadMax)}).`,
+        `${nombreNino(fueraDeRango) || "Uno de los niños"} no está en el rango de edad de esta salida (${edades(salida.edadMin, salida.edadMax)}).`,
       );
       return;
     }
@@ -77,10 +117,13 @@ export function FormularioInscripcion({
     try {
       const r = await iniciarInscripcion({
         salidaId: salida.id,
-        semanas: semanasElegidas.map((w) => w.id),
+        dias: elegidos,
         ninos,
         apoderado,
         emergencia,
+        retiro,
+        centroMedico,
+        comentarios,
         autoriza,
       });
       if (!r.ok) {
@@ -142,7 +185,7 @@ export function FormularioInscripcion({
                 <span>
                   {salida.titulo} × {ninos.length}
                   {conSemanas && (
-                    <span className="block text-gris">{semanasElegidas.map((w) => rangoDias(w.inicio, w.fin)).join(" · ")}</span>
+                    <span className="block text-gris">{textoEleccion}</span>
                   )}
                 </span>
                 <span>{clp(total)}</span>
@@ -177,17 +220,27 @@ export function FormularioInscripcion({
 
       {conSemanas && (
         <fieldset id="semanas" className="scroll-mt-24 rounded-2xl bg-white p-6">
-          <legend className="float-left mb-1 w-full text-lg font-semibold">¿Qué semanas vienen?</legend>
+          <legend className="float-left mb-1 w-full text-lg font-semibold">
+            {conDias ? "¿Qué días vienen?" : "¿Qué semanas vienen?"}
+          </legend>
           <p className="clear-both mb-5 text-sm text-gris">
-            Toca cada semana que quieras tomar. Se inscriben completas y el precio es por niño.
-            {ninos.length > 1 && " Todos los niños van a las mismas semanas."}
+            {conDias ? (
+              <>
+                Toca cada día que quieras tomar, o «Semana completa». Cada día cuesta {clp(salida.precioDia!)} por niño
+                y la semana completa sale más conveniente.
+              </>
+            ) : (
+              "Toca cada semana que quieras tomar. Se inscriben completas y el precio es por niño."
+            )}
+            {ninos.length > 1 && (conDias ? " Todos los niños van los mismos días." : " Todos los niños van a las mismas semanas.")}
           </p>
           <SelectorSemanas
             semanas={salida.semanas}
-            abiertas={semanasAbiertas}
-            elegidas={elegidas}
-            cambiar={(ids) => {
-              setElegidas(ids);
+            precioDia={conDias ? salida.precioDia : null}
+            abiertos={diasAbiertos}
+            elegidos={elegidos}
+            cambiar={(dias) => {
+              setElegidos(dias);
               setError("");
             }}
             ninos={ninos.length}
@@ -213,9 +266,9 @@ export function FormularioInscripcion({
                 </button>
               )}
             </div>
-            <div className="grid gap-4 sm:grid-cols-[1fr_120px]">
+            <div className="grid gap-4 sm:grid-cols-3">
               <label>
-                <span className="rotulo">Nombre completo</span>
+                <span className="rotulo">Nombres</span>
                 <input
                   required
                   className="campo"
@@ -224,7 +277,37 @@ export function FormularioInscripcion({
                 />
               </label>
               <label>
-                <span className="rotulo">Edad</span>
+                <span className="rotulo">Primer apellido</span>
+                <input
+                  required
+                  className="campo"
+                  value={n.apellidoPaterno}
+                  onChange={(e) => cambiarNino(i, "apellidoPaterno", e.target.value)}
+                />
+              </label>
+              <label>
+                <span className="rotulo">Segundo apellido</span>
+                <input
+                  required
+                  className="campo"
+                  value={n.apellidoMaterno}
+                  onChange={(e) => cambiarNino(i, "apellidoMaterno", e.target.value)}
+                />
+              </label>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-[1fr_110px_130px]">
+              <label>
+                <span className="rotulo">RUT</span>
+                <input
+                  required
+                  className="campo"
+                  placeholder="12345678-9"
+                  value={n.rut}
+                  onChange={(e) => cambiarNino(i, "rut", e.target.value)}
+                />
+              </label>
+              <label>
+                <span className="rotulo">Edad (años)</span>
                 <input
                   required
                   type="number"
@@ -235,12 +318,53 @@ export function FormularioInscripcion({
                   onChange={(e) => cambiarNino(i, "edad", e.target.value)}
                 />
               </label>
+              <label>
+                <span className="rotulo">y meses</span>
+                <select
+                  className="campo"
+                  value={n.meses ?? 0}
+                  onChange={(e) => cambiarNino(i, "meses", e.target.value)}
+                >
+                  {Array.from({ length: 12 }, (_, m) => (
+                    <option key={m} value={m}>
+                      {m} {m === 1 ? "mes" : "meses"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-[1fr_160px]">
+              <label>
+                <span className="rotulo">¿Alguna alergia?</span>
+                <input
+                  required
+                  className="campo"
+                  placeholder="Ej.: picadura de abeja, maní. Si no tiene, «ninguna»."
+                  value={n.alergias}
+                  onChange={(e) => cambiarNino(i, "alergias", e.target.value)}
+                />
+              </label>
+              <label>
+                <span className="rotulo">Grupo sanguíneo</span>
+                <select
+                  className="campo"
+                  value={n.grupoSanguineo ?? ""}
+                  onChange={(e) => cambiarNino(i, "grupoSanguineo", e.target.value)}
+                >
+                  <option value="">No lo sé</option>
+                  {GRUPOS_SANGUINEOS.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
             <label className="block">
-              <span className="rotulo">Alergias, enfermedades o cuidados de salud</span>
+              <span className="rotulo">¿Alguna enfermedad, diagnóstico o condición que debamos saber?</span>
               <textarea
                 className="campo min-h-20"
-                placeholder="Ej.: alérgico a las abejas, usa inhalador. Si no tiene, escribe «ninguna»."
+                placeholder="Ej.: asma (usa inhalador), se marea en el auto. Si no, escribe «ninguna»."
                 required
                 value={n.salud}
                 onChange={(e) => cambiarNino(i, "salud", e.target.value)}
@@ -310,39 +434,92 @@ export function FormularioInscripcion({
       </fieldset>
 
       <fieldset className="rounded-2xl bg-white p-6">
-        <legend className="float-left mb-1 w-full text-lg font-semibold">Contacto de emergencia</legend>
-        <p className="clear-both mb-4 text-sm text-gris">Una persona distinta al apoderado, por si no logramos ubicarte.</p>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <label>
-            <span className="rotulo">Nombre</span>
+        <legend className="float-left mb-4 w-full text-lg font-semibold">Retiro y emergencias</legend>
+        <div className="clear-both space-y-6">
+          <div>
+            <h3 className="text-sm font-semibold">
+              ¿Quién retira {ninos.length === 1 ? "al niño o niña" : "a los niños"}?
+            </h3>
+            <div className="mt-2 grid gap-4 sm:grid-cols-2">
+              <label>
+                <span className="rotulo">Nombre</span>
+                <input
+                  required
+                  className="campo"
+                  value={retiro.nombre}
+                  onChange={(e) => setRetiro({ ...retiro, nombre: e.target.value })}
+                />
+              </label>
+              <label>
+                <span className="rotulo">Teléfono</span>
+                <input
+                  required
+                  type="tel"
+                  className="campo"
+                  placeholder="+56 9 1234 5678"
+                  value={retiro.telefono}
+                  onChange={(e) => setRetiro({ ...retiro, telefono: e.target.value })}
+                />
+              </label>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold">Contacto en caso de emergencia</h3>
+            <p className="text-sm text-gris">Una persona distinta al apoderado, por si no logramos ubicarte.</p>
+            <div className="mt-2 grid gap-4 sm:grid-cols-3">
+              <label>
+                <span className="rotulo">Nombre</span>
+                <input
+                  required
+                  className="campo"
+                  value={emergencia.nombre}
+                  onChange={(e) => setEmergencia({ ...emergencia, nombre: e.target.value })}
+                />
+              </label>
+              <label>
+                <span className="rotulo">Teléfono</span>
+                <input
+                  required
+                  type="tel"
+                  className="campo"
+                  value={emergencia.telefono}
+                  onChange={(e) => setEmergencia({ ...emergencia, telefono: e.target.value })}
+                />
+              </label>
+              <label>
+                <span className="rotulo">Relación</span>
+                <input
+                  required
+                  className="campo"
+                  placeholder="Abuela, tío…"
+                  value={emergencia.relacion}
+                  onChange={(e) => setEmergencia({ ...emergencia, relacion: e.target.value })}
+                />
+              </label>
+            </div>
+          </div>
+          <label className="block">
+            <span className="rotulo">En caso de accidente, ¿a qué centro médico los llevamos?</span>
             <input
               required
               className="campo"
-              value={emergencia.nombre}
-              onChange={(e) => setEmergencia({ ...emergencia, nombre: e.target.value })}
-            />
-          </label>
-          <label>
-            <span className="rotulo">Teléfono</span>
-            <input
-              required
-              type="tel"
-              className="campo"
-              value={emergencia.telefono}
-              onChange={(e) => setEmergencia({ ...emergencia, telefono: e.target.value })}
-            />
-          </label>
-          <label>
-            <span className="rotulo">Relación</span>
-            <input
-              required
-              className="campo"
-              placeholder="Abuela, tío…"
-              value={emergencia.relacion}
-              onChange={(e) => setEmergencia({ ...emergencia, relacion: e.target.value })}
+              placeholder="Ej.: Clínica Alemana de Vitacura"
+              value={centroMedico}
+              onChange={(e) => setCentroMedico(e.target.value)}
             />
           </label>
         </div>
+      </fieldset>
+
+      <fieldset className="rounded-2xl bg-white p-6">
+        <legend className="float-left mb-1 w-full text-lg font-semibold">¿Algo más que quieras contarnos?</legend>
+        <p className="clear-both mb-3 text-sm text-gris">Opcional. Cómo es, qué le gusta, si es su primera vez en el club…</p>
+        <textarea
+          className="campo min-h-24"
+          maxLength={2000}
+          value={comentarios}
+          onChange={(e) => setComentarios(e.target.value)}
+        />
       </fieldset>
 
       <fieldset className="rounded-2xl bg-white p-6">

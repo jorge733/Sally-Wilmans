@@ -4,6 +4,7 @@ import { db } from "./firebase-admin";
 import { hoyChile } from "./format";
 import { ultimoDia } from "./salida-utils";
 export { cuposLibres, salidaAbierta } from "./salida-utils";
+import type { RespuestaEncuesta } from "./encuesta";
 import { AJUSTES_POR_DEFECTO } from "./site";
 import type { AjustesSitio, FotoGaleria, Inscripcion, Salida } from "./types";
 
@@ -26,6 +27,7 @@ export function aSalida(d: Doc): Salida {
     cupos: x.cupos ?? 0,
     cuposTomados: x.cuposTomados ?? 0,
     semanas: Array.isArray(x.semanas) ? x.semanas : [],
+    precioDia: x.precioDia || null,
     descripcion: x.descripcion ?? "",
     queLlevar: x.queLlevar ?? [],
     fotos: Array.isArray(x.fotos)
@@ -86,4 +88,22 @@ export async function obtenerGaleria(): Promise<FotoGaleria[]> {
   return snap.docs
     .map((d) => ({ id: d.id, ...(d.data() as Omit<FotoGaleria, "id">) }))
     .sort((a, b) => a.orden - b.orden || a.creadoEn - b.creadoEn);
+}
+
+export async function respuestasEncuesta(): Promise<RespuestaEncuesta[]> {
+  const snap = await db.collection("encuestaJovenes").orderBy("creadoEn", "desc").get();
+  return snap.docs.map((d) => {
+    const x = d.data();
+    return {
+      id: d.id,
+      nombre: x.nombre ?? "",
+      edad: x.edad ?? 0,
+      elegidas: x.elegidas ?? {},
+      otros: x.otros ?? {},
+      frecuencia: x.frecuencia ?? "",
+      dias: x.dias ?? [],
+      comentario: x.comentario ?? "",
+      creadoEn: x.creadoEn ?? 0,
+    } as RespuestaEncuesta;
+  });
 }

@@ -2,8 +2,20 @@ import "server-only";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "./firebase-admin";
 import { aInscripcion, aSalida } from "./data";
-import { rangoDias } from "./format";
-import { cuposLibres, libresSemana, porSemanas, salidaAbierta, semanaAbierta } from "./salida-utils";
+import { fechaLarga, rangoDias } from "./format";
+import {
+  cuposLibres,
+  diaAbierto,
+  diasInscritos,
+  diasSemana,
+  libresDia,
+  porDia,
+  porSemanas,
+  precioEleccion,
+  salidaAbierta,
+  semanaCompletaAbierta,
+  tomadosEn,
+} from "./salida-utils";
 import { enviarAvisosInscripcion } from "./email";
 import { ESTADO_FLOW, type EstadoFlow } from "./flow";
 import type { Inscripcion, Nino, SemanaInscrita } from "./types";
@@ -19,15 +31,19 @@ export interface DatosInscripcion {
   salidaId: string;
   apoderado: Inscripcion["apoderado"];
   emergencia: Inscripcion["emergencia"];
+  retiro: NonNullable<Inscripcion["retiro"]>;
+  centroMedico: string;
+  comentarios: string;
   ninos: Nino[];
-  /** Ids de las semanas elegidas (solo en salidas por semanas) */
-  semanas: string[];
+  /** Días elegidos, YYYY-MM-DD (solo en salidas por semanas; una semana completa = todos sus días) */
+  dias: string[];
   textoAutorizacion: string;
 }
 
 /**
  * Cambios en la salida para tomar (signo 1) o devolver (signo -1) los cupos de una inscripción.
- * En salidas por semanas se mueve el cupo de cada semana elegida (y el total, que es la suma).
+ * En salidas por semanas se mueve el cupo de cada día elegido; el de la semana es el de su día
+ * más lleno y el total de la salida, la suma de las semanas.
  */
 function cambiosCupos(
   salidaSnap: Doc,
@@ -36,10 +52,15 @@ function cambiosCupos(
 ): Record<string, unknown> {
   const delta = signo * insc.cantidad;
   if (!insc.semanas?.length) return { cuposTomados: FieldValue.increment(delta) };
-  const ids = new Set(insc.semanas.map((w) => w.id));
-  const semanas = aSalida(salidaSnap).semanas.map((w) =>
-    ids.has(w.id) ? { ...w, cuposTomados: Math.max(0, w.cuposTomados + delta) } : w,
-  );
+  const elegidas = new Map(insc.semanas.map((w) => [w.id, new Set(diasInscritos(w))]));
+  const semanas = aSalida(salidaSnap).semanas.map((w) => {
+    const dias = elegidas.get(w.id);
+    if (!dias) return w;
+    const tomadosDia = Object.fromEntries(
+      diasSemana(w).map((f) => [f, Math.max(0, tomadosEn(w, f) + (dias.has(f) ? delta : 0))]),
+    );
+    return { ...w, tomadosDia, cuposTomados: Math.max(0, ...Object.values(tomadosDia)) };
+  });
   return { semanas, cuposTomados: semanas.reduce((t, w) => t + w.cuposTomados, 0) };
 }
 
@@ -84,20 +105,38 @@ export async function reservar(datos: DatosInscripcion): Promise<Inscripcion> {
     let semanas: SemanaInscrita[] | undefined;
     let precioUnitario = salida.precio;
     if (porSemanas(salida)) {
-      const elegidas = salida.semanas.filter((w) => datos.semanas.includes(w.id));
-      if (!elegidas.length || elegidas.length !== new Set(datos.semanas).size) {
-        throw new ErrorInscripcion("Elige al menos una semana.");
-      }
-      for (const w of elegidas) {
-        const libres = libresSemana(w);
-        if (!semanaAbierta(w)) throw new ErrorInscripcion(`La semana del ${rangoDias(w.inicio, w.fin)} ya no recibe inscripciones.`);
-        if (cantidad > libres) {
+      const conDias = porDia(salida);
+      const pedidos = new Set(datos.dias);
+      semanas = [];
+      for (const w of salida.semanas) {
+        const todos = diasSemana(w);
+        const dias = todos.filter((f) => pedidos.has(f));
+        if (!dias.length) continue;
+        dias.forEach((f) => pedidos.delete(f));
+        const completa = dias.length === todos.length;
+        if (!conDias && !completa) {
+          throw new ErrorInscripcion(`La semana del ${rangoDias(w.inicio, w.fin)} se inscribe completa.`);
+        }
+        if (conDias ? dias.some((f) => !diaAbierto(w, f)) : !semanaCompletaAbierta(w)) {
+          throw new ErrorInscripcion(`La semana del ${rangoDias(w.inicio, w.fin)} ya no recibe inscripciones en esas fechas.`);
+        }
+        const llena = dias.find((f) => libresDia(w, f) < cantidad);
+        if (llena) {
+          const libres = libresDia(w, llena);
           throw new ErrorInscripcion(
-            `En la semana del ${rangoDias(w.inicio, w.fin)} ${libres === 1 ? "solo queda 1 cupo" : `solo quedan ${libres} cupos`}.`,
+            `El ${fechaLarga(llena)} ${libres === 1 ? "solo queda 1 cupo" : `solo quedan ${libres} cupos`}.`,
           );
         }
+        semanas.push({
+          id: w.id,
+          inicio: w.inicio,
+          fin: w.fin,
+          precio: precioEleccion(w, dias.length, salida.precioDia),
+          ...(completa ? {} : { dias }),
+        });
       }
-      semanas = elegidas.map(({ id, inicio, fin, precio }) => ({ id, inicio, fin, precio }));
+      if (pedidos.size) throw new ErrorInscripcion("Alguno de los días elegidos ya no está en el calendario. Recarga la página.");
+      if (!semanas.length) throw new ErrorInscripcion(conDias ? "Elige al menos un día." : "Elige al menos una semana.");
       precioUnitario = semanas.reduce((t, w) => t + w.precio, 0);
     } else {
       const libres = cuposLibres(salida);
@@ -112,9 +151,12 @@ export async function reservar(datos: DatosInscripcion): Promise<Inscripcion> {
     const insc: Omit<Inscripcion, "id"> = {
       salidaId: salida.id,
       salidaTitulo: salida.titulo,
-      salidaFecha: semanas?.[0]?.inicio ?? salida.fecha,
+      salidaFecha: semanas?.[0] ? diasInscritos(semanas[0])[0] : salida.fecha,
       apoderado: datos.apoderado,
       emergencia: datos.emergencia,
+      retiro: datos.retiro,
+      centroMedico: datos.centroMedico,
+      comentarios: datos.comentarios,
       ninos: datos.ninos,
       ...(semanas ? { semanas } : {}),
       autorizacion: { aceptada: true, texto: datos.textoAutorizacion, fecha: ahora },
@@ -141,7 +183,7 @@ function hayMenosCupos(salida: ReturnType<typeof aSalida>, insc: Inscripcion): b
   if (!insc.semanas?.length) return Math.max(0, salida.cupos - salida.cuposTomados) < insc.cantidad;
   return insc.semanas.some((elegida) => {
     const w = salida.semanas.find((x) => x.id === elegida.id);
-    return !w || libresSemana(w) < insc.cantidad;
+    return !w || diasInscritos(elegida).some((f) => libresDia(w, f) < insc.cantidad);
   });
 }
 

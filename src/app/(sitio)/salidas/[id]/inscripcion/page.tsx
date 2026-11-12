@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { obtenerAjustes, obtenerSalida } from "@/lib/data";
 import { liberarReservasVencidas } from "@/lib/inscripciones";
-import { cuposLibres, salidaAbierta, semanaAbierta } from "@/lib/salida-utils";
+import { hoyChile } from "@/lib/format";
+import { cuposLibres, diaAbierto, diasSemana, porDia, salidaAbierta, semanaCompletaAbierta } from "@/lib/salida-utils";
+import type { Salida } from "@/lib/types";
 import { FormularioInscripcion } from "./FormularioInscripcion";
 
 type Props = { params: Promise<{ id: string }> };
@@ -12,6 +14,19 @@ export const metadata: Metadata = { title: "Inscripción", robots: { index: fals
 
 /** Siempre al día: los cupos se revisan en cada visita. */
 export const dynamic = "force-dynamic";
+
+/** Días que todavía se pueden elegir: uno por uno con precio por día, o los de cada semana completa abierta. */
+function diasAbiertos(salida: Salida): string[] {
+  const hoy = hoyChile();
+  const conDias = porDia(salida);
+  return salida.semanas.flatMap((w) =>
+    conDias
+      ? diasSemana(w).filter((f) => diaAbierto(w, f, hoy))
+      : semanaCompletaAbierta(w, hoy)
+        ? diasSemana(w)
+        : [],
+  );
+}
 
 export default async function PaginaInscripcion({ params }: Props) {
   const { id } = await params;
@@ -30,7 +45,7 @@ export default async function PaginaInscripcion({ params }: Props) {
           <FormularioInscripcion
             salida={salida}
             maxNinos={Math.min(cuposLibres(salida), 5)}
-            semanasAbiertas={salida.semanas.filter((w) => semanaAbierta(w)).map((w) => w.id)}
+            diasAbiertos={diasAbiertos(salida)}
             textoAutorizacion={ajustes.textoAutorizacion}
           />
         ) : (

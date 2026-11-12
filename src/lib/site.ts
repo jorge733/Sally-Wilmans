@@ -45,7 +45,7 @@ export const PASOS = [
   },
   {
     titulo: "Completa la ficha",
-    texto: "Datos de cada niño, alergias o cuidados de salud, contacto de emergencia y tu autorización.",
+    texto: "Datos de cada niño, alergias y salud, quién lo retira, contacto de emergencia y tu autorización.",
   },
   {
     titulo: "Paga en línea",

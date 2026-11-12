@@ -12,10 +12,10 @@ import {
 } from "@/components/Iconos";
 import { GaleriaSalida } from "@/components/GaleriaSalida";
 import { Paisaje } from "@/components/Paisaje";
-import { EstadoCupos, textoPrecio } from "@/components/TarjetaSalida";
+import { EstadoCupos, precioSemana, textoPrecio } from "@/components/TarjetaSalida";
 import { obtenerAjustes, obtenerSalida } from "@/lib/data";
 import { clp, diasHabiles, edades, fechaSalida, linkWhatsapp, rangoDias } from "@/lib/format";
-import { libresSemana, porSemanas, salidaAbierta, semanaAbierta, varianteDe } from "@/lib/salida-utils";
+import { libresSemana, porDia, porSemanas, salidaAbierta, semanaAbierta, varianteDe } from "@/lib/salida-utils";
 import { OG_BASE } from "@/lib/site";
 
 type Props = { params: Promise<{ id: string }> };
@@ -126,12 +126,26 @@ export default async function DetalleSalida({ params }: Props) {
           <div className="rounded-2xl border border-linea bg-white p-6 shadow-xl shadow-marca/5">
             {porSemanas(salida) ? (
               <>
-                <div className="text-sm text-gris">Valor por niño, cada semana</div>
-                <div className="text-3xl font-bold">{textoPrecio(salida).valor}</div>
+                {porDia(salida) ? (
+                  <>
+                    <div className="text-sm text-gris">Valor por niño</div>
+                    <div className="text-3xl font-bold">
+                      {clp(salida.precioDia!)} <span className="text-base font-medium text-gris">por día</span>
+                    </div>
+                    <div className="mt-1 text-sm text-gris">
+                      o {clp(Math.max(...salida.semanas.map((w) => w.precio)))} la semana completa (lunes a viernes)
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm text-gris">Valor por niño, cada semana</div>
+                    <div className="text-3xl font-bold">{textoPrecio(salida).valor}</div>
+                  </>
+                )}
                 <ul className="mt-5 divide-y divide-linea rounded-xl border border-linea text-sm">
                   {salida.semanas.map((w) => {
                     const libres = libresSemana(w);
-                    const abiertaW = semanaAbierta(w);
+                    const abiertaW = semanaAbierta(w, porDia(salida));
                     return (
                       <li key={w.id} className={`flex items-center justify-between gap-3 px-3 py-2 ${abiertaW ? "" : "text-gris"}`}>
                         <span>
@@ -148,7 +162,7 @@ export default async function DetalleSalida({ params }: Props) {
                                 : `${diasHabiles(w.inicio, w.fin)} días · quedan ${libres} cupos`}
                           </span>
                         </span>
-                        <span className={`font-semibold ${abiertaW ? "" : "line-through"}`}>{clp(w.precio)}</span>
+                        <span className={`font-semibold ${abiertaW ? "" : "line-through"}`}>{clp(precioSemana(salida, w))}</span>
                       </li>
                     );
                   })}
@@ -165,7 +179,7 @@ export default async function DetalleSalida({ params }: Props) {
             )}
             {abierta ? (
               <Link href={`/salidas/${salida.id}/inscripcion`} className="btn btn-primario mt-6 w-full">
-                {porSemanas(salida) ? "Elegir semanas" : "Inscribir"} <IconoFlecha />
+                {porDia(salida) ? "Elegir días" : porSemanas(salida) ? "Elegir semanas" : "Inscribir"} <IconoFlecha />
               </Link>
             ) : (
               <div className="mt-6 rounded-xl bg-crema p-4 text-center text-sm">

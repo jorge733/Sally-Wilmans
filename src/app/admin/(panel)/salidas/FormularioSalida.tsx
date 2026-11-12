@@ -25,6 +25,7 @@ export function FormularioSalida({ salida }: { salida?: Salida }) {
   const [desde, setDesde] = useState(s.fecha ?? "");
   const [hasta, setHasta] = useState(s.fechaFin ?? "");
   const [porSem, setPorSem] = useState(Boolean(s.semanas?.length));
+  const [precioDia, setPrecioDia] = useState(s.precioDia ? String(s.precioDia) : "");
   const [semanas, setSemanas] = useState<FilaSemana[]>(
     (s.semanas ?? []).map((w) => ({ ...w, precio: String(w.precio), cupos: String(w.cupos) })),
   );
@@ -132,11 +133,30 @@ export function FormularioSalida({ salida }: { salida?: Salida }) {
             <span>
               Las familias eligen qué semanas toman
               <span className="block font-normal text-gris">
-                Cada semana se inscribe completa y tiene su propio precio y cupos. Las fechas, el precio «desde» y los
-                cupos totales de la salida salen de las semanas.
+                Cada semana tiene su propio precio y cupos (por día). Las fechas, el precio «desde» y los cupos totales
+                de la salida salen de las semanas.
               </span>
             </span>
           </label>
+          {conSemanas && (
+            <label className="block max-w-xs">
+              <span className="rotulo">Precio por día suelto (CLP, opcional)</span>
+              <input
+                name="precioDia"
+                type="number"
+                min={0}
+                step={500}
+                value={precioDia}
+                onChange={(e) => setPrecioDia(e.target.value)}
+                className="campo"
+              />
+              <span className="mt-1 block text-xs text-gris">
+                {precioDia && Number(precioDia) > 0
+                  ? `${clp(Number(precioDia))} por día. Las familias pueden elegir días sueltos o semanas completas; nunca pagan más que el precio de la semana.`
+                  : "Déjalo vacío si solo se inscriben semanas completas."}
+              </span>
+            </label>
+          )}
           {conSemanas && (
             <EditorSemanas
               filas={semanas}

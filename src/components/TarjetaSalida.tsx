@@ -1,20 +1,40 @@
 import Link from "next/link";
 import { clp, edades, fechaCorta } from "@/lib/format";
-import { cuposLibres, libresSemana, porSemanas, salidaAbierta, semanaAbierta, semanasVigentes } from "@/lib/salida-utils";
+import {
+  cuposLibres,
+  diasSemana,
+  libresSemana,
+  porDia,
+  porSemanas,
+  precioEleccion,
+  salidaAbierta,
+  semanaAbierta,
+  semanasVigentes,
+} from "@/lib/salida-utils";
 import type { Salida } from "@/lib/types";
 import { IconoFlecha, IconoLugar, IconoNinos, IconoReloj } from "./Iconos";
 import { Paisaje } from "./Paisaje";
 
-/** Precio que se muestra: en salidas por semanas, el de la semana más barata. */
+/** Precio de una semana completa (si por días sale más barato, como en una semana corta, ese). */
+export function precioSemana(salida: Salida, w: Salida["semanas"][number]): number {
+  return precioEleccion(w, diasSemana(w).length, salida.precioDia);
+}
+
+/** Precio que se muestra: en salidas por semanas, el de la semana más barata (o el del día). */
 export function textoPrecio(salida: Salida): { valor: string; detalle: string } {
   if (!porSemanas(salida)) return { valor: clp(salida.precio), detalle: "por niño" };
+  if (porDia(salida)) {
+    // La semana de referencia es la de 5 días; las cortas cuestan menos.
+    const normal = Math.max(...salida.semanas.map((w) => w.precio));
+    return { valor: clp(salida.precioDia!), detalle: `por niño, cada día · ${clp(normal)} la semana` };
+  }
   const distintos = new Set(salida.semanas.map((w) => w.precio)).size > 1;
   return { valor: `${distintos ? "Desde " : ""}${clp(salida.precio)}`, detalle: "por niño, cada semana" };
 }
 
 function EstadoSemanas({ salida }: { salida: Salida }) {
   const vigentes = semanasVigentes(salida);
-  const conCupo = vigentes.filter((w) => semanaAbierta(w)).length;
+  const conCupo = vigentes.filter((w) => semanaAbierta(w, porDia(salida))).length;
   const abierta = salidaAbierta(salida);
   const cupos = vigentes.reduce((t, w) => t + w.cupos, 0);
   const pct = cupos ? Math.min(100, (vigentes.reduce((t, w) => t + w.cupos - libresSemana(w), 0) / cupos) * 100) : 100;
