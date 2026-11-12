@@ -8,7 +8,7 @@
 export const EDADES_ENCUESTA = [13, 14, 15, 16] as const;
 
 export interface PreguntaOpciones {
-  id: "juegos" | "actividades" | "deportes" | "temas" | "formatos";
+  id: "juegos" | "actividades" | "temas" | "formatos";
   titulo: string;
   ayuda: string;
   opciones: string[];
@@ -49,24 +49,6 @@ export const PREGUNTAS_ENCUESTA: PreguntaOpciones[] = [
       "Técnicas de supervivencia y nudos",
       "Voluntariado o cuidado del entorno",
       "Arte, música o fogata",
-    ],
-    otro: true,
-  },
-  {
-    id: "deportes",
-    titulo: "¿Qué deportes te gustaría practicar?",
-    ayuda: "Marca todos los que quieras.",
-    opciones: [
-      "Fútbol",
-      "Vóleibol",
-      "Básquetbol",
-      "Ultimate frisbee",
-      "Trail running",
-      "Bicicleta o mountain bike",
-      "Kayak o deportes de agua",
-      "Natación",
-      "Yoga o estiramiento",
-      "Artes marciales",
     ],
     otro: true,
   },

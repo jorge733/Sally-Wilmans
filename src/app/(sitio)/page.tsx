@@ -289,7 +289,7 @@ export default async function Inicio() {
                 Ayúdanos a armar el grupo de jóvenes
               </h3>
               <p className="mt-2 max-w-xl text-gris">
-                Cuéntanos qué juegos, actividades, deportes y temas para
+                Cuéntanos qué juegos, actividades y temas para
                 conversar o debatir te gustaría tener. Son solo 3 minutos.
               </p>
             </div>
