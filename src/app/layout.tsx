@@ -10,10 +10,18 @@ const amatic = Amatic_SC({ variable: "--font-amatic", subsets: ["latin"], weight
 
 export const metadata: Metadata = {
   metadataBase: new URL(urlSitio()),
-  title: { default: `${SITIO.nombre} · ${SITIO.bajada}`, template: `%s · ${SITIO.nombre}` },
+  // Corto (menos de 60 caracteres) y con lo que buscan las familias, para que Google no lo corte.
+  title: { default: `${SITIO.nombre} · ${SITIO.tituloBuscador}`, template: `%s · ${SITIO.nombre}` },
   description: SITIO.descripcion,
   applicationName: SITIO.nombre,
   keywords: ["salidas al cerro", "niños", "senderismo", "naturaleza", "Waldorf", "Santiago", "club de verano"],
+  authors: [{ name: SITIO.responsable }],
+  category: "Actividades para niños",
+  formatDetection: { telephone: false, email: false, address: false },
+  // Código de Google Search Console (Configuración > Verificación de propiedad > Etiqueta HTML).
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+    : {}),
   openGraph: OG_BASE,
   twitter: {
     card: "summary_large_image",

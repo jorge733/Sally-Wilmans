@@ -17,6 +17,7 @@ import { obtenerAjustes, obtenerSalida } from "@/lib/data";
 import { clp, diasHabiles, edades, fechaSalida, linkWhatsapp, rangoDias } from "@/lib/format";
 import { libresSemana, porDia, porSemanas, salidaAbierta, semanaAbierta, varianteDe } from "@/lib/salida-utils";
 import { OG_BASE } from "@/lib/site";
+import { JsonLd, eventoSalida } from "@/lib/datos-estructurados";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -61,6 +62,7 @@ export default async function DetalleSalida({ params }: Props) {
 
   return (
     <article>
+      <JsonLd datos={eventoSalida(salida)} />
       <div className="relative h-64 overflow-hidden sm:h-80">
         {salida.fotoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

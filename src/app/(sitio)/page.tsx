@@ -13,6 +13,7 @@ import {
 } from "@/components/Iconos";
 import { Paisaje } from "@/components/Paisaje";
 import { TarjetaSalida } from "@/components/TarjetaSalida";
+import { JsonLd, organizacion, preguntasFrecuentes, sitioWeb } from "@/lib/datos-estructurados";
 import { varianteDe } from "@/lib/salida-utils";
 import { obtenerAjustes, obtenerContenido, obtenerFotosSitio, salidasPublicas } from "@/lib/data";
 import { FOTOS_INCLUIDAS, type FotoSitio } from "@/lib/fotos-sitio";
@@ -133,6 +134,7 @@ export default async function Inicio() {
 
   return (
     <>
+      <JsonLd datos={[organizacion(ajustes), sitioWeb(), preguntasFrecuentes(c.preguntas.lista)]} />
       {/* Banner: encuesta del grupo de jóvenes */}
       {c.encuesta.mostrar && (
       <Link

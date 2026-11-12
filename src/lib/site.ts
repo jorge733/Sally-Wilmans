@@ -7,12 +7,16 @@ export const SITIO = {
   nombre: "Club de la Montaña",
   nombreLargo: "Club de Niños en la Montaña",
   bajada: "Naturaleza, juego libre y vida sana para niños y niñas de 5 a 12 años",
+  /** Lo que va tras el nombre en el título que muestra Google. */
+  tituloBuscador: "Salidas al cerro para niños en Santiago",
+  /** Unos 160 caracteres: lo que Google alcanza a mostrar bajo el título. */
   descripcion:
-    "Club de Niños en la Montaña: salidas al cerro para niños y niñas de 5 a 12 años en Santiago. Naturaleza, senderismo, juego libre y vida sana, inspirado en la pedagogía Waldorf. Revisa las próximas fechas e inscribe a tus hijos en línea.",
+    "Salidas al cerro para niños y niñas de 5 a 12 años en Santiago: senderismo, juego libre y vida sana, inspirado en la pedagogía Waldorf. Revisa las fechas e inscríbete en línea.",
   responsable: "Sally Wilmans Cifuentes",
   ciudad: "Santiago, Chile",
   desde: 2018,
   edades: "5 a 12 años",
+  instagram: "clubdelamontanachile",
 };
 
 /**

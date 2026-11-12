@@ -18,6 +18,7 @@ El sitio público y el panel funcionan con datos reales en Firestore. Lo que que
 - Encuesta para jóvenes de 13 a 16 años en `/encuesta` (juegos, actividades, temas y formatos). Se puede destacar con un aviso en el inicio desde el panel.
 - Imágenes para compartir (WhatsApp, Instagram) del sitio, de cada salida y de la encuesta (`opengraph-image.tsx`).
 - Animaciones al hacer scroll, favicon y botón de WhatsApp.
+- SEO: `/sitemap.xml` (inicio, salidas vigentes y encuesta), `/robots.txt` (cierra panel, pagos y fichas) y datos estructurados para Google: el club y sus preguntas frecuentes en el inicio, y cada salida como evento con fecha, lugar, precio y cupos (`src/lib/datos-estructurados.tsx`).
 
 **Correos (Resend)**
 
@@ -29,7 +30,7 @@ El sitio público y el panel funcionan con datos reales en Firestore. Lo que que
 
 1. Pago real: cargar `FLOW_API_KEY` y `FLOW_SECRET_KEY` de Sally en Vercel y hacer una compra de prueba en sandbox.flow.cl.
 2. Verificar el dominio del remitente en Resend.
-3. Dominio propio y SEO final.
+3. Dominio propio. Al tenerlo: cambiar `NEXT_PUBLIC_SITE_URL` en Vercel, agregar el sitio en Google Search Console, poner el código de verificación en `GOOGLE_SITE_VERIFICATION`, volver a publicar y enviar `/sitemap.xml` desde Search Console. Poner el link del sitio en la bio de Instagram y crear el Perfil de Empresa en Google.
 
 ## Panel (/admin)
 
