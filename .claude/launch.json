@@ -3,6 +3,7 @@
   "configurations": [
     { "name": "web", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 3000 },
     { "name": "web-aparte", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev", "--", "-p", "3005"], "env": { "NEXT_DIST_DIR": ".next-aparte" }, "port": 3005 },
+    { "name": "web-tercero", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev", "--", "-p", "3007"], "env": { "NEXT_DIST_DIR": ".next-tercero" }, "port": 3007 },
     { "name": "emuladores", "runtimeExecutable": "npm", "runtimeArgs": ["run", "emuladores"], "port": 4000 }
   ]
 }

@@ -24,16 +24,9 @@ import {
 import { Paisaje } from "@/components/Paisaje";
 import { TarjetaSalida } from "@/components/TarjetaSalida";
 import { varianteDe } from "@/lib/salida-utils";
-import { obtenerAjustes, salidasPublicas } from "@/lib/data";
+import { obtenerAjustes, obtenerContenido, salidasPublicas } from "@/lib/data";
 import { linkWhatsapp } from "@/lib/format";
-import {
-  CUIDADOS,
-  OG_BASE,
-  PASOS,
-  PILARES,
-  PREGUNTAS,
-  SITIO,
-} from "@/lib/site";
+import { OG_BASE, SITIO } from "@/lib/site";
 
 const ICONOS_CUIDADO = [IconoGrupo, IconoEscudo, IconoCorazon, IconoSendero];
 
@@ -107,6 +100,19 @@ function Hoja({ className = "" }: { className?: string }) {
   );
 }
 
+/** Texto con **negritas**, como lo escribe Sally en el panel. */
+function ConNegritas({ texto }: { texto: string }) {
+  return texto.split(/\*\*(.+?)\*\*/g).map((t, i) =>
+    i % 2 ? (
+      <b key={i} className="text-tinta">
+        {t}
+      </b>
+    ) : (
+      t
+    ),
+  );
+}
+
 /** Retraso de una animación de entrada, para escalonar elementos. */
 const retraso = (ms: number) =>
   ({ "--retraso": `${ms}ms` }) as React.CSSProperties;
@@ -133,27 +139,30 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function Inicio() {
-  const [salidas, ajustes] = await Promise.all([
+  const [salidas, ajustes, c] = await Promise.all([
     salidasPublicas(),
     obtenerAjustes(),
+    obtenerContenido(),
   ]);
 
   return (
     <>
       {/* Banner: encuesta del grupo de jóvenes */}
+      {c.encuesta.mostrar && (
       <Link
         href="/encuesta"
         className="group block bg-acento px-4 py-3 text-center text-sm text-white transition-colors hover:bg-acento-oscuro sm:text-base"
       >
-        <span className="font-semibold">¿Tienes entre 13 y 16 años?</span>{" "}
-        Cuéntanos qué te gustaría hacer en el nuevo grupo de jóvenes.{" "}
+        <span className="font-semibold">{c.encuesta.bannerDestacado}</span>{" "}
+        {c.encuesta.bannerTexto}{" "}
         <span className="font-semibold whitespace-nowrap underline underline-offset-4">
-          Responde la encuesta
+          {c.encuesta.bannerBoton}
           <span aria-hidden className="ml-1 inline-block transition-transform group-hover:translate-x-1">
             →
           </span>
         </span>
       </Link>
+      )}
 
       {/* Portada */}
       <section className="relative isolate overflow-hidden bg-marca text-white">
@@ -167,21 +176,19 @@ export default async function Inicio() {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-16 sm:px-6 md:pt-20 md:pb-24 lg:grid-cols-[1fr_1.05fr] lg:gap-12">
           <div>
             <p className="entrada mano text-2xl text-[#f6c68f] sm:text-3xl">
-              {SITIO.nombreLargo}
+              {c.portada.antetitulo}
             </p>
             <h1
               style={retraso(100)}
               className="entrada mt-3 text-4xl leading-[1.08] font-semibold sm:text-5xl lg:text-[3.4rem]"
             >
-              Llevamos a los niños al cerro a ser niños
+              {c.portada.titulo}
             </h1>
             <p
               style={retraso(220)}
               className="entrada mt-6 max-w-xl text-lg text-marca-claro"
             >
-              Salidas a la naturaleza para niños y niñas de {SITIO.edades}:
-              jugar, moverse, explorar, asombrarse y compartir con otros niños,
-              lejos de las pantallas.
+              {c.portada.texto}
             </p>
             <div
               style={retraso(340)}
@@ -198,8 +205,7 @@ export default async function Inicio() {
               style={retraso(460)}
               className="entrada mt-8 text-sm text-marca-claro"
             >
-              Inspirado en la pedagogía Waldorf · {SITIO.ciudad} · Desde{" "}
-              {SITIO.desde}
+              {c.portada.lineaFinal}
             </p>
           </div>
           <figure className="entrada-foto relative">
@@ -214,7 +220,7 @@ export default async function Inicio() {
               />
             </div>
             <figcaption className="estampa mano absolute -bottom-5 left-5 -rotate-2 rounded-xl bg-crema px-4 py-1.5 text-2xl text-marca shadow-lg">
-              ¡La familia del club!
+              {c.portada.pieFoto}
             </figcaption>
           </figure>
         </div>
@@ -223,9 +229,9 @@ export default async function Inicio() {
       {/* Pilares */}
       <section className="border-b border-linea bg-crema">
         <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-y-3 px-4 py-6 sm:px-6 md:grid-cols-4">
-          {PILARES.map((p, i) => (
+          {c.pilares.map((p, i) => (
             <li
-              key={p}
+              key={i}
               data-revelar="zoom"
               style={retraso(i * 90)}
               className="mano flex items-center justify-center gap-2 text-2xl text-marca uppercase sm:text-3xl"
@@ -246,13 +252,11 @@ export default async function Inicio() {
             <div>
               <p className="etiqueta">Calendario</p>
               <h2 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">
-                Próximas fechas
+                {c.fechas.titulo}
               </h2>
             </div>
             <p className="max-w-md text-gris">
-              Salidas de sábado en la mañana y nuestro Club de Verano en
-              diciembre y enero. Los cupos son limitados y la inscripción se
-              cierra sola cuando se llenan.
+              {c.fechas.texto}
             </p>
           </div>
           {salidas.length > 0 ? (
@@ -270,33 +274,31 @@ export default async function Inicio() {
             </div>
           ) : (
             <div className="mt-10 rounded-2xl border border-dashed border-linea bg-white p-10 text-center">
-              <p className="mano text-3xl text-marca">¡Pronto nuevas fechas!</p>
+              <p className="mano text-3xl text-marca">{c.fechas.vacioTitulo}</p>
               <p className="mt-2 text-gris">
-                Estamos preparando las próximas salidas. Síguenos en Instagram o
-                escríbenos para enterarte primero.
+                {c.fechas.vacioTexto}
               </p>
             </div>
           )}
 
           {/* Invitación a la encuesta del grupo de jóvenes */}
+          {c.encuesta.mostrar && (
           <div
             data-revelar
             className="mt-12 flex flex-col gap-5 rounded-3xl bg-crema p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8"
           >
             <div>
-              <p className="etiqueta">¿Tienes entre 13 y 16 años?</p>
+              <p className="etiqueta">{c.encuesta.bannerDestacado}</p>
               <h3 className="mt-2 text-2xl font-semibold text-marca">
-                Ayúdanos a armar el grupo de jóvenes
+                {c.encuesta.titulo}
               </h3>
-              <p className="mt-2 max-w-xl text-gris">
-                Cuéntanos qué juegos, actividades y temas para
-                conversar o debatir te gustaría tener. Son solo 3 minutos.
-              </p>
+              <p className="mt-2 max-w-xl text-gris">{c.encuesta.texto}</p>
             </div>
             <Link href="/encuesta" className="btn btn-primario shrink-0">
               Responder la encuesta
             </Link>
           </div>
+          )}
         </div>
       </section>
 
@@ -315,39 +317,33 @@ export default async function Inicio() {
             </div>
             <div className="absolute -right-3 -bottom-5 rounded-2xl bg-white px-5 py-4 shadow-xl shadow-marca/10 sm:-right-6">
               <div className="mano text-4xl text-acento">
-                Desde {SITIO.desde}
+                {c.nosotros.sello}
               </div>
-              <div className="text-sm text-gris">llevando niños al cerro</div>
+              <div className="text-sm text-gris">{c.nosotros.selloTexto}</div>
             </div>
           </div>
           <div data-revelar="derecha" style={retraso(150)}>
             <p className="etiqueta">Quiénes somos</p>
             <h2 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">
-              Recuperar la niñez verdadera
+              {c.nosotros.titulo}
             </h2>
             <div className="mt-5 space-y-4 text-gris">
-              <p>
-                En el Club de la Montaña ayudamos a madres y padres de niños y
-                niñas de {SITIO.edades} a recuperar la niñez verdadera: con
-                naturaleza, juego libre y socialización real.
-              </p>
-              <p>
-                Inspirados en la pedagogía Waldorf, salimos al cerro a caminar,
-                jugar, hacer talleres y juegos tradicionales, y a descubrir lo
-                que nos regala la Madre Tierra en cada estación: las añañucas de
-                la primavera, el sol del verano, las hojas del otoño.
-              </p>
-              <p>
-                El club lo dirige{" "}
-                <b className="text-tinta">{SITIO.responsable}</b>, junto a un
-                equipo que acompaña a cada grupo con cariño y cuidado.
-              </p>
+              {c.nosotros.parrafos
+                .split(/\n\s*\n/)
+                .map((p) => p.trim())
+                .filter(Boolean)
+                .map((p, i) => (
+                  <p key={i} className="whitespace-pre-line">
+                    <ConNegritas texto={p} />
+                  </p>
+                ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* Club de Verano */}
+      {c.verano.mostrar && (
       <section className="py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div
@@ -361,36 +357,33 @@ export default async function Inicio() {
             <div className="absolute inset-0 -z-10 hidden bg-gradient-to-r from-acento via-acento/90 to-transparent md:block" />
             <p className="mano text-3xl text-[#fde3c3]">Club de Verano</p>
             <h2 className="mt-1 max-w-lg text-3xl font-semibold sm:text-4xl">
-              Del 9 al 30 de diciembre y del 4 al 29 de enero, en el Parque
-              Natural Aguas de Ramón
+              {c.verano.titulo}
             </h2>
-            <p className="mt-4 max-w-lg text-white/90">
-              De lunes a viernes, de 9:00 a 13:00, con recepción desde las 8:30.
-              Juego libre, caminatas y juegos tradicionales para niños y niñas
-              de 5 a 12 años. Puedes inscribir a tus hijos por día ($18.500) o por
-              semana completa ($80.000), con la entrada al parque incluida.
+            <p className="mt-4 max-w-lg whitespace-pre-line text-white/90">
+              {c.verano.texto}
             </p>
             <Link
               href="#salidas"
               className="btn mt-7 bg-white text-acento hover:bg-crema"
             >
-              Ver días y semanas <IconoFlecha />
+              {c.verano.boton} <IconoFlecha />
             </Link>
           </div>
         </div>
       </section>
+      )}
 
       {/* Cómo funciona */}
       <section id="como-funciona" className="scroll-mt-20 bg-crema py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <p className="etiqueta">Inscripción</p>
           <h2 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">
-            Inscribir es así de simple
+            {c.pasos.titulo}
           </h2>
           <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {PASOS.map((p, i) => (
+            {c.pasos.lista.map((p, i) => (
               <li
-                key={p.titulo}
+                key={i}
                 data-revelar
                 style={retraso(i * 120)}
                 className="rounded-2xl bg-white p-6 transition-shadow hover:shadow-lg hover:shadow-marca/10"
@@ -411,16 +404,16 @@ export default async function Inicio() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <p className="etiqueta !text-[#f6c68f]">Seguridad</p>
           <h2 className="mt-2 max-w-xl text-3xl font-semibold sm:text-4xl">
-            Cómo cuidamos a los niños
+            {c.cuidados.titulo}
           </h2>
           <div className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-            {CUIDADOS.map((c, i) => {
-              const Icono = ICONOS_CUIDADO[i];
+            {c.cuidados.lista.map((cuidado, i) => {
+              const Icono = ICONOS_CUIDADO[i % ICONOS_CUIDADO.length];
               return (
-                <div key={c.titulo} data-revelar style={retraso(i * 120)}>
+                <div key={i} data-revelar style={retraso(i * 120)}>
                   <Icono className="size-8 text-[#f6c68f]" />
-                  <h3 className="mt-4 text-lg font-semibold">{c.titulo}</h3>
-                  <p className="mt-2 text-sm text-marca-claro">{c.texto}</p>
+                  <h3 className="mt-4 text-lg font-semibold">{cuidado.titulo}</h3>
+                  <p className="mt-2 text-sm text-marca-claro">{cuidado.texto}</p>
                 </div>
               );
             })}
@@ -435,7 +428,7 @@ export default async function Inicio() {
             <div>
               <p className="etiqueta">Galería</p>
               <h2 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">
-                Así son nuestras salidas
+                {c.galeria.titulo}
               </h2>
             </div>
             {ajustes.instagram && (
@@ -475,21 +468,21 @@ export default async function Inicio() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
           <p className="etiqueta text-center">Preguntas frecuentes</p>
           <h2 className="mt-2 text-center text-3xl font-semibold text-marca sm:text-4xl">
-            Queridas familias
+            {c.preguntas.titulo}
           </h2>
           <div
             data-revelar
             className="mt-10 divide-y divide-linea rounded-2xl bg-white"
           >
-            {PREGUNTAS.map((q) => (
-              <details key={q.p} className="group px-6 py-5">
+            {c.preguntas.lista.map((q, i) => (
+              <details key={i} className="group px-6 py-5">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
                   {q.p}
                   <span className="text-xl text-acento transition group-open:rotate-45">
                     +
                   </span>
                 </summary>
-                <p className="mt-3 text-gris">{q.r}</p>
+                <p className="mt-3 whitespace-pre-line text-gris">{q.r}</p>
               </details>
             ))}
           </div>
@@ -504,13 +497,12 @@ export default async function Inicio() {
             className="grid items-center gap-8 rounded-3xl bg-marca p-8 text-white sm:p-12 md:grid-cols-[1.3fr_1fr]"
           >
             <div>
-              <p className="mano text-3xl text-[#f6c68f]">¡Les esperamos!</p>
+              <p className="mano text-3xl text-[#f6c68f]">{c.contacto.antetitulo}</p>
               <h2 className="mt-1 text-3xl font-semibold sm:text-4xl">
-                ¿Tienes dudas?
+                {c.contacto.titulo}
               </h2>
               <p className="mt-3 max-w-md text-marca-claro">
-                Escríbenos si tienes preguntas sobre una salida, las edades o lo
-                que tu hijo o hija necesita llevar.
+                {c.contacto.texto}
               </p>
             </div>
             <div className="flex flex-col gap-3">

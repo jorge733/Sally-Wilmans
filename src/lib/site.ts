@@ -1,7 +1,7 @@
 /**
  * Textos fijos del sitio, basados en el Instagram @clubdelamontanachile.
  * Se ajustan en las rondas de cambios con Sally.
- * Lo que Sally cambia sola (WhatsApp, correo, autorización) va en el panel > Ajustes.
+ * Lo que Sally cambia sola va en el panel: textos de inicio en Contenido (lib/contenido.ts), WhatsApp, correo y autorización en Ajustes.
  */
 export const SITIO = {
   nombre: "Club de la Montaña",

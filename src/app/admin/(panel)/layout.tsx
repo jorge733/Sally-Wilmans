@@ -19,7 +19,10 @@ export default async function LayoutPanel({ children }: { children: React.ReactN
             <Link href="/admin/encuesta" className="rounded-full px-3 py-2 hover:bg-crema">
               Encuesta
             </Link>
-            <Link href="/admin/ajustes"className="rounded-full px-3 py-2 hover:bg-crema">
+            <Link href="/admin/contenido" className="rounded-full px-3 py-2 hover:bg-crema">
+              Contenido
+            </Link>
+            <Link href="/admin/ajustes" className="rounded-full px-3 py-2 hover:bg-crema">
               Ajustes
             </Link>
             <Link href="/" target="_blank" className="rounded-full px-3 py-2 hover:bg-crema">

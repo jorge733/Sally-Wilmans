@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { cerrarSesion, requerirAdmin } from "@/lib/auth";
 import { aSalida } from "@/lib/data";
+import { esquemaContenido } from "@/lib/contenido";
 import { MAX_FOTOS_SALIDA } from "@/lib/salida-utils";
 import { db } from "@/lib/firebase-admin";
 import { borrarImagen, copiarImagen, subirImagen } from "@/lib/storage";
@@ -334,6 +335,27 @@ export async function guardarAjustes(_: EstadoFormulario, form: FormData): Promi
   await db.collection("ajustes").doc("sitio").set(r.data, { merge: true });
   revalidatePath("/", "layout");
   return { ok: "Ajustes guardados" };
+}
+
+export async function guardarContenido(_: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
+  await requerirAdmin();
+  let datos: unknown;
+  try {
+    datos = JSON.parse(String(form.get("contenido") ?? ""));
+  } catch {
+    return { error: "No se pudo leer el contenido. Recarga la página e intenta de nuevo." };
+  }
+  const r = esquemaContenido.safeParse(datos);
+  if (!r.success) return { error: r.error.issues[0]?.message ?? "Revisa los textos" };
+  const c = r.data;
+  // Se descartan las filas que quedaron vacías.
+  c.pilares = c.pilares.filter(Boolean);
+  c.pasos.lista = c.pasos.lista.filter((x) => x.titulo || x.texto);
+  c.cuidados.lista = c.cuidados.lista.filter((x) => x.titulo || x.texto);
+  c.preguntas.lista = c.preguntas.lista.filter((x) => x.p && x.r);
+  await db.collection("ajustes").doc("contenido").set({ ...c, actualizadoEn: Date.now() });
+  revalidatePath("/", "layout");
+  return { ok: "Contenido guardado. Ya se ve en el sitio." };
 }
 
 export async function salir(): Promise<void> {
