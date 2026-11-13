@@ -17,6 +17,7 @@ import {
   tomadosEn,
 } from "./salida-utils";
 import { enviarAvisosInscripcion } from "./email";
+import { VERSION_DEVOLUCIONES } from "./devoluciones";
 import { ESTADO_FLOW, type EstadoFlow } from "./flow";
 import type { Inscripcion, Nino, SemanaInscrita } from "./types";
 
@@ -160,6 +161,7 @@ export async function reservar(datos: DatosInscripcion): Promise<Inscripcion> {
       ninos: datos.ninos,
       ...(semanas ? { semanas } : {}),
       autorizacion: { aceptada: true, texto: datos.textoAutorizacion, fecha: ahora },
+      devoluciones: { aceptada: true, version: VERSION_DEVOLUCIONES, fecha: ahora },
       cantidad,
       precioUnitario,
       total: precioUnitario * cantidad,

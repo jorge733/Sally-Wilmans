@@ -46,6 +46,7 @@ export function FormularioInscripcion({
   const [centroMedico, setCentroMedico] = useState("");
   const [comentarios, setComentarios] = useState("");
   const [autoriza, setAutoriza] = useState(false);
+  const [aceptaDevoluciones, setAceptaDevoluciones] = useState(false);
   const [error, setError] = useState("");
   const [procesando, setProcesando] = useState(false);
   const [inscripcionId, setInscripcionId] = useState("");
@@ -125,6 +126,7 @@ export function FormularioInscripcion({
         centroMedico,
         comentarios,
         autoriza,
+        aceptaDevoluciones,
       });
       if (!r.ok) {
         setError(r.error);
@@ -536,6 +538,22 @@ export function FormularioInscripcion({
             className="mt-1 size-5 accent-acento"
           />
           <span className="text-sm font-medium">Leí y acepto la autorización.</span>
+        </label>
+        <label className="mt-3 flex items-start gap-3">
+          <input
+            type="checkbox"
+            required
+            checked={aceptaDevoluciones}
+            onChange={(e) => setAceptaDevoluciones(e.target.checked)}
+            className="mt-1 size-5 accent-acento"
+          />
+          <span className="text-sm font-medium">
+            Leí y acepto la{" "}
+            <a href="/devoluciones" target="_blank" rel="noopener" className="text-marca underline underline-offset-2">
+              política de cambios y devoluciones
+            </a>
+            .
+          </span>
         </label>
       </fieldset>
 

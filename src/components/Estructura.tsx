@@ -95,6 +95,9 @@ export function Pie({ ajustes }: { ajustes: AjustesSitio }) {
         <div className="text-sm">
           <div className="mb-3 font-semibold text-white">Pagos seguros</div>
           <p>Las inscripciones se pagan en línea con Flow: débito, crédito y otros medios.</p>
+          <Link href="/devoluciones" className="mt-3 inline-block underline underline-offset-4 hover:text-white">
+            Política de cambios y devoluciones
+          </Link>
         </div>
       </div>
       <div className="border-t border-white/10 px-4 pt-5 pb-24 text-center text-xs">

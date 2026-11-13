@@ -103,7 +103,11 @@ export const PREGUNTAS = [
   },
   {
     p: "¿Qué pasa si llueve o hay mal tiempo?",
-    r: "Si las condiciones no son seguras, la salida se reprograma y les avisamos con anticipación.",
+    r: "Si las condiciones no son seguras, suspendemos la salida y les avisamos por WhatsApp. Ustedes eligen: pasar a otra fecha o recibir la devolución del 100%.",
+  },
+  {
+    p: "¿Y si mi hijo o hija no puede ir?",
+    r: "Avísanos por WhatsApp con al menos 24 horas de anticipación y te devolvemos el 100% por transferencia. Si avisas con menos tiempo, no hay devolución, pero puede recuperar el día en otra salida dentro de 6 meses. Revisa la política completa en la página de cambios y devoluciones.",
   },
 ];
 

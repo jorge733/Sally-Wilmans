@@ -128,6 +128,12 @@ export interface Inscripcion {
     texto: string;
     fecha: number;
   };
+  /** Política de cambios y devoluciones aceptada en la ficha (no existe en inscripciones anteriores a ella) */
+  devoluciones?: {
+    aceptada: boolean;
+    version: string;
+    fecha: number;
+  };
   cantidad: number;
   /** Por niño; en salidas por semanas, la suma de las semanas elegidas */
   precioUnitario: number;

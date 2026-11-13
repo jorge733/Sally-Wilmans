@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { obtenerAjustes } from "./data";
 import { clp, edadNino, edades, fechaSalida, nombreNino, rangoDias } from "./format";
 import { textoSemanaInscrita } from "./salida-utils";
+import { RESUMEN_DEVOLUCIONES } from "./devoluciones";
 import { PREGUNTAS_ENCUESTA, type RespuestaEncuesta } from "./encuesta";
 import { SITIO, urlSitio } from "./site";
 import type { Inscripcion, Salida } from "./types";
@@ -82,13 +83,16 @@ export async function enviarAvisosInscripcion(insc: Inscripcion, salida: Salida)
         .map((x) => `<li>${esc(x)}</li>`)
         .join("")}</ul>`
     : "";
+  const devoluciones = `<h3 style="margin:20px 0 6px;font-size:16px">Si no pueden asistir</h3><ul style="margin:0;padding-left:20px">${RESUMEN_DEVOLUCIONES.map(
+    (x) => `<li>${esc(x)}</li>`,
+  ).join("")}</ul><p style="margin:6px 0 0;font-size:13px"><a href="${urlSitio()}/devoluciones" style="color:#2f4a34">Ver la política completa de cambios y devoluciones</a></p>`;
   const contacto = ajustes.whatsapp
     ? `<p style="margin-top:20px">¿Dudas? Escríbenos por WhatsApp al <b>+${esc(ajustes.whatsapp.replace(/\D/g, ""))}</b>.</p>`
     : "";
 
   const apoderado = marco(
     "¡Inscripción confirmada!",
-    `<p>Hola ${esc(insc.apoderado.nombre.split(" ")[0])}, recibimos tu pago. Este es tu comprobante:</p>${detalle}${llevar}${contacto}<p>Nos vemos en la montaña.<br>${SITIO.nombre}</p>`,
+    `<p>Hola ${esc(insc.apoderado.nombre.split(" ")[0])}, recibimos tu pago. Este es tu comprobante:</p>${detalle}${llevar}${devoluciones}${contacto}<p>Nos vemos en la montaña.<br>${SITIO.nombre}</p>`,
   );
 
   const fichas = insc.ninos

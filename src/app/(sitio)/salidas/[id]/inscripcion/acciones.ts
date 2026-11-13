@@ -54,6 +54,7 @@ const esquema = z.object({
   centroMedico: texto(160, "Indica a qué centro médico llevarlos en caso de accidente"),
   comentarios: z.string().trim().max(2000).default(""),
   autoriza: z.boolean().refine((v) => v, "Debes aceptar la autorización"),
+  aceptaDevoluciones: z.boolean().refine((v) => v, "Debes aceptar la política de cambios y devoluciones"),
 });
 
 export type DatosFicha = z.input<typeof esquema>;
