@@ -15,6 +15,7 @@ El sitio público y el panel funcionan con datos reales en Firestore. Lo que que
 - Ficha de inscripción: datos de cada niño, salud, apoderado, contacto de emergencia y autorización.
 - Club de Verano por semanas: la familia elige semanas completas (y días sueltos si la salida tiene precio por día); los cupos se cuentan por día.
 - Pago con Flow, comprobante en `/inscripcion/[id]` y reintento si el pago falla.
+- Política de cambios y devoluciones en `/devoluciones` (enlazada desde el pie). Ver **Devoluciones**.
 - Encuesta para jóvenes de 13 a 16 años en `/encuesta` (juegos, actividades, temas y formatos). Se puede destacar con un aviso en el inicio desde el panel.
 - Imágenes para compartir (WhatsApp, Instagram) del sitio, de cada salida y de la encuesta (`opengraph-image.tsx`).
 - Animaciones al hacer scroll, favicon y botón de WhatsApp.
@@ -22,7 +23,7 @@ El sitio público y el panel funcionan con datos reales en Firestore. Lo que que
 
 **Correos (Resend)**
 
-- Al pagar: confirmación al apoderado y aviso a `ADMIN_NOTIFY_EMAIL`. Cada correo sale una sola vez aunque Flow avise dos veces.
+- Al pagar: confirmación al apoderado (con un resumen de la política de devoluciones) y aviso a `ADMIN_NOTIFY_EMAIL`. Cada correo sale una sola vez aunque Flow avise dos veces.
 - Cada respuesta de la encuesta llega también por correo.
 - Sin `RESEND_API_KEY` los correos solo se anotan en la consola.
 
@@ -75,6 +76,24 @@ firebase emulators:start --project demo-club-montana
 Para probar con dinero ficticio: crea una cuenta en https://sandbox.flow.cl, usa sus credenciales y `FLOW_API_URL=https://sandbox.flow.cl/api`. Flow tiene que poder llegar a la URL del sitio, así que se prueba en un deploy de Vercel, no en localhost. En local, `PAGO_SIMULADO=1` salta Flow.
 
 Si corres un segundo servidor de desarrollo en la misma carpeta (por ejemplo, desde otra sesión), usa la configuración `web-aparte` de `.claude/launch.json`: compila en `.next-aparte` en el puerto 3005 para no pisar la carpeta `.next`.
+
+## Devoluciones
+
+Política acordada con Sally en noviembre de 2026:
+
+- **La familia cancela una salida:** con aviso por WhatsApp de al menos 24 horas antes del inicio, se devuelve el 100%. Con menos de 24 horas, el mismo día o si el niño no llega, no hay devolución: puede recuperar el día en otra salida sin pagar de nuevo, según cupos, dentro de 6 meses.
+- **Club de Verano:** cada semana se cancela completa, con 24 horas de aviso antes de su primer día (100% de esa semana). Una vez que la semana comenzó, los días faltados no se devuelven, pero se recuperan dentro de 6 meses.
+- **El club suspende la salida** (mal tiempo, pocos inscritos u otro motivo): la familia elige otra fecha o la devolución del 100%.
+- **Trámite:** los avisos solo por WhatsApp; la devolución se hace por transferencia dentro de 3 días hábiles desde que la familia envía los datos de su cuenta. Los casos excepcionales, como una enfermedad con certificado médico, se evalúan caso a caso.
+
+Dónde aparece:
+
+- Página `/devoluciones`, enlazada desde el pie de página y en `/sitemap.xml`.
+- Ficha de inscripción: casilla obligatoria antes de pagar. Cada inscripción guarda `devoluciones: { aceptada, version, fecha }`.
+- Preguntas frecuentes del inicio (la del mal tiempo y «¿Y si mi hijo o hija no puede ir?»). Si las preguntas ya se guardaron desde el panel, hay que actualizarlas ahí.
+- Correo de confirmación: resumen y enlace.
+
+El texto está en `src/lib/devoluciones.ts`. Si la política cambia, edita ese archivo y sube `VERSION_DEVOLUCIONES`, para distinguir qué versión aceptó cada familia.
 
 ## Desarrollo
 
