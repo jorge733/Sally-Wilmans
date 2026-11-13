@@ -100,7 +100,14 @@ export function Pie({ ajustes }: { ajustes: AjustesSitio }) {
       <div className="border-t border-white/10 py-5 text-center text-xs">
         © {new Date().getFullYear()} {SITIO.nombre}
         <span className="mx-2 opacity-50">·</span>
-        Sitio desarrollado por <span className="font-semibold text-white">BenedettoWebs</span>
+        Sitio desarrollado por <a
+          href="https://benedettowebs.cl"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-white hover:underline"
+        >
+          BenedettoWebs
+        </a>
       </div>
     </footer>
   );
