@@ -22,6 +22,8 @@ html {
 }
 
 body {
+  /* En celulares, el clip de html no basta: Chrome igual ensancha la página al cargar. */
+  overflow-x: clip;
   background: #fbf8f1;
   color: var(--color-tinta);
 }
