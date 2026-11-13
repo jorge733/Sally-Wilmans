@@ -97,7 +97,7 @@ export function Pie({ ajustes }: { ajustes: AjustesSitio }) {
           <p>Las inscripciones se pagan en línea con Flow: débito, crédito y otros medios.</p>
         </div>
       </div>
-      <div className="border-t border-white/10 py-5 text-center text-xs">
+      <div className="border-t border-white/10 px-4 pt-5 pb-24 text-center text-xs">
         © {new Date().getFullYear()} {SITIO.nombre}
         <span className="mx-2 opacity-50">·</span>
         Sitio desarrollado por <a
