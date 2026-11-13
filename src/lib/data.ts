@@ -110,11 +110,14 @@ export async function respuestasEncuesta(): Promise<RespuestaEncuesta[]> {
       id: d.id,
       nombre: x.nombre ?? "",
       edad: x.edad ?? 0,
+      vinoAntes: x.vinoAntes ?? "",
+      conAmigos: x.conAmigos ?? "",
       elegidas: x.elegidas ?? {},
       otros: x.otros ?? {},
-      frecuencia: x.frecuencia ?? "",
-      dias: x.dias ?? [],
+      noMeGustaria: x.noMeGustaria ?? "",
+      nombreGrupo: x.nombreGrupo ?? "",
       comentario: x.comentario ?? "",
+      contactoApoderado: x.contactoApoderado ?? "",
       creadoEn: x.creadoEn ?? 0,
     } as RespuestaEncuesta;
   });

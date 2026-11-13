@@ -1,7 +1,16 @@
 import Link from "next/link";
 import { respuestasEncuesta } from "@/lib/data";
-import { DIAS_PREFERIDOS, EDADES_ENCUESTA, FRECUENCIAS, PREGUNTAS_ENCUESTA } from "@/lib/encuesta";
-import { fechaHora } from "@/lib/format";
+import {
+  CON_AMIGOS,
+  EDADES_ENCUESTA,
+  ENCUESTA_ABRE,
+  ENCUESTA_CIERRA,
+  estadoEncuesta,
+  fechaEncuesta,
+  PREGUNTAS_ENCUESTA,
+  VINO_ANTES,
+} from "@/lib/encuesta";
+import { fechaHora, hoyChile } from "@/lib/format";
 import { BotonBorrar } from "./BotonBorrar";
 
 export const metadata = { title: "Encuesta jóvenes" };
@@ -49,6 +58,9 @@ export default async function PanelEncuesta() {
   const respuestas = await respuestasEncuesta();
   const total = respuestas.length;
   const enlace = `${(process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "")}/encuesta`;
+  const estado = estadoEncuesta(hoyChile());
+  const nombres = respuestas.map((r) => r.nombreGrupo).filter(Boolean);
+  const noGusta = respuestas.map((r) => r.noMeGustaria).filter(Boolean);
 
   return (
     <>
@@ -60,6 +72,11 @@ export default async function PanelEncuesta() {
             <Link href="/encuesta" target="_blank" className="font-semibold text-bosque hover:underline">
               {enlace || "/encuesta"}
             </Link>
+          </p>
+          <p className="mt-1 text-sm text-gris">
+            {estado === "pronto" ? "Abre" : estado === "abierta" ? "Abierta" : "Estuvo abierta"} del{" "}
+            {fechaEncuesta(ENCUESTA_ABRE)} al {fechaEncuesta(ENCUESTA_CIERRA)}.
+            {estado === "pronto" && " Antes de esa fecha la página muestra un aviso y el inicio no la anuncia."}
           </p>
         </div>
         <div className="rounded-2xl bg-white px-5 py-3 text-center">
@@ -106,17 +123,37 @@ export default async function PanelEncuesta() {
               );
             })}
             <Conteo
-              titulo="¿Cada cuánto?"
-              opciones={FRECUENCIAS}
-              votos={(o) => respuestas.filter((r) => r.frecuencia === o).length}
+              titulo="¿Ha venido antes?"
+              opciones={VINO_ANTES}
+              votos={(o) => respuestas.filter((r) => r.vinoAntes === o).length}
               total={total}
             />
             <Conteo
-              titulo="Días que les acomodan"
-              opciones={DIAS_PREFERIDOS}
-              votos={(o) => respuestas.filter((r) => r.dias.includes(o)).length}
+              titulo="¿Vendría con amigos?"
+              opciones={CON_AMIGOS}
+              votos={(o) => respuestas.filter((r) => r.conAmigos === o).length}
               total={total}
             />
+            {nombres.length > 0 && (
+              <section className="rounded-2xl bg-white p-5">
+                <h3 className="font-semibold text-marca">Nombres propuestos para el grupo</h3>
+                <ul className="mt-3 list-disc space-y-0.5 pl-5 text-sm">
+                  {nombres.map((n, i) => (
+                    <li key={i}>{n}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {noGusta.length > 0 && (
+              <section className="rounded-2xl bg-white p-5">
+                <h3 className="font-semibold text-marca">Lo que no les gustaría</h3>
+                <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
+                  {noGusta.map((n, i) => (
+                    <li key={i} className="whitespace-pre-line">{n}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
 
           <h2 className="mt-10 mb-3 text-sm font-semibold tracking-wider text-gris uppercase">Cada respuesta</h2>
@@ -143,14 +180,23 @@ export default async function PanelEncuesta() {
                       </div>
                     );
                   })}
-                  <dt className="text-gris">Frecuencia y días</dt>
-                  <dd>{[r.frecuencia, ...r.dias].filter(Boolean).join(" · ") || "—"}</dd>
-                  {r.comentario && (
-                    <>
-                      <dt className="text-gris">Comentario</dt>
-                      <dd className="whitespace-pre-line">{r.comentario}</dd>
-                    </>
-                  )}
+                  {(
+                    [
+                      ["¿Ha venido antes?", r.vinoAntes],
+                      ["¿Con amigos?", r.conAmigos],
+                      ["No le gustaría", r.noMeGustaria],
+                      ["Nombre para el grupo", r.nombreGrupo],
+                      ["Comentario", r.comentario],
+                      ["Contacto del apoderado", r.contactoApoderado],
+                    ] as const
+                  )
+                    .filter(([, v]) => v)
+                    .map(([k, v]) => (
+                      <div key={k} className="contents">
+                        <dt className="text-gris">{k}</dt>
+                        <dd className="whitespace-pre-line">{v}</dd>
+                      </div>
+                    ))}
                 </dl>
               </li>
             ))}

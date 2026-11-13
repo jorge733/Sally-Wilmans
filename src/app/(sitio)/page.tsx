@@ -17,7 +17,8 @@ import { JsonLd, organizacion, preguntasFrecuentes, sitioWeb } from "@/lib/datos
 import { varianteDe } from "@/lib/salida-utils";
 import { obtenerAjustes, obtenerContenido, obtenerFotosSitio, salidasPublicas } from "@/lib/data";
 import { FOTOS_INCLUIDAS, type FotoSitio } from "@/lib/fotos-sitio";
-import { linkWhatsapp } from "@/lib/format";
+import { estadoEncuesta } from "@/lib/encuesta";
+import { hoyChile, linkWhatsapp } from "@/lib/format";
 import { OG_BASE, SITIO } from "@/lib/site";
 
 const ICONOS_CUIDADO = [IconoGrupo, IconoEscudo, IconoCorazon, IconoSendero];
@@ -131,12 +132,14 @@ export default async function Inicio() {
     obtenerContenido(),
     obtenerFotosSitio(),
   ]);
+  // El aviso de la encuesta solo aparece mientras recibe respuestas (y si Sally no lo ocultó).
+  const encuestaVisible = c.encuesta.mostrar && estadoEncuesta(hoyChile()) === "abierta";
 
   return (
     <>
       <JsonLd datos={[organizacion(ajustes), sitioWeb(), preguntasFrecuentes(c.preguntas.lista)]} />
       {/* Banner: encuesta del grupo de jóvenes */}
-      {c.encuesta.mostrar && (
+      {encuestaVisible && (
       <Link
         href="/encuesta"
         className="group block bg-acento px-4 py-3 text-center text-sm text-white transition-colors hover:bg-acento-oscuro sm:text-base"
@@ -268,7 +271,7 @@ export default async function Inicio() {
           )}
 
           {/* Invitación a la encuesta del grupo de jóvenes */}
-          {c.encuesta.mostrar && (
+          {encuestaVisible && (
           <div
             data-revelar
             className="mt-12 flex flex-col gap-5 rounded-3xl bg-crema p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8"

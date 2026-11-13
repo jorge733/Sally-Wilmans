@@ -147,18 +147,22 @@ export async function enviarAvisoEncuesta(r: RespuestaEncuesta): Promise<void> {
   const ajustes = await obtenerAjustes();
   const avisoA = process.env.ADMIN_NOTIFY_EMAIL || ajustes.email;
   if (!avisoA) return;
+  const parrafo = (t: string) => (t ? esc(t).replace(/\n/g, "<br>") : "—");
   const lista = (xs: string[]) => (xs.length ? xs.map(esc).join("<br>") : `<span style="color:#9a9f92">—</span>`);
   const html = marco(
     "Nueva respuesta a la encuesta",
     `<p>Alguien del grupo de 13 a 16 años respondió la encuesta.</p>${filas([
       ["Nombre", r.nombre ? esc(r.nombre) : "Sin nombre"],
       ["Edad", `${r.edad} años`],
+      ["¿Ha venido antes?", r.vinoAntes ? esc(r.vinoAntes) : "—"],
+      ["¿Con amigos?", r.conAmigos ? esc(r.conAmigos) : "—"],
       ...PREGUNTAS_ENCUESTA.map(
-        (p) => [p.titulo, lista([...r.elegidas[p.id], ...(r.otros[p.id] ? [`Otro: ${r.otros[p.id]}`] : [])])] as [string, string],
+        (p) => [p.titulo, lista([...(r.elegidas[p.id] ?? []), ...(r.otros[p.id] ? [`Otro: ${r.otros[p.id]}`] : [])])] as [string, string],
       ),
-      ["Frecuencia", r.frecuencia ? esc(r.frecuencia) : "—"],
-      ["Días", lista(r.dias)],
-      ["Comentario", r.comentario ? esc(r.comentario).replace(/\n/g, "<br>") : "—"],
+      ["No le gustaría", parrafo(r.noMeGustaria)],
+      ["Nombre para el grupo", parrafo(r.nombreGrupo)],
+      ["Comentario", parrafo(r.comentario)],
+      ["Contacto del apoderado", parrafo(r.contactoApoderado)],
     ])}<p style="margin-top:20px"><a href="${urlSitio()}/admin/encuesta" style="color:#2f4a34;font-weight:bold">Ver todas las respuestas en el panel</a></p>`,
   );
   await enviar(avisoA, `Encuesta jóvenes: nueva respuesta (${r.edad} años)`, html, `encuesta-${r.id}`);

@@ -3,9 +3,31 @@
  * Las preguntas y opciones viven aquí para que el formulario, la validación,
  * el correo y el resumen del panel usen exactamente las mismas.
  * Para cambiar una opción basta con editar esta lista (las respuestas antiguas se conservan).
+ * Las opciones siguen la inspiración Waldorf del club: naturaleza, trabajo con las manos,
+ * arte, música y conversación.
  */
 
 export const EDADES_ENCUESTA = [13, 14, 15, 16] as const;
+
+/** Días en que la encuesta recibe respuestas (YYYY-MM-DD, hora de Chile, ambos incluidos). */
+export const ENCUESTA_ABRE = "2026-12-14";
+export const ENCUESTA_CIERRA = "2026-12-30";
+
+/** "2026-12-14" -> "lunes 14 de diciembre" (sin depender de format.ts para que sirva en el navegador). */
+export function fechaEncuesta(fecha: string): string {
+  const [y, m, d] = fecha.split("-").map(Number);
+  return new Intl.DateTimeFormat("es-CL", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })
+    .format(new Date(Date.UTC(y, m - 1, d, 12)))
+    .replace(",", "");
+}
+
+export type EstadoEncuesta = "pronto" | "abierta" | "cerrada";
+
+export function estadoEncuesta(hoy: string): EstadoEncuesta {
+  if (hoy < ENCUESTA_ABRE) return "pronto";
+  if (hoy > ENCUESTA_CIERRA) return "cerrada";
+  return "abierta";
+}
 
 export interface PreguntaOpciones {
   id: "juegos" | "actividades" | "temas" | "formatos";
@@ -29,7 +51,7 @@ export const PREGUNTAS_ENCUESTA: PreguntaOpciones[] = [
       "Juegos de estrategia",
       "Juegos de mesa o cartas",
       "Juegos tradicionales",
-      "Juegos nocturnos con linterna",
+      "Improvisación o teatro",
     ],
     otro: true,
   },
@@ -38,17 +60,18 @@ export const PREGUNTAS_ENCUESTA: PreguntaOpciones[] = [
     titulo: "¿Qué actividades te interesan?",
     ayuda: "Marca todas las que te tinquen.",
     opciones: [
-      "Trekking a cumbres",
-      "Campamento con noche afuera",
+      "Caminatas por senderos",
       "Orientación con mapa y brújula",
-      "Escalada o rappel",
-      "Cocina de campamento",
-      "Observar estrellas",
+      "Construir refugios",
+      "Tallado en madera",
+      "Tejido, fieltro o cestería",
+      "Acuarela o dibujo",
+      "Canto o música en grupo",
+      "Reconocer flora y fauna",
       "Fotografía de naturaleza",
       "Primeros auxilios en montaña",
       "Técnicas de supervivencia y nudos",
       "Voluntariado o cuidado del entorno",
-      "Arte, música o fogata",
     ],
     otro: true,
   },
@@ -57,13 +80,16 @@ export const PREGUNTAS_ENCUESTA: PreguntaOpciones[] = [
     titulo: "¿De qué temas te gustaría conversar o debatir?",
     ayuda: "Marca los que te importen.",
     opciones: [
-      "Medio ambiente y cambio climático",
-      "Redes sociales y pantallas",
+      "Quién soy y qué me mueve",
       "Amistad y relaciones",
+      "Familia y crecer",
       "Emociones y salud mental",
       "Qué quiero estudiar o hacer en el futuro",
+      "Vidas que inspiran",
+      "Cuidar a otros",
+      "Medio ambiente y cambio climático",
+      "Redes sociales y pantallas",
       "Tecnología e inteligencia artificial",
-      "Igualdad y derechos",
       "Música, series y cultura",
       "Deporte y vida sana",
       "Viajes y otras culturas",
@@ -75,19 +101,21 @@ export const PREGUNTAS_ENCUESTA: PreguntaOpciones[] = [
     titulo: "¿Cómo te gustaría que fueran las conversaciones?",
     ayuda: "Marca todas las que te acomoden.",
     opciones: [
+      "Círculo de palabra",
       "Ronda de conversación libre",
+      "Conversar a partir de un relato",
+      "Escribir antes de compartir",
       "Debate por equipos",
       "Charla con un invitado",
       "Conversación caminando",
-      "Alrededor de una fogata",
       "Prefiero solo actividades, sin conversaciones",
     ],
     otro: false,
   },
 ];
 
-export const FRECUENCIAS = ["Cada semana", "Cada dos semanas", "Una vez al mes", "Solo en vacaciones"];
-export const DIAS_PREFERIDOS = ["Sábado", "Domingo", "Viernes en la tarde", "Otro día de semana en la tarde"];
+export const VINO_ANTES = ["Sí", "No"];
+export const CON_AMIGOS = ["Vendría solo o sola", "Con un amigo o amiga", "Con varios amigos"];
 
 export type IdPregunta = PreguntaOpciones["id"];
 
@@ -95,12 +123,20 @@ export interface RespuestaEncuesta {
   id: string;
   nombre: string;
   edad: number;
-  /** Opciones marcadas por pregunta (incluye las escritas en "otro") */
+  /** Si ya participó antes en el club ("Sí" / "No" / "") */
+  vinoAntes: string;
+  /** Si vendría solo o con amigos */
+  conAmigos: string;
+  /** Opciones marcadas por pregunta */
   elegidas: Record<IdPregunta, string[]>;
   /** Texto libre de "otro", por pregunta */
   otros: Partial<Record<IdPregunta, string>>;
-  frecuencia: string;
-  dias: string[];
+  /** Lo que no le gustaría que pasara */
+  noMeGustaria: string;
+  /** Nombre que propone para el grupo */
+  nombreGrupo: string;
   comentario: string;
+  /** Correo o teléfono del apoderado, opcional, para avisar cuando parta el club */
+  contactoApoderado: string;
   creadoEn: number;
 }

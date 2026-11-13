@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  DIAS_PREFERIDOS,
-  EDADES_ENCUESTA,
-  FRECUENCIAS,
-  PREGUNTAS_ENCUESTA,
-  type IdPregunta,
-} from "@/lib/encuesta";
+import { CON_AMIGOS, EDADES_ENCUESTA, PREGUNTAS_ENCUESTA, VINO_ANTES, type IdPregunta } from "@/lib/encuesta";
 import { enviarEncuesta } from "./acciones";
 
 const vacias = () =>
@@ -32,14 +26,43 @@ function Ficha({ texto, marcada, alternar }: { texto: string; marcada: boolean; 
   );
 }
 
+/** Una sola opción entre varias, con el mismo aspecto de ficha. Tocar la elegida la desmarca. */
+function ElegirUna({
+  rotulo,
+  opciones,
+  valor,
+  cambiar,
+}: {
+  rotulo: string;
+  opciones: string[];
+  valor: string;
+  cambiar: (v: string) => void;
+}) {
+  return (
+    <div>
+      <span className="rotulo">{rotulo}</span>
+      <div className="flex flex-wrap gap-2" role="group" aria-label={rotulo}>
+        {opciones.map((o) => (
+          <Ficha key={o} texto={o} marcada={valor === o} alternar={() => cambiar(valor === o ? "" : o)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const opcional = <span className="font-normal text-gris">(opcional)</span>;
+
 export function FormularioEncuesta() {
   const [nombre, setNombre] = useState("");
   const [edad, setEdad] = useState(0);
+  const [vinoAntes, setVinoAntes] = useState("");
+  const [conAmigos, setConAmigos] = useState("");
   const [elegidas, setElegidas] = useState(vacias);
   const [otros, setOtros] = useState<Partial<Record<IdPregunta, string>>>({});
-  const [frecuencia, setFrecuencia] = useState("");
-  const [dias, setDias] = useState<string[]>([]);
+  const [noMeGustaria, setNoMeGustaria] = useState("");
+  const [nombreGrupo, setNombreGrupo] = useState("");
   const [comentario, setComentario] = useState("");
+  const [contactoApoderado, setContactoApoderado] = useState("");
   const [web, setWeb] = useState("");
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -57,7 +80,19 @@ export function FormularioEncuesta() {
     setError("");
     setEnviando(true);
     try {
-      const r = await enviarEncuesta({ nombre, edad, elegidas, otros, frecuencia, dias, comentario, web });
+      const r = await enviarEncuesta({
+        nombre,
+        edad,
+        vinoAntes,
+        conAmigos,
+        elegidas,
+        otros,
+        noMeGustaria,
+        nombreGrupo,
+        comentario,
+        contactoApoderado,
+        web,
+      });
       if (!r.ok) {
         setError(r.error);
         setEnviando(false);
@@ -89,9 +124,7 @@ export function FormularioEncuesta() {
         <legend className="float-left mb-4 w-full text-lg font-semibold">Sobre ti</legend>
         <div className="clear-both grid gap-5 sm:grid-cols-2">
           <label>
-            <span className="rotulo">
-              Tu nombre <span className="font-normal text-gris">(opcional)</span>
-            </span>
+            <span className="rotulo">Tu nombre {opcional}</span>
             <input
               className="campo"
               maxLength={80}
@@ -122,6 +155,13 @@ export function FormularioEncuesta() {
               ))}
             </div>
           </div>
+          <ElegirUna
+            rotulo="¿Has venido antes al Club de la Montaña?"
+            opciones={VINO_ANTES}
+            valor={vinoAntes}
+            cambiar={setVinoAntes}
+          />
+          <ElegirUna rotulo="¿Vendrías con amigos?" opciones={CON_AMIGOS} valor={conAmigos} cambiar={setConAmigos} />
         </div>
       </fieldset>
 
@@ -154,30 +194,48 @@ export function FormularioEncuesta() {
         </fieldset>
       ))}
 
-      <fieldset className="rounded-2xl bg-white p-6">
-        <legend className="float-left mb-4 w-full text-lg font-semibold">¿Cada cuánto te gustaría juntarte?</legend>
-        <div className="clear-both flex flex-wrap gap-2" role="radiogroup" aria-label="Frecuencia">
-          {FRECUENCIAS.map((f) => (
-            <Ficha key={f} texto={f} marcada={frecuencia === f} alternar={() => setFrecuencia(frecuencia === f ? "" : f)} />
-          ))}
-        </div>
-        <p className="mt-6 mb-3 font-semibold">¿Qué días te acomodan?</p>
-        <div className="flex flex-wrap gap-2">
-          {DIAS_PREFERIDOS.map((x) => (
-            <Ficha key={x} texto={x} marcada={dias.includes(x)} alternar={() => setDias((prev) => alternar(prev, x))} />
-          ))}
-        </div>
-      </fieldset>
-
-      <fieldset className="rounded-2xl bg-white p-6">
-        <legend className="float-left mb-4 w-full text-lg font-semibold">¿Algo más que quieras contarnos?</legend>
-        <textarea
-          className="campo clear-both min-h-28"
-          maxLength={2000}
-          placeholder="Ideas, lugares a los que te gustaría ir, lo que no te gustaría que pasara…"
-          value={comentario}
-          onChange={(e) => setComentario(e.target.value)}
-        />
+      <fieldset className="space-y-5 rounded-2xl bg-white p-6">
+        <legend className="float-left mb-4 w-full text-lg font-semibold">Para terminar</legend>
+        <label className="clear-both block">
+          <span className="rotulo">¿Qué no te gustaría que pasara en el grupo?</span>
+          <textarea
+            className="campo min-h-24"
+            maxLength={1000}
+            placeholder="Algo que te daría lata o vergüenza, o que no te gusta de otras actividades…"
+            value={noMeGustaria}
+            onChange={(e) => setNoMeGustaria(e.target.value)}
+          />
+        </label>
+        <label className="block">
+          <span className="rotulo">¿Qué nombre le pondrías al grupo?</span>
+          <input
+            className="campo"
+            maxLength={80}
+            placeholder="Tu idea de nombre"
+            value={nombreGrupo}
+            onChange={(e) => setNombreGrupo(e.target.value)}
+          />
+        </label>
+        <label className="block">
+          <span className="rotulo">¿Algo más que quieras contarnos?</span>
+          <textarea
+            className="campo min-h-24"
+            maxLength={2000}
+            placeholder="Ideas, lugares a los que te gustaría ir, lo que se te ocurra…"
+            value={comentario}
+            onChange={(e) => setComentario(e.target.value)}
+          />
+        </label>
+        <label className="block">
+          <span className="rotulo">Correo o teléfono de tu mamá, papá o apoderado {opcional}</span>
+          <input
+            className="campo"
+            maxLength={120}
+            placeholder="Para avisarles cuando parta el grupo"
+            value={contactoApoderado}
+            onChange={(e) => setContactoApoderado(e.target.value)}
+          />
+        </label>
       </fieldset>
 
       {/* Campo trampa para robots: oculto para las personas y los lectores de pantalla. */}
