@@ -3,10 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   IconoCalendario,
-  IconoCheck,
   IconoFlecha,
   IconoLugar,
-  IconoMochila,
   IconoNinos,
   IconoReloj,
 } from "@/components/Iconos";
@@ -109,19 +107,6 @@ export default async function DetalleSalida({ params }: Props) {
               <GaleriaSalida fotos={salida.fotos} titulo={salida.titulo} />
             </section>
           )}
-
-          <section>
-            <h2 className="flex items-center gap-2 text-2xl font-semibold text-marca">
-              <IconoMochila className="size-6 text-acento" /> Qué llevar
-            </h2>
-            <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-              {salida.queLlevar.map((x) => (
-                <li key={x} className="flex items-start gap-2">
-                  <IconoCheck className="mt-0.5 size-5 shrink-0 text-bosque" /> {x}
-                </li>
-              ))}
-            </ul>
-          </section>
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">

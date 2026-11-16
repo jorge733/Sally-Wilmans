@@ -45,7 +45,7 @@ export const AJUSTES_POR_DEFECTO = {
 export const PASOS = [
   {
     titulo: "Elige la fecha",
-    texto: "Revisa el calendario: lugar, horario, edades y lo que hay que llevar.",
+    texto: "Revisa el calendario: lugar, horario y edades.",
   },
   {
     titulo: "Completa la ficha",
