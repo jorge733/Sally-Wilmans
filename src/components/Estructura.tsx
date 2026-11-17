@@ -45,6 +45,7 @@ export function Encabezado() {
           <Link href="/#salidas" className="hover:text-tinta">Próximas fechas</Link>
           <Link href="/#como-funciona" className="hover:text-tinta">Cómo funciona</Link>
           <Link href="/#nosotros" className="hover:text-tinta">Quiénes somos</Link>
+          <Link href="/blog" className="hover:text-tinta">Blog</Link>
           <Link href="/#contacto" className="hover:text-tinta">Contacto</Link>
         </nav>
         <Link href="/#salidas" className="btn btn-primario px-4 py-2 text-sm">
@@ -95,7 +96,10 @@ export function Pie({ ajustes }: { ajustes: AjustesSitio }) {
         <div className="text-sm">
           <div className="mb-3 font-semibold text-white">Pagos seguros</div>
           <p>Las inscripciones se pagan en línea con Flow: débito, crédito y otros medios.</p>
-          <Link href="/devoluciones" className="mt-3 inline-block underline underline-offset-4 hover:text-white">
+          <Link href="/blog" className="mt-3 block underline underline-offset-4 hover:text-white">
+            Blog del club
+          </Link>
+          <Link href="/devoluciones" className="mt-2 inline-block underline underline-offset-4 hover:text-white">
             Política de cambios y devoluciones
           </Link>
         </div>

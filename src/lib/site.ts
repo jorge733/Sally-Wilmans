@@ -114,3 +114,15 @@ export const PREGUNTAS = [
 export function urlSitio(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 }
+
+/**
+ * Imagen general del sitio (app/opengraph-image.tsx). Las páginas que definen su propio
+ * openGraph y no tienen imagen propia la repiten, porque si no Next la pierde.
+ */
+export const OG_IMAGEN_SITIO = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+  type: "image/jpeg",
+  alt: `${SITIO.nombre}: ${SITIO.bajada}`,
+};

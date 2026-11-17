@@ -16,10 +16,11 @@ El sitio público y el panel funcionan con datos reales en Firestore. Lo que que
 - Club de Verano por semanas: la familia elige semanas completas (y días sueltos si la salida tiene precio por día); los cupos se cuentan por día.
 - Pago con Flow, comprobante en `/inscripcion/[id]` y reintento si el pago falla.
 - Política de cambios y devoluciones en `/devoluciones` (enlazada desde el pie). Ver **Devoluciones**.
+- Blog en `/blog`: listado y cada artículo en `/blog/[id]`, con portada, fotos, autora, tiempo de lectura y «Sigue leyendo». Los tres más nuevos aparecen en el inicio (solo si hay alguno publicado). Enlazado en el menú y en el pie.
 - Encuesta para jóvenes de 13 a 16 años en `/encuesta` (juegos, actividades, temas y formatos). Se puede destacar con un aviso en el inicio desde el panel.
-- Imágenes para compartir (WhatsApp, Instagram) del sitio, de cada salida y de la encuesta (`opengraph-image.tsx`).
+- Imágenes para compartir (WhatsApp, Instagram) del sitio, de cada salida, de la encuesta, del blog y de cada artículo (con su portada, o cerros si no tiene) (`opengraph-image.tsx`). Las páginas sin imagen propia repiten la del sitio (`OG_IMAGEN_SITIO`).
 - Animaciones al hacer scroll, favicon y botón de WhatsApp.
-- SEO: `/sitemap.xml` (inicio, salidas vigentes y encuesta), `/robots.txt` (cierra panel, pagos y fichas) y datos estructurados para Google: el club y sus preguntas frecuentes en el inicio, y cada salida como evento con fecha, lugar, precio y cupos (`src/lib/datos-estructurados.tsx`).
+- SEO: `/sitemap.xml` (inicio, salidas vigentes, blog y encuesta), `/robots.txt` (cierra panel, pagos y fichas) y datos estructurados para Google: el club y sus preguntas frecuentes en el inicio, cada salida como evento con fecha, lugar, precio y cupos, y cada artículo del blog (`src/lib/datos-estructurados.tsx`).
 
 **Correos (Resend)**
 
@@ -37,6 +38,7 @@ El sitio público y el panel funcionan con datos reales en Firestore. Lo que que
 
 - **Salidas**: crear, editar, duplicar y borrar salidas; armar las semanas del Club de Verano; subir fotos de cada salida.
 - **Inscritos**: fichas de cada salida, para imprimir o descargar en planilla (CSV).
+- **Blog**: escribir, editar y borrar artículos (título, resumen, fecha, portada y texto), como borrador o publicados. El editor tiene botones de formato, fotos dentro del texto y vista previa. El formato está explicado en `src/lib/blog.ts`. La dirección de cada artículo sale del título al crearlo y no cambia después. Las fotos que se quitan o reemplazan se borran de Storage al guardar.
 - **Encuesta**: resumen de respuestas y borrar las que no sirvan.
 - **Contenido**: textos de la página de inicio y fotos (portada, quiénes somos y galería, con formato normal, ancha, alta o grande). Lo que no se edite usa los textos de `src/lib/site.ts`.
 - **Ajustes**: contacto y texto de autorización.

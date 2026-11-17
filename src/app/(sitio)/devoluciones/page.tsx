@@ -3,7 +3,7 @@ import { IconoWhatsapp } from "@/components/Iconos";
 import { obtenerAjustes } from "@/lib/data";
 import { POLITICA_DEVOLUCIONES, TITULO_DEVOLUCIONES } from "@/lib/devoluciones";
 import { linkWhatsapp } from "@/lib/format";
-import { OG_BASE } from "@/lib/site";
+import { OG_BASE, OG_IMAGEN_SITIO } from "@/lib/site";
 
 const descripcion =
   "Con 24 horas de aviso devolvemos el 100%. Si avisas el mismo día, el niño recupera el día en otra salida. Si el club suspende, eliges otra fecha o la devolución.";
@@ -12,7 +12,14 @@ export const metadata: Metadata = {
   title: TITULO_DEVOLUCIONES,
   description: descripcion,
   alternates: { canonical: "/devoluciones" },
-  openGraph: { ...OG_BASE, title: TITULO_DEVOLUCIONES, description: descripcion, url: "/devoluciones" },
+  openGraph: {
+    ...OG_BASE,
+    title: TITULO_DEVOLUCIONES,
+    description: descripcion,
+    url: "/devoluciones",
+    images: [OG_IMAGEN_SITIO],
+  },
+  twitter: { card: "summary_large_image", title: TITULO_DEVOLUCIONES, description: descripcion },
 };
 
 export default async function PaginaDevoluciones() {

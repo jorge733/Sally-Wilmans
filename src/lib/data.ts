@@ -4,6 +4,7 @@ import { db } from "./firebase-admin";
 import { hoyChile } from "./format";
 import { ultimoDia } from "./salida-utils";
 export { cuposLibres, salidaAbierta } from "./salida-utils";
+import type { Articulo } from "./blog";
 import type { RespuestaEncuesta } from "./encuesta";
 import { AJUSTES_POR_DEFECTO } from "./site";
 import { completarContenido, type ContenidoSitio } from "./contenido";
@@ -122,3 +123,40 @@ export async function respuestasEncuesta(): Promise<RespuestaEncuesta[]> {
     } as RespuestaEncuesta;
   });
 }
+
+/* ───────────── Blog ───────────── */
+
+export function aArticulo(d: Doc): Articulo {
+  const x = d.data() ?? {};
+  return {
+    id: d.id,
+    titulo: x.titulo ?? "",
+    resumen: x.resumen ?? "",
+    cuerpo: x.cuerpo ?? "",
+    portada: x.portada?.url ? { url: x.portada.url, path: x.portada.path ?? "", alt: x.portada.alt ?? "" } : null,
+    imagenes: Array.isArray(x.imagenes) ? x.imagenes : [],
+    estado: x.estado === "publicado" ? "publicado" : "borrador",
+    fecha: x.fecha ?? "",
+    creadoEn: x.creadoEn ?? 0,
+    actualizadoEn: x.actualizadoEn ?? 0,
+  };
+}
+
+const masNuevoPrimero = (a: Articulo, b: Articulo) => b.fecha.localeCompare(a.fecha) || b.creadoEn - a.creadoEn;
+
+/** Artículos publicados, del más nuevo al más antiguo. */
+export async function articulosPublicados(): Promise<Articulo[]> {
+  const snap = await db.collection("blog").where("estado", "==", "publicado").get();
+  return snap.docs.map(aArticulo).sort(masNuevoPrimero);
+}
+
+export async function todosLosArticulos(): Promise<Articulo[]> {
+  const snap = await db.collection("blog").get();
+  return snap.docs.map(aArticulo).sort(masNuevoPrimero);
+}
+
+export const obtenerArticulo = cache(async (id: string): Promise<Articulo | null> => {
+  if (!id || id.includes("/")) return null;
+  const d = await db.collection("blog").doc(id).get();
+  return d.exists ? aArticulo(d) : null;
+});

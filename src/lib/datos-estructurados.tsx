@@ -3,6 +3,7 @@
  * sus preguntas frecuentes y cada salida como evento, con fecha, lugar, precio y cupos.
  * Así Google puede mostrar las salidas en sus resultados de eventos.
  */
+import type { Articulo } from "./blog";
 import type { AjustesSitio, Salida } from "./types";
 import { porSemanas, salidaAbierta } from "./salida-utils";
 import { SITIO, urlSitio } from "./site";
@@ -108,5 +109,23 @@ export function eventoSalida(s: Salida): Json {
       availability: salidaAbierta(s) ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
       ...(porSemanas(s) ? { description: "Precio por niño desde (semana completa)" } : {}),
     },
+  };
+}
+
+/** Un artículo del blog, con Sally como autora y el club como editor. */
+export function articuloBlog(a: Articulo): Json {
+  const url = `${urlSitio()}/blog/${a.id}`;
+  return {
+    "@type": "BlogPosting",
+    headline: a.titulo,
+    ...(a.resumen ? { description: a.resumen } : {}),
+    ...(a.portada ? { image: a.portada.url } : {}),
+    datePublished: fechaHora(a.fecha, "12:00"),
+    dateModified: new Date(a.actualizadoEn || a.creadoEn).toISOString(),
+    inLanguage: "es-CL",
+    url,
+    mainEntityOfPage: url,
+    author: { "@type": "Person", name: SITIO.responsable },
+    publisher: { "@id": idOrganizacion() },
   };
 }

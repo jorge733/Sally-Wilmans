@@ -12,14 +12,15 @@ import {
   IconoWhatsapp,
 } from "@/components/Iconos";
 import { Paisaje } from "@/components/Paisaje";
+import { TarjetaArticulo } from "@/components/TarjetaArticulo";
 import { TarjetaSalida } from "@/components/TarjetaSalida";
 import { JsonLd, organizacion, preguntasFrecuentes, sitioWeb } from "@/lib/datos-estructurados";
 import { varianteDe } from "@/lib/salida-utils";
-import { obtenerAjustes, obtenerContenido, obtenerFotosSitio, salidasPublicas } from "@/lib/data";
+import { articulosPublicados, obtenerAjustes, obtenerContenido, obtenerFotosSitio, salidasPublicas } from "@/lib/data";
 import { FOTOS_INCLUIDAS, type FotoSitio } from "@/lib/fotos-sitio";
 import { estadoEncuesta } from "@/lib/encuesta";
 import { hoyChile, linkWhatsapp } from "@/lib/format";
-import { OG_BASE, SITIO } from "@/lib/site";
+import { OG_BASE, OG_IMAGEN_SITIO } from "@/lib/site";
 
 const ICONOS_CUIDADO = [IconoGrupo, IconoEscudo, IconoCorazon, IconoSendero];
 
@@ -111,26 +112,19 @@ export const metadata: Metadata = {
   openGraph: {
     ...OG_BASE,
     url: "/",
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        type: "image/jpeg",
-        alt: `${SITIO.nombre}: ${SITIO.bajada}`,
-      },
-    ],
+    images: [OG_IMAGEN_SITIO],
   },
 };
 
 export const revalidate = 60;
 
 export default async function Inicio() {
-  const [salidas, ajustes, c, fotos] = await Promise.all([
+  const [salidas, ajustes, c, fotos, articulos] = await Promise.all([
     salidasPublicas(),
     obtenerAjustes(),
     obtenerContenido(),
     obtenerFotosSitio(),
+    articulosPublicados().catch(() => []),
   ]);
   // El aviso de la encuesta solo aparece mientras recibe respuestas (y si Sally no lo ocultó).
   const encuestaVisible = c.encuesta.mostrar && estadoEncuesta(hoyChile()) === "abierta";
@@ -443,6 +437,30 @@ export default async function Inicio() {
                   sizes={FORMATOS_GALERIA[foto.formato].sizes}
                   className="size-full object-cover transition duration-700 group-hover:scale-105"
                 />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      )}
+
+      {/* Del blog: los tres artículos más nuevos, solo si hay alguno publicado */}
+      {articulos.length > 0 && (
+      <section className="border-t border-linea py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div data-revelar className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="etiqueta">Blog</p>
+              <h2 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">Desde el cerro</h2>
+            </div>
+            <Link href="/blog" className="font-semibold text-acento hover:text-acento-oscuro">
+              Ver todos los artículos →
+            </Link>
+          </div>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {articulos.slice(0, 3).map((a, i) => (
+              <div key={a.id} data-revelar style={retraso(i * 120)} className="flex [&>*]:w-full">
+                <TarjetaArticulo articulo={a} />
               </div>
             ))}
           </div>

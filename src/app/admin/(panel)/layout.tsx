@@ -16,6 +16,9 @@ export default async function LayoutPanel({ children }: { children: React.ReactN
             <Link href="/admin" className="rounded-full px-3 py-2 hover:bg-crema">
               Salidas
             </Link>
+            <Link href="/admin/blog" className="rounded-full px-3 py-2 hover:bg-crema">
+              Blog
+            </Link>
             <Link href="/admin/encuesta" className="rounded-full px-3 py-2 hover:bg-crema">
               Encuesta
             </Link>
