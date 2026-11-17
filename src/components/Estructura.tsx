@@ -47,18 +47,21 @@ const ENLACES = [
 
 export function Encabezado({ whatsapp }: { whatsapp?: string }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-linea/70 bg-[#fbf8f1]/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    // Cápsula de vidrio flotante sobre el contenido: lo de atrás se ve borroso.
+    // No ocupa lugar (margen negativo): cada página deja --alto-encabezado libre arriba.
+    // El borde transparente de alrededor no tapa los clics de la página.
+    <header className="pointer-events-none sticky top-0 z-30 -mb-[var(--alto-encabezado)] h-[var(--alto-encabezado)] px-3 pt-3 sm:px-4">
+      <div className="vidrio pointer-events-auto mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 rounded-full pr-2 pl-4 sm:pl-5">
         <Logo />
-        <nav className="hidden items-center gap-7 text-sm font-medium text-gris md:flex" aria-label="Principal">
+        <nav className="hidden items-center gap-1 text-sm font-medium text-marca md:flex" aria-label="Principal">
           {ENLACES.map((e) => (
-            <Link key={e.href} href={e.href} className="hover:text-tinta">
+            <Link key={e.href} href={e.href} className="rounded-full px-3 py-1.5 transition hover:bg-white/70 hover:text-tinta">
               {e.texto}
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
-          <Link href="/#salidas" className="btn btn-primario px-4 py-2 text-sm">
+        <div className="flex items-center gap-1">
+          <Link href="/#salidas" className="btn btn-primario px-4 py-2 text-sm shadow-md shadow-acento/25">
             Inscribir
           </Link>
           <MenuCelular

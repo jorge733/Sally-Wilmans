@@ -59,7 +59,7 @@ export default async function PaginaArticulo({ params }: Props) {
     <>
       <JsonLd datos={articuloBlog(a)} />
       <article className="pb-16">
-        <header className="bg-crema pt-10 pb-12 sm:pt-14">
+        <header className="bg-crema pt-[calc(var(--alto-encabezado)+2.5rem)] pb-12 sm:pt-[calc(var(--alto-encabezado)+3.5rem)]">
           <div className="mx-auto max-w-3xl px-4 sm:px-6">
             <Link href="/blog" className="text-sm font-medium text-gris hover:text-tinta">
               ← Blog

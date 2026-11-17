@@ -16,7 +16,7 @@ export async function NoEncontrado() {
         <Paisaje variante={1} animado className="absolute inset-0 -z-10 h-full w-full" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#fbf8f1]/10 via-[#fbf8f1]/55 to-[#fbf8f1]" />
 
-        <div className="mx-auto max-w-3xl px-4 pt-16 pb-20 text-center sm:px-6 md:pt-24 md:pb-28">
+        <div className="mx-auto max-w-3xl px-4 pt-[calc(var(--alto-encabezado)+4rem)] pb-20 text-center sm:px-6 md:pt-[calc(var(--alto-encabezado)+6rem)] md:pb-28">
           <p className="entrada mano text-[6.5rem] leading-none text-marca sm:text-[9rem]" aria-hidden>
             4
             <span className="inline-block text-acento" style={{ transform: "rotate(-8deg)" }}>

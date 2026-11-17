@@ -75,7 +75,7 @@ export function MenuCelular({
         ref={boton}
         type="button"
         onClick={() => setAbierto(true)}
-        className="-mr-1 grid size-10 place-items-center rounded-full text-marca hover:bg-black/5 md:hidden"
+        className="grid size-10 place-items-center rounded-full text-marca hover:bg-white/60 md:hidden"
         aria-label="Abrir menú"
         aria-expanded={abierto}
         aria-controls="menu-celular"
@@ -88,14 +88,14 @@ export function MenuCelular({
       {abierto &&
         createPortal(
           <div className="fixed inset-0 z-50 md:hidden">
-            <div className="menu-fondo absolute inset-0 bg-tinta/40" onClick={cerrar} aria-hidden />
+            <div className="menu-fondo absolute inset-0 bg-tinta/25 backdrop-blur-[2px]" onClick={cerrar} aria-hidden />
             <div
               ref={panel}
               id="menu-celular"
               role="dialog"
               aria-modal="true"
               aria-label="Menú"
-              className="menu-panel relative max-h-full overflow-y-auto rounded-b-3xl bg-[#fbf8f1] px-4 pt-3 pb-6 shadow-xl"
+              className="menu-panel vidrio vidrio-fuerte relative m-3 max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-[1.75rem] px-4 pt-2 pb-5"
             >
               <div className="flex items-center justify-between" onClick={cerrar}>
                 {logo}
@@ -112,7 +112,7 @@ export function MenuCelular({
               </div>
 
               <nav aria-label="Principal" className="mt-4">
-                <ul className="divide-y divide-linea">
+                <ul className="divide-y divide-white/70">
                   {enlaces.map((e) => (
                     <li key={e.href}>
                       <Link

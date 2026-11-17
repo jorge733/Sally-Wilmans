@@ -136,7 +136,7 @@ export default async function Inicio() {
       {encuestaVisible && (
       <Link
         href="/encuesta"
-        className="group block bg-acento px-4 py-3 text-center text-sm text-white transition-colors hover:bg-acento-oscuro sm:text-base"
+        className="group block bg-acento px-4 pt-[calc(var(--alto-encabezado)+0.75rem)] pb-3 text-center text-sm text-white transition-colors hover:bg-acento-oscuro sm:text-base"
       >
         <span className="font-semibold">{c.encuesta.bannerDestacado}</span>{" "}
         {c.encuesta.bannerTexto}{" "}
@@ -158,7 +158,7 @@ export default async function Inicio() {
           className="absolute inset-0 -z-10 size-full opacity-35"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-marca/80 to-marca" />
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-16 sm:px-6 md:pt-20 md:pb-24 lg:grid-cols-[1fr_1.05fr] lg:gap-12">
+        <div className={`mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 sm:px-6 md:pb-24 ${encuestaVisible ? "pt-12 md:pt-20" : "pt-[calc(var(--alto-encabezado)+3rem)] md:pt-[calc(var(--alto-encabezado)+5rem)]"} lg:grid-cols-[1fr_1.05fr] lg:gap-12`}>
           <div>
             <p className="entrada mano text-2xl text-[#f6c68f] sm:text-3xl">
               {c.portada.antetitulo}

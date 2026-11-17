@@ -36,7 +36,7 @@ export default async function PaginaInscripcion({ params }: Props) {
   if (!salida || salida.estado === "borrador") notFound();
 
   return (
-    <div className="bg-crema py-10 sm:py-14">
+    <div className="bg-crema pt-[calc(var(--alto-encabezado)+2.5rem)] pb-10 sm:pt-[calc(var(--alto-encabezado)+3.5rem)] sm:pb-14">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <Link href={`/salidas/${salida.id}`} className="text-sm font-medium text-gris hover:text-tinta">
           ← Volver a la salida

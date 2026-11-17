@@ -21,7 +21,7 @@ export const revalidate = 60;
 export default async function PaginaBlog() {
   const articulos = await articulosPublicados();
   return (
-    <div className="bg-crema py-12 sm:py-16">
+    <div className="bg-crema pt-[calc(var(--alto-encabezado)+3rem)] pb-12 sm:pt-[calc(var(--alto-encabezado)+4rem)] sm:pb-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <p className="etiqueta">Blog</p>
         <h1 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">Desde el cerro</h1>

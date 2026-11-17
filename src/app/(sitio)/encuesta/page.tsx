@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic";
 export default function PaginaEncuesta() {
   const estado = estadoEncuesta(hoyChile());
   return (
-    <div className="bg-crema py-10 sm:py-14">
+    <div className="bg-crema pt-[calc(var(--alto-encabezado)+2.5rem)] pb-10 sm:pt-[calc(var(--alto-encabezado)+3.5rem)] sm:pb-14">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <div className="etiqueta">Grupo de 13 a 16 años</div>
         <h1 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">¿Qué te gustaría hacer en la montaña?</h1>

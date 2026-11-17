@@ -159,7 +159,7 @@ export default async function PaginaEstadoInscripcion({ params }: Props) {
   }
 
   return (
-    <div className="bg-crema py-10 sm:py-14">
+    <div className="bg-crema pt-[calc(var(--alto-encabezado)+2.5rem)] pb-10 sm:pt-[calc(var(--alto-encabezado)+3.5rem)] sm:pb-14">
       <div className="mx-auto max-w-3xl space-y-6 px-4 sm:px-6">
         {contenido}
         {insc.estado !== "pagada" && resumen}

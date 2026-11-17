@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default async function PaginaDevoluciones() {
   const ajustes = await obtenerAjustes();
   return (
-    <div className="bg-crema py-10 sm:py-14">
+    <div className="bg-crema pt-[calc(var(--alto-encabezado)+2.5rem)] pb-10 sm:pt-[calc(var(--alto-encabezado)+3.5rem)] sm:pb-14">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <div className="etiqueta">Inscripciones</div>
         <h1 className="mt-2 text-3xl font-semibold text-marca sm:text-4xl">{TITULO_DEVOLUCIONES}</h1>
