@@ -3,6 +3,7 @@ import { linkWhatsapp } from "@/lib/format";
 import { SITIO } from "@/lib/site";
 import type { AjustesSitio } from "@/lib/types";
 import { IconoCorreo, IconoInstagram, IconoWhatsapp } from "./Iconos";
+import { MenuCelular } from "./MenuCelular";
 
 /** Montañas dibujadas a mano con un corazón, como el logo de los afiches del club. */
 export function Logo({ claro = false }: { claro?: boolean }) {
@@ -36,21 +37,36 @@ export function Logo({ claro = false }: { claro?: boolean }) {
   );
 }
 
-export function Encabezado() {
+const ENLACES = [
+  { href: "/#salidas", texto: "Próximas fechas" },
+  { href: "/#como-funciona", texto: "Cómo funciona" },
+  { href: "/#nosotros", texto: "Quiénes somos" },
+  { href: "/blog", texto: "Blog" },
+  { href: "/#contacto", texto: "Contacto" },
+];
+
+export function Encabezado({ whatsapp }: { whatsapp?: string }) {
   return (
     <header className="sticky top-0 z-30 border-b border-linea/70 bg-[#fbf8f1]/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-gris md:flex" aria-label="Principal">
-          <Link href="/#salidas" className="hover:text-tinta">Próximas fechas</Link>
-          <Link href="/#como-funciona" className="hover:text-tinta">Cómo funciona</Link>
-          <Link href="/#nosotros" className="hover:text-tinta">Quiénes somos</Link>
-          <Link href="/blog" className="hover:text-tinta">Blog</Link>
-          <Link href="/#contacto" className="hover:text-tinta">Contacto</Link>
+          {ENLACES.map((e) => (
+            <Link key={e.href} href={e.href} className="hover:text-tinta">
+              {e.texto}
+            </Link>
+          ))}
         </nav>
-        <Link href="/#salidas" className="btn btn-primario px-4 py-2 text-sm">
-          Inscribir
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/#salidas" className="btn btn-primario px-4 py-2 text-sm">
+            Inscribir
+          </Link>
+          <MenuCelular
+            enlaces={ENLACES}
+            logo={<Logo />}
+            whatsapp={whatsapp ? linkWhatsapp(whatsapp, "Hola, tengo una consulta sobre las salidas del Club de la Montaña") : undefined}
+          />
+        </div>
       </div>
     </header>
   );

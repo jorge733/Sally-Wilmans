@@ -6,7 +6,7 @@ export default async function LayoutSitio({ children }: { children: React.ReactN
   const ajustes = await obtenerAjustes();
   return (
     <>
-      <Encabezado />
+      <Encabezado whatsapp={ajustes.whatsapp} />
       <main>{children}</main>
       <Pie ajustes={ajustes} />
       <BotonWhatsapp numero={ajustes.whatsapp} />

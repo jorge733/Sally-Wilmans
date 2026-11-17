@@ -281,3 +281,23 @@ details[open] > summary + * {
     scroll-behavior: auto;
   }
 }
+
+/* Menú del celular: el fondo aparece y el panel baja desde arriba. */
+.menu-fondo {
+  animation: menu-aparece 0.2s ease-out;
+}
+.menu-panel {
+  animation: menu-baja 0.25s ease-out;
+}
+@keyframes menu-aparece {
+  from { opacity: 0; }
+}
+@keyframes menu-baja {
+  from { transform: translateY(-1.5rem); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-fondo,
+  .menu-panel {
+    animation: none;
+  }
+}

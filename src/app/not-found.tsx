@@ -10,7 +10,7 @@ export default async function NoEncontradoGeneral() {
   const ajustes = await obtenerAjustes();
   return (
     <>
-      <Encabezado />
+      <Encabezado whatsapp={ajustes.whatsapp} />
       <main>
         <NoEncontrado />
       </main>
