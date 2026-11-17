@@ -28,7 +28,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const s = await obtenerSalida(id);
-  if (!s || s.estado === "borrador") return {};
+  if (!s || s.estado === "borrador") return { title: "Página no encontrada", robots: { index: false } };
   const fecha = fechaSalida(s);
   const resumen = `${fecha.charAt(0).toUpperCase() + fecha.slice(1)} · ${s.lugar} · ${edades(s.edadMin, s.edadMax)}.`;
   const texto = `${resumen} ${s.descripcion}`.replace(/\s+/g, " ").trim();

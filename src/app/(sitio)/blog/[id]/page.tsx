@@ -24,7 +24,7 @@ async function publicado(id: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const a = await publicado(id);
-  if (!a) return {};
+  if (!a) return { title: "Página no encontrada", robots: { index: false } };
   const texto = a.resumen || textoPlano(a.cuerpo);
   const description = texto.length > 200 ? `${texto.slice(0, 197).replace(/\s+\S*$/, "")}…` : texto;
   const url = `/blog/${id}`;
