@@ -10,7 +10,7 @@ El sitio público y el panel funcionan con datos reales en Firestore. Lo que que
 
 - Pago real con Flow: claves de Sally en Vercel y compra de prueba hecha.
 - Dominio del remitente verificado en Resend.
-- Dominio propio clubdelamontana.cl, con `NEXT_PUBLIC_SITE_URL` actualizado, el sitio en Google Search Console y `/sitemap.xml` enviado.
+- Dominio propio clubdelamontaña.cl, con `NEXT_PUBLIC_SITE_URL` actualizado, el sitio en Google Search Console y `/sitemap.xml` enviado.
 - Texto de autorización definitivo cargado en Panel → Ajustes.
 - Link del sitio en la bio de Instagram y Perfil de Empresa en Google.
 
