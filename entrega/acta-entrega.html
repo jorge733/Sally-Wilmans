@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Acta de entrega · Club de la Montaña · BenedettoWebs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --bg-alt: #10162a;
+    --surface: #151c33;
+    --borde-osc: #2a3356;
+    --text: #1b2033;
+    --muted: #5b6480;
+    --linea: #e3e6f0;
+    --suave: #f4f5fb;
+    --primary: #6c63ff;
+    --secondary: #00d4ff;
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+  }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: 'Outfit', system-ui, sans-serif; color: var(--text); background: #fff; font-size: 10.5pt; line-height: 1.5; }
+
+  .hoja { width: 210mm; height: 297mm; position: relative; padding: 0 0 22mm; page-break-after: always; overflow: hidden; }
+  .hoja:last-child { page-break-after: auto; }
+  .cuerpo { padding: 10mm 16mm 0; }
+
+  /* Portada / encabezado oscuro */
+  .banda { background: var(--bg); color: #e8ecf6; padding: 13mm 16mm 12mm; position: relative; overflow: hidden; }
+  .banda::before { content: ""; position: absolute; width: 520px; height: 420px; top: -240px; right: -120px; background: radial-gradient(circle, rgba(108,99,255,.45), transparent 65%); }
+  .banda::after { content: ""; position: absolute; width: 380px; height: 300px; bottom: -220px; left: -80px; background: radial-gradient(circle, rgba(0,212,255,.22), transparent 65%); }
+  .banda > * { position: relative; z-index: 1; }
+  .fila-logo { display: flex; justify-content: space-between; align-items: center; }
+  .logo { display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15pt; letter-spacing: -.02em; color: #e8ecf6; }
+  .logo .accent { color: var(--primary); }
+  .logo svg { width: 38px; height: 38px; }
+  .doc-num { font-family: 'JetBrains Mono', monospace; font-size: 8.5pt; color: #9aa4bf; text-align: right; line-height: 1.6; }
+  .chip { display: inline-block; margin-top: 11mm; padding: 4px 12px; border: 1px solid var(--borde-osc); border-radius: 999px; font-size: 8.5pt; color: #9aa4bf; letter-spacing: .04em; text-transform: uppercase; }
+  h1 { font-size: 30pt; line-height: 1.08; font-weight: 800; margin-top: 4mm; letter-spacing: -.02em; }
+  .grad { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .bajada { color: #9aa4bf; font-size: 11.5pt; margin-top: 3mm; max-width: 150mm; }
+
+  .mini-banda { background: var(--bg); color: #e8ecf6; padding: 6mm 16mm; display: flex; justify-content: space-between; align-items: center; }
+  .mini-banda .logo { font-size: 11pt; }
+  .mini-banda .logo svg { width: 26px; height: 26px; }
+  .mini-banda span.tit { font-size: 9pt; color: #9aa4bf; }
+
+  /* Ficha de datos */
+  .ficha { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 9mm; }
+  .tarjeta { border: 1px solid var(--linea); border-radius: 14px; padding: 5mm 6mm; background: #fff; }
+  .tarjeta .rot { font-size: 8pt; text-transform: uppercase; letter-spacing: .08em; color: var(--primary); font-weight: 700; margin-bottom: 2mm; }
+  .tarjeta .nom { font-weight: 700; font-size: 12pt; }
+  .tarjeta .det { color: var(--muted); font-size: 9.5pt; }
+
+  .datos { margin-top: 5mm; border: 1px solid var(--linea); border-radius: 14px; overflow: hidden; }
+  .datos div { display: grid; grid-template-columns: 46mm 1fr; padding: 2.6mm 6mm; border-bottom: 1px solid var(--linea); font-size: 10pt; }
+  .datos div:nth-child(odd) { background: var(--suave); }
+  .datos div:last-child { border-bottom: 0; }
+  .datos b { font-weight: 600; color: var(--muted); }
+
+  h2 { font-size: 14.5pt; font-weight: 800; margin: 8mm 0 3mm; display: flex; align-items: center; gap: 3mm; letter-spacing: -.01em; }
+  h2 .n { font-family: 'JetBrains Mono', monospace; font-size: 9pt; color: #fff; background: var(--gradient); border-radius: 8px; padding: 2px 7px; }
+  h3 { font-size: 11pt; font-weight: 700; margin-bottom: 1.5mm; }
+  p.intro { color: var(--muted); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .bloque { border: 1px solid var(--linea); border-radius: 14px; padding: 4.5mm 5mm; break-inside: avoid; position: relative; }
+  .bloque::before { content: ""; position: absolute; left: 0; top: 5mm; bottom: 5mm; width: 3px; border-radius: 3px; background: var(--gradient); }
+  ul.check { list-style: none; }
+  ul.check li { position: relative; padding-left: 5.5mm; margin: 1.1mm 0; font-size: 9.6pt; }
+  ul.check li::before { content: ""; position: absolute; left: 0; top: 1.6mm; width: 3mm; height: 3mm; border-radius: 50%; background: var(--gradient); }
+  ul.check li::after { content: ""; position: absolute; left: .95mm; top: 2.3mm; width: 1.1mm; height: .6mm; border-left: 1.4px solid #fff; border-bottom: 1.4px solid #fff; transform: rotate(-45deg); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 8.4pt; background: var(--suave); border: 1px solid var(--linea); border-radius: 5px; padding: 0 4px; color: #3d3796; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid var(--linea); border-radius: 14px; overflow: hidden; }
+  th { text-align: left; font-size: 8pt; text-transform: uppercase; letter-spacing: .06em; color: #fff; background: var(--bg-alt); padding: 2.6mm 4mm; }
+  td { padding: 2.6mm 4mm; border-top: 1px solid var(--linea); vertical-align: top; }
+  tr:nth-child(even) td { background: var(--suave); }
+  td.c { white-space: nowrap; font-weight: 600; }
+
+  .pend { counter-reset: p; list-style: none; }
+  .pend li { counter-increment: p; position: relative; padding: 3mm 4mm 3mm 13mm; border: 1px solid var(--linea); border-radius: 12px; margin-bottom: 2.5mm; font-size: 9.6pt; break-inside: avoid; }
+  .pend li::before { content: counter(p); position: absolute; left: 4mm; top: 3mm; width: 6mm; height: 6mm; border-radius: 50%; background: var(--gradient); color: #fff; font-weight: 700; font-size: 8.5pt; display: grid; place-items: center; }
+  .pend .quien { display: inline-block; font-size: 7.8pt; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; border-radius: 999px; padding: 0 7px; margin-left: 2mm; vertical-align: 1px; }
+  .q-sally { background: #ecebff; color: #4b43d6; }
+  .q-ambos { background: #def8ff; color: #00718a; }
+
+  .nota { background: var(--suave); border: 1px solid var(--linea); border-radius: 12px; padding: 4mm 5mm; font-size: 9.4pt; color: var(--muted); margin-top: 4mm; }
+  .nota b { color: var(--text); }
+
+  .firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 14mm; margin-top: 22mm; }
+  .firma { border-top: 1.5px solid var(--text); padding-top: 2.5mm; font-size: 9.6pt; }
+  .firma .rol { font-size: 8pt; text-transform: uppercase; letter-spacing: .08em; color: var(--primary); font-weight: 700; }
+  .firma .lin { color: var(--muted); margin-top: 1mm; }
+
+  .pie { position: absolute; left: 0; right: 0; bottom: 0; height: 13mm; background: var(--bg); color: #9aa4bf; display: flex; align-items: center; justify-content: space-between; padding: 0 16mm; font-size: 8.3pt; }
+  .pie .m { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #e8ecf6; }
+  .pie .m span { color: var(--primary); }
+  .pie::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--gradient); }
+
+  @media screen { body { background: #d9dcea; } .hoja { margin: 10mm auto; box-shadow: 0 10px 40px rgba(0,0,0,.15); background: #fff; } }
+</style>
+</head>
+<body>
+
+<!-- ============ HOJA 1 ============ -->
+<section class="hoja">
+  <header class="banda">
+    <div class="fila-logo">
+      <div class="logo">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b0f1a"/><rect x=".75" y=".75" width="62.5" height="62.5" rx="13.25" fill="none" stroke="#2a3356" stroke-width="1.5"/><path d="M10.91 39.78V36.84L18.33 33.41Q18.84 33.18 19.34 33.01Q19.84 32.84 20.12 32.79Q19.84 32.74 19.33 32.6Q18.82 32.46 18.33 32.23L10.91 28.77V25.78L22.37 31.18V34.38ZM26.29 41.22V22.53H32.03Q34.74 22.53 36.33 23.82Q37.91 25.11 37.91 27.34Q37.91 28.6 37.35 29.52Q36.79 30.44 35.83 30.95Q34.87 31.46 33.61 31.46V31.36Q34.97 31.33 36.03 31.86Q37.09 32.38 37.72 33.41Q38.35 34.43 38.35 35.89Q38.35 37.5 37.61 38.71Q36.86 39.91 35.52 40.56Q34.18 41.22 32.31 41.22ZM29.41 38.55H32.1Q33.51 38.55 34.32 37.8Q35.12 37.04 35.12 35.74Q35.12 34.43 34.32 33.63Q33.51 32.82 32.1 32.82H29.41ZM29.41 30.23H31.97Q33.25 30.23 33.98 29.56Q34.71 28.88 34.71 27.7Q34.71 26.52 33.98 25.86Q33.25 25.19 31.97 25.19H29.41Z" fill="#00d4ff"/><path d="M41.22 44.75V41.86H53.5V44.75Z" fill="#6c63ff"/></svg>
+        <span>Benedetto<span class="accent">Webs</span></span>
+      </div>
+      <div class="doc-num">ACTA N° BW-2026-CDM<br>18 de noviembre de 2026</div>
+    </div>
+    <span class="chip">Acta de entrega del proyecto</span>
+    <h1>Sitio web del<br><span class="grad">Club de la Montaña</span></h1>
+    <p class="bajada">Sitio público con inscripciones y pago en línea, blog, encuesta y un panel para que Sally administre todo por su cuenta.</p>
+  </header>
+
+  <div class="cuerpo">
+    <div class="ficha">
+      <div class="tarjeta">
+        <div class="rot">Cliente</div>
+        <div class="nom">Sally Wilmans Cifuentes</div>
+        <div class="det">Club de la Montaña · Club de Niños en la Montaña<br>Santiago, Chile · @clubdelamontanachile</div>
+      </div>
+      <div class="tarjeta">
+        <div class="rot">Desarrollado por</div>
+        <div class="nom">BenedettoWebs</div>
+        <div class="det">Santiago Benedetto · benedettowebs.cl<br>sabenedettoa@benedettowebs.cl · +56 9 3269 8141</div>
+      </div>
+    </div>
+
+    <div class="datos">
+      <div><b>Proyecto</b><span>Diseño y desarrollo del sitio web y panel de administración</span></div>
+      <div><b>Período de trabajo</b><span>4 al 17 de noviembre de 2026</span></div>
+      <div><b>Fecha de entrega</b><span>18 de noviembre de 2026</span></div>
+      <div><b>Dirección del sitio</b><span>clubdelamontana.cl (dominio por activar; ver pendientes)</span></div>
+      <div><b>Panel de administración</b><span><code>/admin</code> — clave entregada por separado</span></div>
+      <div><b>Tecnología</b><span>Next.js en Vercel · Firebase · Flow · Resend</span></div>
+    </div>
+
+    <h2><span class="n">01</span> Objeto del acta</h2>
+    <p>Por medio de la presente, <b>BenedettoWebs</b> hace entrega a <b>Sally Wilmans Cifuentes</b> del sitio web del Club de la Montaña, junto con su panel de administración, en el estado que se describe en este documento. Las familias pueden ver las próximas salidas, inscribir a sus hijos y pagar en línea; Sally puede editar fechas, textos, fotos y artículos sin depender de un programador.</p>
+  </div>
+
+  <footer class="pie"><span class="m">Benedetto<span>Webs</span></span><span>Acta de entrega · Club de la Montaña</span><span>1 / 5</span></footer>
+</section>
+
+<!-- ============ HOJA 2 ============ -->
+<section class="hoja">
+  <div class="mini-banda">
+    <div class="logo">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b0f1a"/><rect x=".75" y=".75" width="62.5" height="62.5" rx="13.25" fill="none" stroke="#2a3356" stroke-width="1.5"/><path d="M10.91 39.78V36.84L18.33 33.41Q18.84 33.18 19.34 33.01Q19.84 32.84 20.12 32.79Q19.84 32.74 19.33 32.6Q18.82 32.46 18.33 32.23L10.91 28.77V25.78L22.37 31.18V34.38ZM26.29 41.22V22.53H32.03Q34.74 22.53 36.33 23.82Q37.91 25.11 37.91 27.34Q37.91 28.6 37.35 29.52Q36.79 30.44 35.83 30.95Q34.87 31.46 33.61 31.46V31.36Q34.97 31.33 36.03 31.86Q37.09 32.38 37.72 33.41Q38.35 34.43 38.35 35.89Q38.35 37.5 37.61 38.71Q36.86 39.91 35.52 40.56Q34.18 41.22 32.31 41.22ZM29.41 38.55H32.1Q33.51 38.55 34.32 37.8Q35.12 37.04 35.12 35.74Q35.12 34.43 34.32 33.63Q33.51 32.82 32.1 32.82H29.41ZM29.41 30.23H31.97Q33.25 30.23 33.98 29.56Q34.71 28.88 34.71 27.7Q34.71 26.52 33.98 25.86Q33.25 25.19 31.97 25.19H29.41Z" fill="#00d4ff"/><path d="M41.22 44.75V41.86H53.5V44.75Z" fill="#6c63ff"/></svg>
+      <span>Benedetto<span class="accent">Webs</span></span>
+    </div>
+    <span class="tit">Acta de entrega · Club de la Montaña</span>
+  </div>
+
+  <div class="cuerpo">
+    <h2 style="margin-top:2mm"><span class="n">02</span> Sitio público</h2>
+    <div class="grid2">
+      <div class="bloque">
+        <h3>Página de inicio</h3>
+        <ul class="check">
+          <li>Portada con foto grupal del club y los cuatro pilares</li>
+          <li>Próximas salidas, cómo funciona y quiénes somos</li>
+          <li>Cuidados, galería de fotos reales y preguntas frecuentes</li>
+          <li>Contacto y botón flotante de WhatsApp</li>
+          <li>Últimos tres artículos del blog y aviso de la encuesta</li>
+        </ul>
+      </div>
+      <div class="bloque">
+        <h3>Salidas e inscripción</h3>
+        <ul class="check">
+          <li>Página de cada salida: fecha, lugar, edades, horario, precio, cupos y fotos</li>
+          <li>Ficha: datos del niño, salud, apoderado, emergencia y autorización</li>
+          <li>Club de Verano por semanas completas o días sueltos</li>
+          <li>Cupos contados por día y reservados mientras se paga</li>
+        </ul>
+      </div>
+      <div class="bloque">
+        <h3>Blog, encuesta y políticas</h3>
+        <ul class="check">
+          <li>Blog con portada, fotos, autora y tiempo de lectura</li>
+          <li>Encuesta para jóvenes de 13 a 16 años</li>
+          <li>Política de cambios y devoluciones en <code>/devoluciones</code></li>
+          <li>Página 404 propia del club</li>
+        </ul>
+      </div>
+      <div class="bloque">
+        <h3>Diseño y experiencia</h3>
+        <ul class="check">
+          <li>Identidad visual de @clubdelamontanachile</li>
+          <li>Adaptado a celulares, con menú propio</li>
+          <li>Encabezado flotante con efecto de vidrio</li>
+          <li>Animaciones al hacer scroll y favicon de montaña</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2><span class="n">03</span> Pagos y correos</h2>
+    <div class="grid2">
+      <div class="bloque">
+        <h3>Pago en línea con Flow</h3>
+        <ul class="check">
+          <li>Débito, crédito y otros medios de pago</li>
+          <li>El cupo se reserva 30 minutos mientras la familia paga</li>
+          <li>Comprobante en línea y opción de reintentar si el pago falla</li>
+          <li>Aceptación obligatoria de la política de devoluciones antes de pagar</li>
+        </ul>
+      </div>
+      <div class="bloque">
+        <h3>Correos automáticos (Resend)</h3>
+        <ul class="check">
+          <li>Confirmación al apoderado, con resumen de la política</li>
+          <li>Aviso a Sally por cada inscripción pagada</li>
+          <li>Cada respuesta de la encuesta llega también por correo</li>
+          <li>«Qué llevar» se muestra al confirmar el pago</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pie"><span class="m">Benedetto<span>Webs</span></span><span>Acta de entrega · Club de la Montaña</span><span>2 / 5</span></footer>
+</section>
+
+<!-- ============ HOJA 3 ============ -->
+<section class="hoja">
+  <div class="mini-banda">
+    <div class="logo">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b0f1a"/><rect x=".75" y=".75" width="62.5" height="62.5" rx="13.25" fill="none" stroke="#2a3356" stroke-width="1.5"/><path d="M10.91 39.78V36.84L18.33 33.41Q18.84 33.18 19.34 33.01Q19.84 32.84 20.12 32.79Q19.84 32.74 19.33 32.6Q18.82 32.46 18.33 32.23L10.91 28.77V25.78L22.37 31.18V34.38ZM26.29 41.22V22.53H32.03Q34.74 22.53 36.33 23.82Q37.91 25.11 37.91 27.34Q37.91 28.6 37.35 29.52Q36.79 30.44 35.83 30.95Q34.87 31.46 33.61 31.46V31.36Q34.97 31.33 36.03 31.86Q37.09 32.38 37.72 33.41Q38.35 34.43 38.35 35.89Q38.35 37.5 37.61 38.71Q36.86 39.91 35.52 40.56Q34.18 41.22 32.31 41.22ZM29.41 38.55H32.1Q33.51 38.55 34.32 37.8Q35.12 37.04 35.12 35.74Q35.12 34.43 34.32 33.63Q33.51 32.82 32.1 32.82H29.41ZM29.41 30.23H31.97Q33.25 30.23 33.98 29.56Q34.71 28.88 34.71 27.7Q34.71 26.52 33.98 25.86Q33.25 25.19 31.97 25.19H29.41Z" fill="#00d4ff"/><path d="M41.22 44.75V41.86H53.5V44.75Z" fill="#6c63ff"/></svg>
+      <span>Benedetto<span class="accent">Webs</span></span>
+    </div>
+    <span class="tit">Acta de entrega · Club de la Montaña</span>
+  </div>
+
+  <div class="cuerpo">
+    <h2 style="margin-top:2mm"><span class="n">04</span> Panel de administración</h2>
+    <table>
+      <tr><th style="width:30mm">Sección</th><th>Qué puede hacer Sally</th></tr>
+      <tr><td class="c">Salidas</td><td>Crear, editar, duplicar y borrar salidas; armar las semanas del Club de Verano; subir fotos de cada salida.</td></tr>
+      <tr><td class="c">Inscritos</td><td>Ver las fichas de cada salida, imprimirlas o descargarlas en planilla (CSV).</td></tr>
+      <tr><td class="c">Blog</td><td>Escribir, editar y borrar artículos como borrador o publicados, con botones de formato, fotos dentro del texto y vista previa.</td></tr>
+      <tr><td class="c">Encuesta</td><td>Ver el resumen de respuestas, borrar las que no sirvan y destacar la encuesta en el inicio.</td></tr>
+      <tr><td class="c">Contenido</td><td>Editar los textos de la página de inicio y cambiar las fotos de portada, quiénes somos y galería.</td></tr>
+      <tr><td class="c">Ajustes</td><td>WhatsApp, correo de contacto y texto de autorización de la ficha.</td></tr>
+    </table>
+    <div class="nota"><b>Acceso:</b> se entra con una sola clave. La sesión dura 7 días. Para cambiar la clave, se modifica <code>ADMIN_PASSWORD</code> en Vercel y se vuelve a publicar el sitio.</div>
+
+    <h2><span class="n">05</span> Visibilidad en Google y redes</h2>
+    <div class="grid2">
+      <div class="bloque">
+        <ul class="check">
+          <li>Mapa del sitio (<code>/sitemap.xml</code>) y <code>/robots.txt</code></li>
+          <li>Datos estructurados: el club, preguntas frecuentes, cada salida como evento y cada artículo</li>
+          <li>Títulos y descripciones pensados para el buscador</li>
+        </ul>
+      </div>
+      <div class="bloque">
+        <ul class="check">
+          <li>Imágenes para compartir en WhatsApp e Instagram del sitio, de cada salida, de la encuesta y del blog</li>
+          <li>Imagen y textos para difundir la encuesta</li>
+          <li>Material para anunciar el sitio en Instagram</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pie"><span class="m">Benedetto<span>Webs</span></span><span>Acta de entrega · Club de la Montaña</span><span>3 / 5</span></footer>
+</section>
+
+<!-- ============ HOJA 4 ============ -->
+<section class="hoja">
+  <div class="mini-banda">
+    <div class="logo">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b0f1a"/><rect x=".75" y=".75" width="62.5" height="62.5" rx="13.25" fill="none" stroke="#2a3356" stroke-width="1.5"/><path d="M10.91 39.78V36.84L18.33 33.41Q18.84 33.18 19.34 33.01Q19.84 32.84 20.12 32.79Q19.84 32.74 19.33 32.6Q18.82 32.46 18.33 32.23L10.91 28.77V25.78L22.37 31.18V34.38ZM26.29 41.22V22.53H32.03Q34.74 22.53 36.33 23.82Q37.91 25.11 37.91 27.34Q37.91 28.6 37.35 29.52Q36.79 30.44 35.83 30.95Q34.87 31.46 33.61 31.46V31.36Q34.97 31.33 36.03 31.86Q37.09 32.38 37.72 33.41Q38.35 34.43 38.35 35.89Q38.35 37.5 37.61 38.71Q36.86 39.91 35.52 40.56Q34.18 41.22 32.31 41.22ZM29.41 38.55H32.1Q33.51 38.55 34.32 37.8Q35.12 37.04 35.12 35.74Q35.12 34.43 34.32 33.63Q33.51 32.82 32.1 32.82H29.41ZM29.41 30.23H31.97Q33.25 30.23 33.98 29.56Q34.71 28.88 34.71 27.7Q34.71 26.52 33.98 25.86Q33.25 25.19 31.97 25.19H29.41Z" fill="#00d4ff"/><path d="M41.22 44.75V41.86H53.5V44.75Z" fill="#6c63ff"/></svg>
+      <span>Benedetto<span class="accent">Webs</span></span>
+    </div>
+    <span class="tit">Acta de entrega · Club de la Montaña</span>
+  </div>
+
+  <div class="cuerpo">
+    <h2 style="margin-top:2mm"><span class="n">06</span> Política de cambios y devoluciones</h2>
+    <p class="intro" style="margin-bottom:2.5mm">Acordada con Sally en noviembre de 2026 y publicada en el sitio, la ficha, las preguntas frecuentes y el correo de confirmación.</p>
+    <ul class="check" style="columns:2; column-gap:8mm">
+      <li>Aviso por WhatsApp con 24 h o más de anticipación: devolución del 100%.</li>
+      <li>Con menos de 24 h o inasistencia: sin devolución, se recupera el día en 6 meses.</li>
+      <li>Club de Verano: se cancela la semana completa con 24 h de aviso.</li>
+      <li>Si el club suspende: la familia elige otra fecha o el 100%.</li>
+      <li>Devolución por transferencia en 3 días hábiles.</li>
+      <li>Casos excepcionales se evalúan caso a caso.</li>
+    </ul>
+
+    <h2><span class="n">07</span> Pendientes para dejar el sitio 100% operativo</h2>
+    <ol class="pend">
+      <li><b>Activar el pago real.</b><span class="quien q-ambos">Sally + BW</span><br>Cargar en Vercel las claves de Flow de Sally (<code>FLOW_API_KEY</code> y <code>FLOW_SECRET_KEY</code>) y hacer una compra de prueba.</li>
+      <li><b>Verificar el dominio del remitente en Resend</b><span class="quien q-ambos">Sally + BW</span><br>para que los correos salgan desde la dirección del club.</li>
+      <li><b>Dominio propio.</b><span class="quien q-ambos">Sally + BW</span><br>Activar clubdelamontana.cl, actualizar la dirección en Vercel, registrar el sitio en Google Search Console y enviar el mapa del sitio.</li>
+      <li><b>Texto de autorización definitivo.</b><span class="quien q-sally">Sally</span><br>Reemplazar el texto provisorio desde Panel → Ajustes.</li>
+      <li><b>Difusión.</b><span class="quien q-sally">Sally</span><br>Poner el link del sitio en la bio de Instagram y crear el Perfil de Empresa en Google.</li>
+    </ol>
+  </div>
+
+  <footer class="pie"><span class="m">Benedetto<span>Webs</span></span><span>Acta de entrega · Club de la Montaña</span><span>4 / 5</span></footer>
+</section>
+
+<!-- ============ HOJA 5 ============ -->
+<section class="hoja">
+  <div class="mini-banda">
+    <div class="logo">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b0f1a"/><rect x=".75" y=".75" width="62.5" height="62.5" rx="13.25" fill="none" stroke="#2a3356" stroke-width="1.5"/><path d="M10.91 39.78V36.84L18.33 33.41Q18.84 33.18 19.34 33.01Q19.84 32.84 20.12 32.79Q19.84 32.74 19.33 32.6Q18.82 32.46 18.33 32.23L10.91 28.77V25.78L22.37 31.18V34.38ZM26.29 41.22V22.53H32.03Q34.74 22.53 36.33 23.82Q37.91 25.11 37.91 27.34Q37.91 28.6 37.35 29.52Q36.79 30.44 35.83 30.95Q34.87 31.46 33.61 31.46V31.36Q34.97 31.33 36.03 31.86Q37.09 32.38 37.72 33.41Q38.35 34.43 38.35 35.89Q38.35 37.5 37.61 38.71Q36.86 39.91 35.52 40.56Q34.18 41.22 32.31 41.22ZM29.41 38.55H32.1Q33.51 38.55 34.32 37.8Q35.12 37.04 35.12 35.74Q35.12 34.43 34.32 33.63Q33.51 32.82 32.1 32.82H29.41ZM29.41 30.23H31.97Q33.25 30.23 33.98 29.56Q34.71 28.88 34.71 27.7Q34.71 26.52 33.98 25.86Q33.25 25.19 31.97 25.19H29.41Z" fill="#00d4ff"/><path d="M41.22 44.75V41.86H53.5V44.75Z" fill="#6c63ff"/></svg>
+      <span>Benedetto<span class="accent">Webs</span></span>
+    </div>
+    <span class="tit">Acta de entrega · Club de la Montaña</span>
+  </div>
+
+  <div class="cuerpo">
+    <h2 style="margin-top:2mm"><span class="n">08</span> Servicios y cuentas</h2>
+    <table>
+      <tr><th style="width:30mm">Servicio</th><th>Para qué se usa</th></tr>
+      <tr><td class="c">Vercel</td><td>Publica el sitio. Aquí se guardan las claves y la configuración (variables de entorno).</td></tr>
+      <tr><td class="c">Firebase</td><td>Proyecto <code>clubdelamontana-chile</code>: base de datos de salidas, inscripciones, blog y encuesta (en Santiago) y almacenamiento de fotos.</td></tr>
+      <tr><td class="c">Flow</td><td>Cobro de las inscripciones, con la cuenta de Sally.</td></tr>
+      <tr><td class="c">Resend</td><td>Envío de los correos de confirmación y avisos.</td></tr>
+      <tr><td class="c">GitHub</td><td>Código fuente del sitio, con instrucciones de uso y mantención en el README.</td></tr>
+    </table>
+    <div class="nota">Las claves de acceso no se incluyen en este documento por seguridad; se entregan por un canal aparte.</div>
+
+    <h2><span class="n">09</span> Conformidad</h2>
+    <p>Ambas partes declaran que el sitio web y su panel de administración se entregan con las funciones descritas en esta acta. Los puntos de la sección 07 quedan como pendientes y no impiden la recepción del proyecto. Se firma en señal de conformidad en Santiago, a 18 de noviembre de 2026.</p>
+
+    <div class="firmas">
+      <div class="firma">
+        <div class="rol">Recibe conforme</div>
+        <div><b>Sally Wilmans Cifuentes</b></div>
+        <div class="lin">Club de la Montaña</div>
+        <div class="lin">Fecha: ____ / ____ / ________</div>
+      </div>
+      <div class="firma">
+        <div class="rol">Entrega</div>
+        <div><b>Santiago Benedetto</b></div>
+        <div class="lin">BenedettoWebs</div>
+        <div class="lin">Fecha: ____ / ____ / ________</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pie"><span class="m">Benedetto<span>Webs</span></span><span>benedettowebs.cl · @benedettowebs</span><span>5 / 5</span></footer>
+</section>
+
+</body>
+</html>
