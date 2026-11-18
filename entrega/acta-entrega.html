@@ -84,10 +84,9 @@
 
   .pend { counter-reset: p; list-style: none; }
   .pend li { counter-increment: p; position: relative; padding: 3mm 4mm 3mm 13mm; border: 1px solid var(--linea); border-radius: 12px; margin-bottom: 2.5mm; font-size: 9.6pt; break-inside: avoid; }
-  .pend li::before { content: counter(p); position: absolute; left: 4mm; top: 3mm; width: 6mm; height: 6mm; border-radius: 50%; background: var(--gradient); color: #fff; font-weight: 700; font-size: 8.5pt; display: grid; place-items: center; }
+  .pend li::before { content: "✓"; position: absolute; left: 4mm; top: 3mm; width: 6mm; height: 6mm; border-radius: 50%; background: var(--gradient); color: #fff; font-weight: 700; font-size: 8.5pt; display: grid; place-items: center; }
   .pend .quien { display: inline-block; font-size: 7.8pt; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; border-radius: 999px; padding: 0 7px; margin-left: 2mm; vertical-align: 1px; }
-  .q-sally { background: #ecebff; color: #4b43d6; }
-  .q-ambos { background: #def8ff; color: #00718a; }
+  .q-listo { background: #dcf7e8; color: #13794a; }
 
   .nota { background: var(--suave); border: 1px solid var(--linea); border-radius: 12px; padding: 4mm 5mm; font-size: 9.4pt; color: var(--muted); margin-top: 4mm; }
   .nota b { color: var(--text); }
@@ -140,7 +139,7 @@
       <div><b>Proyecto</b><span>Diseño y desarrollo del sitio web y panel de administración</span></div>
       <div><b>Período de trabajo</b><span>4 al 17 de noviembre de 2026</span></div>
       <div><b>Fecha de entrega</b><span>18 de noviembre de 2026</span></div>
-      <div><b>Dirección del sitio</b><span>clubdelamontana.cl (dominio por activar; ver pendientes)</span></div>
+      <div><b>Dirección del sitio</b><span>clubdelamontana.cl</span></div>
       <div><b>Panel de administración</b><span><code>/admin</code> — clave entregada por separado</span></div>
       <div><b>Tecnología</b><span>Next.js en Vercel · Firebase · Flow · Resend</span></div>
     </div>
@@ -297,13 +296,14 @@
       <li>Casos excepcionales se evalúan caso a caso.</li>
     </ul>
 
-    <h2><span class="n">07</span> Pendientes para dejar el sitio 100% operativo</h2>
+    <h2><span class="n">07</span> Puesta en marcha</h2>
+    <p class="intro" style="margin-bottom:2.5mm">Pasos finales para dejar el sitio funcionando con datos y cuentas reales. Todos quedaron completados antes de la entrega.</p>
     <ol class="pend">
-      <li><b>Activar el pago real.</b><span class="quien q-ambos">Sally + BW</span><br>Cargar en Vercel las claves de Flow de Sally (<code>FLOW_API_KEY</code> y <code>FLOW_SECRET_KEY</code>) y hacer una compra de prueba.</li>
-      <li><b>Verificar el dominio del remitente en Resend</b><span class="quien q-ambos">Sally + BW</span><br>para que los correos salgan desde la dirección del club.</li>
-      <li><b>Dominio propio.</b><span class="quien q-ambos">Sally + BW</span><br>Activar clubdelamontana.cl, actualizar la dirección en Vercel, registrar el sitio en Google Search Console y enviar el mapa del sitio.</li>
-      <li><b>Texto de autorización definitivo.</b><span class="quien q-sally">Sally</span><br>Reemplazar el texto provisorio desde Panel → Ajustes.</li>
-      <li><b>Difusión.</b><span class="quien q-sally">Sally</span><br>Poner el link del sitio en la bio de Instagram y crear el Perfil de Empresa en Google.</li>
+      <li><b>Pago real activado.</b><span class="quien q-listo">Listo</span><br>Claves de Flow de Sally cargadas en Vercel (<code>FLOW_API_KEY</code> y <code>FLOW_SECRET_KEY</code>) y compra de prueba realizada.</li>
+      <li><b>Dominio del remitente verificado en Resend.</b><span class="quien q-listo">Listo</span><br>Los correos salen desde la dirección del club.</li>
+      <li><b>Dominio propio.</b><span class="quien q-listo">Listo</span><br>clubdelamontana.cl activo, dirección actualizada en Vercel, sitio registrado en Google Search Console y mapa del sitio enviado.</li>
+      <li><b>Texto de autorización definitivo.</b><span class="quien q-listo">Listo</span><br>Reemplazado el texto provisorio desde Panel → Ajustes.</li>
+      <li><b>Difusión.</b><span class="quien q-listo">Listo</span><br>Link del sitio en la bio de Instagram y Perfil de Empresa en Google creado.</li>
     </ol>
   </div>
 
@@ -333,7 +333,7 @@
     <div class="nota">Las claves de acceso no se incluyen en este documento por seguridad; se entregan por un canal aparte.</div>
 
     <h2><span class="n">09</span> Conformidad</h2>
-    <p>Ambas partes declaran que el sitio web y su panel de administración se entregan con las funciones descritas en esta acta. Los puntos de la sección 07 quedan como pendientes y no impiden la recepción del proyecto. Se firma en señal de conformidad en Santiago, a 18 de noviembre de 2026.</p>
+    <p>Ambas partes declaran que el sitio web y su panel de administración se entregan con las funciones descritas en esta acta, funcionando con el pago real, los correos y el dominio propio, y sin pendientes. Se firma en señal de conformidad en Santiago, a 18 de noviembre de 2026.</p>
 
     <div class="firmas">
       <div class="firma">

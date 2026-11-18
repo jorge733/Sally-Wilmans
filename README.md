@@ -6,33 +6,13 @@ Sitio web del Club de la Montaña (Sally Willmans): las familias ven las próxim
 
 ## Estado
 
-El sitio público y el panel funcionan con datos reales en Firestore. Lo que queda está en **Pendiente**.
+El sitio público y el panel funcionan con datos reales en Firestore. Lo que queda está en **Puesta en marcha (completada)**
 
-**Sitio público**
-
-- Inicio: portada, próximas salidas, cómo funciona, quiénes somos, cuidados, galería, preguntas y contacto. Textos y fotos se editan desde el panel.
-- Detalle de cada salida: fecha, lugar, edades, horario, qué llevar, precio, cupos y fotos de la salida.
-- Ficha de inscripción: datos de cada niño, salud, apoderado, contacto de emergencia y autorización.
-- Club de Verano por semanas: la familia elige semanas completas (y días sueltos si la salida tiene precio por día); los cupos se cuentan por día.
-- Pago con Flow, comprobante en `/inscripcion/[id]` y reintento si el pago falla.
-- Política de cambios y devoluciones en `/devoluciones` (enlazada desde el pie). Ver **Devoluciones**.
-- Blog en `/blog`: listado y cada artículo en `/blog/[id]`, con portada, fotos, autora, tiempo de lectura y «Sigue leyendo». Los tres más nuevos aparecen en el inicio (solo si hay alguno publicado). Enlazado en el menú y en el pie.
-- Encuesta para jóvenes de 13 a 16 años en `/encuesta` (juegos, actividades, temas y formatos). Se puede destacar con un aviso en el inicio desde el panel.
-- Imágenes para compartir (WhatsApp, Instagram) del sitio, de cada salida, de la encuesta, del blog y de cada artículo (con su portada, o cerros si no tiene) (`opengraph-image.tsx`). Las páginas sin imagen propia repiten la del sitio (`OG_IMAGEN_SITIO`).
-- Animaciones al hacer scroll, favicon y botón de WhatsApp.
-- SEO: `/sitemap.xml` (inicio, salidas vigentes, blog y encuesta), `/robots.txt` (cierra panel, pagos y fichas) y datos estructurados para Google: el club y sus preguntas frecuentes en el inicio, cada salida como evento con fecha, lugar, precio y cupos, y cada artículo del blog (`src/lib/datos-estructurados.tsx`).
-
-**Correos (Resend)**
-
-- Al pagar: confirmación al apoderado (con un resumen de la política de devoluciones) y aviso a `ADMIN_NOTIFY_EMAIL`. Cada correo sale una sola vez aunque Flow avise dos veces.
-- Cada respuesta de la encuesta llega también por correo.
-- Sin `RESEND_API_KEY` los correos solo se anotan en la consola.
-
-**Pendiente**
-
-1. Pago real: cargar `FLOW_API_KEY` y `FLOW_SECRET_KEY` de Sally en Vercel y hacer una compra de prueba en sandbox.flow.cl.
-2. Verificar el dominio del remitente en Resend.
-3. Dominio propio. Al tenerlo: cambiar `NEXT_PUBLIC_SITE_URL` en Vercel, agregar el sitio en Google Search Console, poner el código de verificación en `GOOGLE_SITE_VERIFICATION`, volver a publicar y enviar `/sitemap.xml` desde Search Console. Poner el link del sitio en la bio de Instagram y crear el Perfil de Empresa en Google.
+- Pago real con Flow: claves de Sally en Vercel y compra de prueba hecha.
+- Dominio del remitente verificado en Resend.
+- Dominio propio clubdelamontana.cl, con `NEXT_PUBLIC_SITE_URL` actualizado, el sitio en Google Search Console y `/sitemap.xml` enviado.
+- Texto de autorización definitivo cargado en Panel → Ajustes.
+- Link del sitio en la bio de Instagram y Perfil de Empresa en Google.
 
 ## Panel (/admin)
 
