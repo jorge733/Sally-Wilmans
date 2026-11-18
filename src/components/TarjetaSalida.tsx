@@ -10,6 +10,7 @@ import {
   salidaAbierta,
   semanaAbierta,
   semanasVigentes,
+  textoCuposLibres,
 } from "@/lib/salida-utils";
 import type { Salida } from "@/lib/types";
 import { IconoFlecha, IconoLugar, IconoNinos, IconoReloj } from "./Iconos";
@@ -66,9 +67,8 @@ export function EstadoCupos({ salida }: { salida: Salida }) {
     <div>
       <div className="mb-1.5 flex justify-between text-xs font-medium">
         <span className={abierta ? (libres <= 3 ? "text-acento" : "text-bosque") : "text-gris"}>
-          {!abierta ? "Salida completa" : libres === 1 ? "¡Queda 1 cupo!" : `Quedan ${libres} cupos`}
+          {!abierta ? "Salida completa" : textoCuposLibres(libres, libres <= 3)}
         </span>
-        <span className="text-gris">{salida.cupos} en total</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-linea">
         <div

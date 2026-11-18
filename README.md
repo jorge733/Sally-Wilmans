@@ -10,8 +10,8 @@ El sitio público y el panel funcionan con datos reales en Firestore. Lo que que
 
 **Sitio público**
 
-- Inicio: portada, próximas salidas, cómo funciona, quiénes somos, cuidados, galería, preguntas y contacto. Textos y fotos se editan desde el panel.
-- Detalle de cada salida: fecha, lugar, edades, horario, qué llevar, precio, cupos y fotos de la salida.
+- Inicio: portada, próximas salidas (con filtro por edad cuando hay salidas para distintos grupos de edad), cómo funciona, quiénes somos, cuidados, galería, preguntas y contacto. Textos y fotos se editan desde el panel.
+- Detalle de cada salida: fecha, lugar, edades, horario, qué llevar, precio, cupos y fotos de la salida. Cuántos cupos quedan se muestra solo cuando quedan 10 o menos (`MOSTRAR_CUPOS_DESDE` en `src/lib/salida-utils.ts`); antes dice «Cupos disponibles».
 - Ficha de inscripción: datos de cada niño, salud, apoderado, contacto de emergencia y autorización.
 - Club de Verano por semanas: la familia elige semanas completas (y días sueltos si la salida tiene precio por día); los cupos se cuentan por día.
 - Pago con Flow, comprobante en `/inscripcion/[id]` y reintento si el pago falla.

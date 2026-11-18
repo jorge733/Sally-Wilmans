@@ -13,13 +13,14 @@ import {
 } from "@/components/Iconos";
 import { Paisaje } from "@/components/Paisaje";
 import { TarjetaArticulo } from "@/components/TarjetaArticulo";
+import { FiltroEdades } from "@/components/FiltroEdades";
 import { TarjetaSalida } from "@/components/TarjetaSalida";
 import { JsonLd, organizacion, preguntasFrecuentes, sitioWeb } from "@/lib/datos-estructurados";
 import { varianteDe } from "@/lib/salida-utils";
 import { articulosPublicados, obtenerAjustes, obtenerContenido, obtenerFotosSitio, salidasPublicas } from "@/lib/data";
 import { FOTOS_INCLUIDAS, type FotoSitio } from "@/lib/fotos-sitio";
 import { estadoEncuesta } from "@/lib/encuesta";
-import { hoyChile, linkWhatsapp } from "@/lib/format";
+import { edades, hoyChile, linkWhatsapp } from "@/lib/format";
 import { OG_BASE, OG_IMAGEN_SITIO } from "@/lib/site";
 
 const ICONOS_CUIDADO = [IconoGrupo, IconoEscudo, IconoCorazon, IconoSendero];
@@ -126,6 +127,10 @@ export default async function Inicio() {
     obtenerFotosSitio(),
     articulosPublicados().catch(() => []),
   ]);
+  // Grupos de edad de las salidas (cada rango distinto), de menor a mayor, para el filtro.
+  const gruposEdad = [...new Map(salidas.map((s) => [`${s.edadMin}-${s.edadMax}`, s])).entries()]
+    .sort(([, a], [, b]) => a.edadMin - b.edadMin || a.edadMax - b.edadMax)
+    .map(([clave, s]) => ({ clave, texto: edades(s.edadMin, s.edadMax) }));
   // El aviso de la encuesta solo aparece mientras recibe respuestas (y si Sally no lo ocultó).
   const encuestaVisible = c.encuesta.mostrar && estadoEncuesta(hoyChile()) === "abierta";
 
@@ -243,18 +248,18 @@ export default async function Inicio() {
             </p>
           </div>
           {salidas.length > 0 ? (
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {salidas.map((s, i) => (
-                <div
-                  key={s.id}
-                  data-revelar
-                  style={retraso((i % 3) * 120)}
-                  className="flex [&>*]:w-full"
-                >
-                  <TarjetaSalida salida={s} indice={varianteDe(s.id)} />
-                </div>
-              ))}
-            </div>
+            <FiltroEdades
+              grupos={gruposEdad}
+              salidas={salidas.map((s, i) => ({
+                id: s.id,
+                grupo: `${s.edadMin}-${s.edadMax}`,
+                tarjeta: (
+                  <div data-revelar style={retraso((i % 3) * 120)} className="flex [&>*]:w-full">
+                    <TarjetaSalida salida={s} indice={varianteDe(s.id)} />
+                  </div>
+                ),
+              }))}
+            />
           ) : (
             <div className="mt-10 rounded-2xl border border-dashed border-linea bg-white p-10 text-center">
               <p className="mano text-3xl text-marca">{c.fechas.vacioTitulo}</p>

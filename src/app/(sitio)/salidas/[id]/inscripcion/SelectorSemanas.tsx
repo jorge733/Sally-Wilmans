@@ -1,7 +1,7 @@
 "use client";
 
 import { clp, fechaLarga, rangoDias, sumarDias } from "@/lib/format";
-import { diasSemana, libresDia, precioEleccion } from "@/lib/salida-utils";
+import { diasSemana, libresDia, precioEleccion, textoCuposLibres } from "@/lib/salida-utils";
 import type { Semana } from "@/lib/types";
 
 const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie"];
@@ -17,8 +17,7 @@ function lunesDe(f: string): string {
   return sumarDias(f, dia === 0 ? -6 : 1 - dia);
 }
 
-const cupos = (n: number, exclamar = false) =>
-  n === 1 ? (exclamar ? "¡Queda 1 cupo!" : "Queda 1 cupo") : exclamar ? `¡Quedan ${n} cupos!` : `Quedan ${n} cupos`;
+const cupos = textoCuposLibres;
 
 /**
  * Calendario de lunes a viernes donde cada fila es una semana del club.

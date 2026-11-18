@@ -96,6 +96,16 @@ export function cuposLibres(s: Salida): number {
   return Math.max(0, s.cupos - s.cuposTomados);
 }
 
+/** En la página pública, cuántos cupos quedan se muestra solo desde este número hacia abajo. */
+export const MOSTRAR_CUPOS_DESDE = 10;
+
+/** "Quedan 7 cupos", o solo "Cupos disponibles" mientras queden más de MOSTRAR_CUPOS_DESDE. */
+export function textoCuposLibres(libres: number, exclamar = false): string {
+  if (libres > MOSTRAR_CUPOS_DESDE) return "Cupos disponibles";
+  if (libres === 1) return exclamar ? "¡Queda 1 cupo!" : "Queda 1 cupo";
+  return exclamar ? `¡Quedan ${libres} cupos!` : `Quedan ${libres} cupos`;
+}
+
 /** Último día en que la salida aún puede recibir inscripciones (para listarla en el sitio). */
 export function ultimoDia(s: Salida): string {
   if (porDia(s)) return s.semanas.reduce((m, w) => (w.fin > m ? w.fin : m), "");

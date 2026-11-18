@@ -13,7 +13,7 @@ import { Paisaje } from "@/components/Paisaje";
 import { EstadoCupos, precioSemana, textoPrecio } from "@/components/TarjetaSalida";
 import { obtenerAjustes, obtenerSalida } from "@/lib/data";
 import { clp, diasHabiles, edades, fechaSalida, linkWhatsapp, rangoDias } from "@/lib/format";
-import { libresSemana, porDia, porSemanas, salidaAbierta, semanaAbierta, varianteDe } from "@/lib/salida-utils";
+import { MOSTRAR_CUPOS_DESDE, libresSemana, porDia, porSemanas, salidaAbierta, semanaAbierta, textoCuposLibres, varianteDe } from "@/lib/salida-utils";
 import { OG_BASE } from "@/lib/site";
 import { JsonLd, eventoSalida } from "@/lib/datos-estructurados";
 
@@ -143,10 +143,10 @@ export default async function DetalleSalida({ params }: Props) {
                                 ? "Completa"
                                 : "Ya partió"
                               : libres <= 3
-                                ? libres === 1
-                                  ? "¡Queda 1 cupo!"
-                                  : `¡Quedan ${libres} cupos!`
-                                : `${diasHabiles(w.inicio, w.fin)} días · quedan ${libres} cupos`}
+                                ? textoCuposLibres(libres, true)
+                                : libres <= MOSTRAR_CUPOS_DESDE
+                                  ? `${diasHabiles(w.inicio, w.fin)} días · quedan ${libres} cupos`
+                                  : `${diasHabiles(w.inicio, w.fin)} días`}
                           </span>
                         </span>
                         <span className={`font-semibold ${abiertaW ? "" : "line-through"}`}>{clp(precioSemana(salida, w))}</span>
